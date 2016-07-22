@@ -165,7 +165,6 @@ if ( ~isempty(opts.timeband_ms) )
   X    = X(:,timeIdx,:);
 end
 
-
 %4.5) Bad trial removal
 isbadtr=[]; trthresh=[];
 if ( opts.badtrrm )
