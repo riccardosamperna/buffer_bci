@@ -131,6 +131,8 @@ for si=1:nSeq;
   else
     sleepSec(trialDuration); 
 	 % wait for classifier prediction event
+	 if( verb>0 ) fprintf(1,'Waiting for predictions\n'); end;
+	 % wait for classifier prediction event
 	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],2000);
   end
   trlEndTime=getwTime();
