@@ -131,11 +131,18 @@ for si=1:nSeq;
   else
     sleepSec(trialDuration); 
 	 % wait for classifier prediction event
+<<<<<<< 6d4df5d452650bf1d1fc8217a0a3f14ba0fa3493
 	 if( verb>0 ) fprintf(1,'Waiting for predictions\n'); end;
 	 % wait for classifier prediction event
 	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],2000);
   end
   trlEndTime=getwTime();
+=======
+	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],2000);
+  end
+  trlEndTime=getwTime();
+
+>>>>>>> stuff for the early stopping
   
   % do something with the prediction (if there is one), i.e. give feedback
   if( isempty(devents) ) % extract the decision value
@@ -143,7 +150,10 @@ for si=1:nSeq;
     set(h(:),'facecolor',bgColor);
     set(h(end),'facecolor',fbColor); % fix turns blue to show now pred recieved
     drawnow;
+<<<<<<< 6d4df5d452650bf1d1fc8217a0a3f14ba0fa3493
     nMissed=nMissed+1;
+=======
+>>>>>>> stuff for the early stopping
   else
 	 fprintf(1,'Prediction after %gs : %s',trlEndTime-trlStartTime,ev2str(devents(end)));
     dv = devents(end).value;

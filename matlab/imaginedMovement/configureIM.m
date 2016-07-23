@@ -116,17 +116,16 @@ epochtrialAdaptHL=(adaptHalfLife_ms/epochtrlen_ms); % half-life in number called
 epochtrailAdaptFactor=exp(log(.5)/epochtrialAdaptHL); % convert to exp-move-ave weight factor
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
-%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
-trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
-%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','adaptspatialfilt',trialadaptfactor,'objFn','mlr_cg','binsp',0,'spMx','1vR'}; % adaptive-whiten + direct multi-class training
+% whiten + direct multi-class training, ignoring the startup window after the cue
+trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','timeband_ms',[250 trlen_ms],'objFn','mlr_cg','binsp',0,'spMx','1vR'}; 
 %trainOpts = {'spType',{{1 3} {2 4}}}; % train 2 classifiers, 1=N vs S, 2=E vs W
 
 % Epoch feedback opts
 %%0) Use exactly the same classification window for feedback as for training, but
 %%   but also include a bias adaption system to cope with train->test transfer
-earlyStopping = false;
-epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials data
-%epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) biasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
+earlyStopping = true;
+epochFeedbackOpts={}; % raw output
+%epochFeedbackOpts={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/50))}; % bias-adaption
 
 % Epoch feedback with early-stopping, config using the user feedback table
 userFeedbackTable={'epochFeedback_es' 'cont' {'predFilt',@(x,s,e) gausOutlierFilt(x,s,2.5*8,trlen_ms./step_ms),'trlen_ms',welch_width_ms}}; 
