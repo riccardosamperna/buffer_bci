@@ -86,7 +86,7 @@ while (timetogo>0)
 
 		% additional prediction smoothing for display, if wanted
 		if ( ~isempty(stimSmoothFactor) && isnumeric(stimSmoothFactor) && stimSmoothFactor>0 )
-        if ( stimSmoothFactor>=0 ) % exp weighted moving average
+		  if ( stimSmoothFactor>=0 ) % exp weighted moving average
 			 dv=dv*stimSmoothFactor + (1-stimSmoothFactor)*pred(:);
 		  else % store predictions in a ring buffer
 			 fbuff(:,mod(nEpochs-1,abs(stimSmoothFactor))+1)=pred(:); % store predictions in a ring buffer
