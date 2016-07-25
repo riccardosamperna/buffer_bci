@@ -3,14 +3,16 @@ configureIM;
 rtbDuration=.5; %.5s between commands
 
 cybathalon = struct('host','localhost','port',5555,'player',1,...
-                    'cmdlabels',{{'jump' 'slide' 'speed' 'rest'}},'cmddict',[2 3 1 99],...
-						  'cmdColors',[.6 0 .6;.6 .6 0;0 .5 0;.3 .3 .3]',...
+                    'cmdlabels',{{'speed' 'rest' 'jump' 'kick'}},'cmddict',[1 99 2 3],...
                     'socket',[],'socketaddress',[]);
 % open socket to the cybathalon game
 [cybathalon.socket]=javaObject('java.net.DatagramSocket'); % create a UDP socket
 cybathalon.socketaddress=javaObject('java.net.InetSocketAddress',cybathalon.host,cybathalon.port);
 cybathalon.socket.connect(cybathalon.socketaddress); % connect to host/port
 connectionWarned=0;
+
+% make the target sequence
+tgtSeq=mkStimSeqRand(nSymbs,nSeq);
 
 % make the stimulus display
 fig=figure(2);
@@ -132,14 +134,14 @@ for si=1:nSeq;
 		  warning('Error sending to the Cybathalon game.  Is it running?\n');
 		end
 	 end
-
-										  % now wait a little to give some RTB time
-	 drawnow;
-	 sleepSec(rtbDuration);
-	 set(h(predTgt),'facecolor',cybathalon.cmdColors(:,predTgt));
-	 set(h(end),'facecolor',bgColor); % clear the feedback
 	 
-  end % if classifier prediction  
+  end % if classifier prediction
+  sleepSec(feedbackDuration);
+  
+  % reset the cue and fixation point to indicate trial has finished  
+  set(h(:),'facecolor',bgColor);
+  if ( ~isempty(symbCue) ) set(txthdl,'visible','off'); end
+  % also reset the position of the fixation point
   drawnow;
   
 end % loop over sequences in the experiment
