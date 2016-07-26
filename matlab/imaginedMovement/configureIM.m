@@ -44,21 +44,12 @@ end
 verb         =1; % verbosity level for debug messages, 1=default, 0=quiet, 2=very verbose
 buffhost     ='localhost';
 buffport     =1972;
-% N.B. tgts *always* start from the top (12 o'clock=N) and run anti-clock
-% 3-[N,SW,SE], 4-[N,W,S,E], 6-[N,NW,SW,S,SE,NE], 8-[N,NW,W,SW,S,SE,E,NE]
-symbCue      ={'FT' 'LH' 'RH'}; % sybmol cue in addition to positional one. E,N,W,S for 4 symbs
-nSymbs       =numel(symbCue); 
-baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
-rtbClass     ='99 RTB';% if set, treat post-trial return-to-baseline phase as separate class to classify
-
-nSeq              =20*nSymbs; % 20 examples of each target
-epochDuration     =.75;% lots of short (750ms/trial) epochs for training the classifier
-trialDuration     =epochDuration*3*2; % = 4.5s trials
-baselineDuration  =epochDuration*2; % = 1.5s baseline
-intertrialDuration=epochDuration*2; % = 1.5s post-trial
-feedbackDuration  =epochDuration*2;
-errorDuration     =epochDuration*2*2;%= 3s penalty for mistake
-calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
+nSymbs       =4; % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
+symbCue      ={'RH' 'rst' 'LH' 'FT'}; % sybmol cue in addition to positional one. E,N,W,S for 4 symbs
+baselineClass=[];
+%nSymbs       =3;
+%symbCue      ={'rst' 'LH' 'RH'}; % string cue in addition to positional one. N,W,E for 3 symbs
+nSeq         =20*nSymbs; % 20 examples of each target
 
 
 warpCursor   = 0; % flag if in feedback BCI output sets cursor location or how the cursor moves
