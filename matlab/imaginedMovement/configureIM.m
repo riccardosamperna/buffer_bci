@@ -50,7 +50,6 @@ baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to c
 rbtClass     =[];
 
 nSeq         =20*nSymbs; % 20 examples of each target
-
 trialDuration     =3;   % length in seconds of the task in seconds
 baselineDuration  =1;   % length in seconds of the get-ready cue
 intertrialDuration=3.5; % length in seconds of the post-task blank screen
