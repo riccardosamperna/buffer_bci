@@ -141,21 +141,9 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 
 %%2) Classify every welch-window-width (default 250ms), prediction is average of full trials worth of data, no-bias adaptation
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
-<<<<<<< 222a9fcebbef0a3b249ded31e5ad647c9518e64e
-%% Also send all raw predictions out for use in, e.g. center-out training
-contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',-contFeedbackFiltLen}; % trlDuration average
-% as above but include an additional bias-adaption as well as classifier output smoothing
-contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor contFeedbackFiltFactor])}; % trlDuration average
-
-% Epoch feedback with early-stopping, config using the user feedback table
-userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,trialDuration*1000./step_ms)}};
-% Epoch feedback with early-stopping, (cont-classifer, so update adaptive whitener constant)
-userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,trialDuration*1000./step_ms),'adaptspatialfilt',conttrialAdaptFactor}};
-=======
 contFeedbackOpts ={'predFilt',-(trlen_ms/step_ms),'trlen_ms',welch_width_ms};
 
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation
 %contFeedbackOpts ={'predFilt',@(x,s) biasFilt(x,s,exp(log(.5)/400)),'trlen_ms',[]}; 
 %stimSmoothFactor= -(trlen_ms/500);% actual prediction is average of trail-length worth of predictions
->>>>>>> early stopping and cybathalon output stuff
