@@ -201,7 +201,7 @@ while( ~endTest )
 		fprintf('Got reset event. Prediction filters reset.\n');
 		filtstate=[]; fbuff(:)=0; dv(:)=0;
 		endSample = devents(mi).sample+trlen_samp; % wait for trials worth of data post reset time
-	 end
+	 end;
     nEvents=status.nevents;
   end
 end % while not endTest

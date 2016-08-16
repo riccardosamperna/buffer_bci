@@ -81,7 +81,7 @@ if ( isfield(clsfr,'adaptspatialfilt') && ~isempty(clsfr.adaptspatialfilt) )
 	 else % update
 	   % between 0 and 1 is an exp weighting factor
 		% N.B. alpha = exp(log(.5)./(half-life))
-		if ( clsfr.adaptspatialfilt>=0 && clsfr.adaptspatialfilt<=1 ) % exp-weighted moving average
+		if ( clsfr.adaptspatialfilt>=0 && clsfr.adaptspatialfilt<1 ) % exp-weighted moving average
 		  chCov = clsfr.adaptspatialfilt*clsfr.chCov + (1-clsfr.adaptspatialfilt)*chCov;
 		  clsfr.chCov = chCov;
 		else % integers 1 or larger => ring buffer
