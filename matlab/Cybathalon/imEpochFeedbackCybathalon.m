@@ -1,7 +1,7 @@
 configureIM;
 
 cybathalon = struct('host','localhost','port',5555,'player',1,...
-                    'cmdlabels',{{'speed' 'rest' 'jump' 'kick'}},'cmddict',[1 99 2 3],...
+                    'cmdlabels',{{'rotate' 'jump' 'slide' 'rest'}},'cmddict',[1 2 3 99],...
                     'socket',[],'socketaddress',[]);
 % open socket to the cybathalon game
 [cybathalon.socket]=javaObject('java.net.DatagramSocket'); % create a UDP socket
@@ -123,7 +123,7 @@ for si=1:nSeq;
       end
     end    
     % give the feedback on the predicted class
-    prob=1./(1+exp(-dv)); prob=prob./sum(prob);
+    prob=exp((dv-max(dv))); prob=prob./sum(prob); % robust soft-max prob computation
     if ( verb>=0 ) 
       fprintf('dv:');fprintf('%5.4f ',dv);fprintf('\t\tProb:');fprintf('%5.4f ',prob);fprintf('\n'); 
     end;  

@@ -21,6 +21,7 @@ s.var=sqrt(s.var.^2 + mean(x.^2));
 
 mx =max(s.x);
 if( mx > s.mu + zscore*s.var || s.n>maxn )
+  %if ( s.n>maxn ) fprintf('gausOutlierFilt: maxn pred'); else fprintf('gausOutlierFilt: outlier pred'); end;
   x     =s.x;
   % clear internal state
   s.x(:)=0;
