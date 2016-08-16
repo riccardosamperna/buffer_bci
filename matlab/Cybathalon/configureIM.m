@@ -51,6 +51,10 @@ baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to c
 %symbCue      ={'rst' 'LH' 'RH'}; % string cue in addition to positional one. N,W,E for 3 symbs
 nSeq         =20*nSymbs; % 20 examples of each target
 
+animateFix   = true; % do we animate the fixation point during training?
+frameDuration= .1; % time between re-draws when animating the fixation point
+animateStep  = diff(axLim)*.01; % amount by which to move point per-frame in fix animation
+
 epochDuration     =1.5;
 trialDuration     =epochDuration*3; % = 4.5s trials
 baselineDuration  =epochDuration;   % = 1.5s baseline
@@ -59,7 +63,7 @@ feedbackDuration  =epochDuration;
 
 contFeedbackTrialDuration =10;
 neurofeedbackTrialDuration=30;
-warpCursor   = 0; % flag if in feedback BCI output sets cursor location or how the cursor moves
+warpCursor   = 1; % flag if in feedback BCI output sets cursor location or how the cursor moves
 moveScale    = .1;
 
 axLim        =[-1.5 1.5]; % size of the display axes
@@ -100,7 +104,7 @@ userFeedbackTable={'epochFeedback_es' 'cont' {'predFilt',@(x,s,e) gausOutlierFil
 %contFeedbackOpts ={'predFilt',@(x,s) biasFilt(x,s,exp(log(.5)/100)),'step_ms',250};
 stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s trlen
 
-%%2) Classify every welch-window-width (default 250ms), prediction is average of full trials worth of data, no-bias adaptation
+%%2) Classify every welch-window-width (default 250ms), prediction is running average of full trials worth of data, no-bias adaptation
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
 contFeedbackOpts ={'predFilt',-(trlen_ms/step_ms),'trlen_ms',welch_width_ms};
 
