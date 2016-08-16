@@ -128,7 +128,7 @@ epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials da
 %epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) biasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
 
 % Epoch feedback with early-stopping, config using the user feedback table
-userFeedbackTable={'epochFeedback_es' 'cont' {'predFilt',@(x,s,e) gausOutlierFilt(x,s,2.5*8,trialDuration*1000./step_ms),'trlen_ms',welch_width_ms}};
+userFeedbackTable={'epochFeedback_es' 'cont' {'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,trialDuration*1000./step_ms),'trlen_ms',welch_width_ms}};
 
 
 % different feedback configs (should all give similar results)
