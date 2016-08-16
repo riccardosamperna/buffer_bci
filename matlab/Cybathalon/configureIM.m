@@ -50,17 +50,18 @@ nSymbs       =numel(symbCue); % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     =[];
 
+animateFix   = true; % do we animate the fixation point during training?
+frameDuration= .1; % time between re-draws when animating the fixation point
+animateStep  = diff(axLim)*.01; % amount by which to move point per-frame in fix animation
 
-nSeq              =20*nSymbs; % 20 examples of each target
-epochDuration     =.75;
-trialDuration     =epochDuration*3*2; % 3*20 = 60 classification trials per class = 4.5s trials
-baselineDuration  =epochDuration*2;   % = 1.5s baseline
-intertrialDuration=epochDuration*2;   % = 1.5s post-trial
-feedbackDuration  =epochDuration*2;
-errorDuration     =epochDuration*2*3; %= 3s penalty for mistake
-calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
+epochDuration     =1.5;
+trialDuration     =epochDuration*3; % = 4.5s trials
+baselineDuration  =epochDuration;   % = 1.5s baseline
+intertrialDuration=epochDuration;   % = 1.5s post-trial
+feedbackDuration  =epochDuration;
 
-
+contFeedbackTrialDuration =10;
+neurofeedbackTrialDuration=30;
 warpCursor   = 1; % flag if in feedback BCI output sets cursor location or how the cursor moves
 moveScale    = .1;
 feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
@@ -139,7 +140,7 @@ userFeedbackTable={'epochFeedback_es' 'cont' {'predFilt',@(x,s,e) gausOutlierFil
 %contFeedbackOpts ={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/100)),'step_ms',250};
 stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s trlen
 
-%%2) Classify every welch-window-width (default 250ms), prediction is average of full trials worth of data, no-bias adaptation
+%%2) Classify every welch-window-width (default 250ms), prediction is running average of full trials worth of data, no-bias adaptation
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
 contFeedbackOpts ={'predFilt',-(trlen_ms/step_ms),'trlen_ms',welch_width_ms};
 
