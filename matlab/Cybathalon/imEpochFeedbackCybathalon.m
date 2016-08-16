@@ -110,6 +110,9 @@ for si=1:nSeq;
     set(h(end),'facecolor',fbColor); % fix turns blue to show now pred recieved
     drawnow;
   else
+	 if ( any([devents.sample]<ev.sample) ) % check for escaping predictions
+		warning('prediction from before the trial start!');
+	 end
 	 fprintf(1,'Prediction after %gs : %s',trlEndTime-trlStartTime,ev2str(devents(end)));
     dv = devents(end).value;
     if ( numel(dv)==1 )
