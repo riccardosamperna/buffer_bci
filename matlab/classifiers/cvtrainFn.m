@@ -423,8 +423,8 @@ if ( ~all(exInd) && opts.binsp && ~isempty(opts.calibrate) && ~isequal(opts.cali
          res.opt.soln{i}(end)    =res.opt.soln{i}(end)*Ab(1,i)+Ab(2,i);
       end
       % update the predictions also
-      res.opt.f(:,i)    = res.opt.f(:,i)*Ab(1,i)+Ab(2,i);
-      res.opt.tstf(:,i) = res.tstf(:,i,res.opt.Ci)*Ab(1,i)+Ab(2,i);
+      res.opt.f(:,i)    = res.opt.f(:,i)   *Ab(1,i)+Ab(2,i);
+      res.opt.tstf(:,i) = res.opt.tstf(:,i)*Ab(1,i)+Ab(2,i);
    end  
    res.opt.cal.scale=Ab(1,:); res.opt.cal.offset=Ab(2,:);
 end
