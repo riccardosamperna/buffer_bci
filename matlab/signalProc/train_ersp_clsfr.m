@@ -407,11 +407,12 @@ return
 %---------------------------------------
 function testCase()
 z=jf_mksfToy('Y',sign(round(rand(600,1))-.5));
-[clsfr]=train_ersp_clsfr(z.X,z.Y,'fs',z.di(2).info.fs,'ch_pos',[z.di(1).extra.pos3d],'ch_names',z.di(1).vals,'freqband',[0 .1 10 12],'visualize',1,'verb',1);
-f=apply_ersp_clsfr(X,clsfr);
+[clsfr,res]=train_ersp_clsfr(z.X,z.Y,'fs',z.di(2).info.fs,'ch_pos',[z.di(1).extra.pos3d],'ch_names',z.di(1).vals,'freqband',[0 .1 10 12],'visualize',0,'verb',1);
+[fmc,f]=apply_ersp_clsfr(z.X,clsfr);
+mad(res.opt.f,f)
 
 % try with 3 class problem
-[clsfr]=train_ersp_clsfr(z.X,ceil(rand(size(z.Y,1),1)*2.9),'fs',z.di(2).info.fs,'ch_pos',[z.di(1).extra.pos3d],'ch_names',z.di(1).vals,'freqband',[0 .1 10 12],'visualize',1,'verb',1);
+[clsfr,res]=train_ersp_clsfr(z.X,ceil(rand(size(z.Y,1),1)*2.9),'fs',z.di(2).info.fs,'ch_pos',[z.di(1).extra.pos3d],'ch_names',z.di(1).vals,'freqband',[0 .1 10 12],'visualize',0,'verb',1);
 
 % try with pre-built set of sub-problems
 [clsfr]=train_ersp_clsfr(z.X,[z.Y sign(randn(size(z.Y)))],'fs',z.di(2).info.fs,'ch_pos',[z.di(1).extra.pos3d],'ch_names',z.di(1).vals,'freqband',[0 .1 10 12],'visualize',1,'verb',1);
