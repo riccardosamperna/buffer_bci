@@ -73,7 +73,7 @@ for si=1:nSeq;
 		set(h(end),'position',fixPos);
 		drawnow;		
 		sleepSec(min(max(0,timetogo),frameDuration));
-		timetogo = baselineDuration- (getwTime()-t0); % time left to run in this trial
+		timetogo = animateDuration- (getwTime()-t0); % time left to run in this trial
 	 end
 	 % reset fix pos
 	 set(h(end),'position',[stimPos(:,end)-cursorSize/2;cursorSize*[1;1]]);
