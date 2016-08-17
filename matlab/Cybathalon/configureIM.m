@@ -51,10 +51,6 @@ baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to c
 %symbCue      ={'rst' 'LH' 'RH'}; % string cue in addition to positional one. N,W,E for 3 symbs
 nSeq         =20*nSymbs; % 20 examples of each target
 
-animateFix   = true; % do we animate the fixation point during training?
-frameDuration= .1; % time between re-draws when animating the fixation point
-animateStep  = diff(axLim)*.01; % amount by which to move point per-frame in fix animation
-
 epochDuration     =1.5;
 trialDuration     =epochDuration*3; % = 4.5s trials
 baselineDuration  =epochDuration;   % = 1.5s baseline
@@ -73,6 +69,12 @@ fixColor     =[1 0 0]; % fixitation/get-ready cue point color
 tgtColor     =[0 1 0]; % target color
 fbColor      =[0 0 1]; % feedback color
 txtColor     =[.5 .5 .5]; % color of the cue text
+
+animateFix   = true; % do we animate the fixation point during training?
+frameDuration= .1; % time between re-draws when animating the fixation point
+animateStep  = diff(axLim)*.01; % amount by which to move point per-frame in fix animation
+
+
 
 % Calibration/data-recording options
 trlen_ms      =epochDuration*1000; % how much data to use in each classifier training example
