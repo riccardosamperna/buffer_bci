@@ -326,5 +326,5 @@ return
 %---------------------------------------
 function testCase()
 z=jf_mksfToy('Y',sign(round(rand(600,1))-.5));
-[clsfr]=train_ersp_clsfr(z.X,z.Y,'fs',z.di(2).info.fs,'ch_pos',[z.di(1).extra.pos3d],'ch_names',z.di(1).vals,'freqband',[0 .1 10 12],'visualize',1,'verb',1);
-f=apply_ersp_clsfr(X,clsfr);
+[clsfr]=train_erp_clsfr(z.X,z.Y,'fs',z.di(2).info.fs,'ch_pos',[z.di(1).extra.pos3d],'ch_names',z.di(1).vals,'freqband',[0 .1 10 12],'visualize',1,'verb',1);
+f=apply_erp_clsfr(X,clsfr);
