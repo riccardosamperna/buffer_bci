@@ -64,7 +64,7 @@ else
               'maxStep',3,'minStep',5e-2,'marate',.95,'bPC',[],'wPC',1,...
 				  'incThresh',.66,'optBias',0,'maxTr',inf,...
               'compBinp',1,'rescaledv',0,'getOpts',0);
-  [opts,varargin]=parseOpts(opts,varargin{:});
+  opts=parseOpts(opts,varargin{:});
   if ( opts.getOpts ) wb=opts; return; end;
 end
 if ( isempty(opts.maxEval) ) opts.maxEval=5*sum(Y(:)~=0); end
