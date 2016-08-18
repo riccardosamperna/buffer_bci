@@ -71,7 +71,7 @@ else
 				  'CGmethod','PR','bPC',[],'wPC',[],'PCmethod','zero',...
 				  'incThresh',.66,'optBias',0,'maxTr',inf,...
               'getOpts',0);
-  [opts,varargin]=parseOpts(opts,varargin{:});
+  opts=parseOpts(opts,varargin{:});
   if ( opts.getOpts ) wb=opts; return; end;
 end
 if ( isempty(opts.maxEval) ) opts.maxEval=5*sum(Y(:)~=0); end
