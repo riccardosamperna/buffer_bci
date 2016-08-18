@@ -31,6 +31,7 @@ function [testdata,testevents]=cont_applyClsfr(clsfr,varargin)
 %                        'predFilt',@(x,s,e) avenFilt(x,s,10)  % send average f every 10 predictions
 %                        'predFilt',@(x,s,e) marginFilt(x,s,3) % send if margin between best and worst prediction >=3
 %  resetType     -- event type to match to reset the filter states   ('classifier.reset')
+%  clsfrOpts  -- {opts} name,value pairs to override fields in the input classfier structure
 % Examples:
 %  % 1) Default: apply clsfr every 100ms and send predictions as 'classifier.predicition'
 %  %    stop processing when get a 'stimulus.test','end' event.
@@ -48,8 +49,13 @@ opts=struct('buffhost','localhost','buffport',1972,'hdr',[],...
 				'resetType','classifier.reset',...
             'predEventType','classifier.prediction',...
             'trlen_ms',[],'trlen_samp',[],'overlap',.5,'step_ms',[],...
-            'predFilt',[],'timeout_ms',1000);
-[opts,varargin]=parseOpts(opts,varargin);
+            'predFilt',[],'timeout_ms',1000,'adaptspatialfilt',[]);
+[opts]=parseOpts(opts,varargin);
+
+% override classifier fields
+if ( ~isempty(opts.adaptspatialfilt) )
+  for ci=1:numel(clsfr); clsfr(ci).adaptspatialfilt=opts.adaptspatialfilt; end;
+end
 
 % if not explicitly given work out from the classifier information the trial length needed
 % to apply the classifier
