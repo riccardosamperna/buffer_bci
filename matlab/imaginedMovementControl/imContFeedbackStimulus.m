@@ -77,8 +77,10 @@ for si=1:nSeq;
     timetogo = trialDuration - (getwTime()-trlStartTime); % time left to run in this trial
     % wait for new prediction events to process *or* end of trial
     [events,state,nsamples,nevents] = buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],min(1000,timetogo*1000));
-    if ( ~isempty(events) ) 
-      [ans,si]=sort([events.sample],'ascend'); % proc in *temporal* order
+    if ( isempty(events) ) 
+		if ( timetogo>.1 ) fprintf('%d) no predictions!\n',nsamples); end;
+    else
+		[ans,si]=sort([events.sample],'ascend'); % proc in *temporal* order
       for ei=1:numel(events);
         ev=events(si(ei));% event to process
 		  %fprintf('pred-evt=%s\n',ev2str(ev));
@@ -107,17 +109,25 @@ for si=1:nSeq;
 		  % convert from dv to normalised probability
         prob = 1./(1+exp(-dv)); prob=prob./sum(prob); % convert from dv to normalised probability
         if ( verb>=0 ) 
-          fprintf('dv:');fprintf('%5.4f ',pred);fprintf('\t\tProb:');fprintf('%5.4f ',prob);fprintf('\n'); 
+			 fprintf('%d) dv:[%s]\tPr:[%s]\n',ev.sample,sprintf('%5.4f ',pred),sprintf('%5.4f ',prob));
         end;
       end
-	 else
-		fprintf('%d) no predictions!\n',nsamples);
+
 	 end % if prediction events to process
 
     % feedback information... simply move in direction detected by the BCI
-    dx = stimPos(:,1:end-1)*prob(:); % change in position is weighted by class probs
-	 if ( warpCursor ) fixPos=dx; else fixPos=fixPos + dx*moveScale; end; % relative or absolute cursor movement
-    set(h(end),'position',[fixPos-stimRadius/2;stimRadius/2*[1;1]]);
+	 if ( numel(prob)>=size(stimPos,2)-1 ) % per-target decomposition
+		dx = stimPos(:,1:numel(prob))*prob(:); % change in position is weighted by class probs
+	 elseif ( numel(prob)==2 ) % direct 2d decomposition
+		dx = prob;
+	 elseif ( numel(prob)==1 )
+		dx = [prob;0];
+	 end
+    cursorPos=get(h(end),'position'); cursorPos=cursorPos(:);
+	 fixPos   =cursorPos(1:2)+.5*cursorPos(3:4); % center of the fix-point
+	 % relative or absolute cursor movement
+	 if ( warpCursor ) fixPos=dx; else fixPos=fixPos + dx*moveScale; end; 
+	 set(h(end),'position',[fixPos-.5*cursorPos(3:4) cursorPos(3:4)]);
     drawnow; % update the display after all events processed    
   end % while time to go
 
