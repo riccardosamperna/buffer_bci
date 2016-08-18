@@ -182,8 +182,8 @@ switch cmd;
   if ( numel(detail)==1 ) 
 	 if ( islogical(detail.value) ) detail.value=single(detail.value); end; % BODGE: convert to single float
 	 e=javaObject('nl.fcdonders.fieldtrip.bufferclient.BufferEvent',detail.type,detail.value,detail.sample);
-	 % BODGE: on octave the auto-boxing sometimes breaks.... bodge a fix
-	 %if (exist('OCTAVE_VERSION','builtin')) e.setValue(detail.value); end;
+	 % BODGE: on octave the auto-boxing sometimes breaks for arrays.... bodge a fix
+	 if (exist('OCTAVE_VERSION','builtin') && numel(detail.value)>1 ) e.setValue(detail.value); end;
     e=bufClient.putEvent(e);
   else
     for ei=1:numel(detail);
@@ -191,7 +191,7 @@ switch cmd;
 		if ( islogical(evt.value) ) evt.value=single(evt.value); end; % BODGE: convert to single float
 		e=javaObject('nl.fcdonders.fieldtrip.bufferclient.BufferEvent',detail.type,detail.value,detail.sample);
 	   % BODGE: on octave the auto-boxing sometimes breaks.... bodge a fix
-		if (exist('OCTAVE_VERSION','builtin')) e.setValue(detail.value); end;
+		if (exist('OCTAVE_VERSION','builtin') && numel(detail.value)>1 ) e.setValue(detail.value); end;
 		e=bufClient.putEvent(e);
     end
   end
