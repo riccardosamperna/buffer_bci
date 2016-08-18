@@ -79,7 +79,7 @@ while (timetogo>0)
 
 										  % process the prediction events
   if ( isempty(events) )
-	 if ( timetogo>.1 ) fprintf('%d) no predictions!\n',nsamples); drawnow; end;
+	 if ( timetogo>.1 ) fprintf('%d) no predictions!\n',nsamples); end;
   else
     [ans,si]=sort([events.sample],'ascend'); % proc in *temporal* order
     for ei=1:numel(events);
@@ -96,14 +96,14 @@ while (timetogo>0)
 		  end
 		end
 
-		% additional prediction smoothing for display, if wanted
+						  % additional prediction smoothing for display, if wanted
 		if ( ~isempty(stimSmoothFactor) && isnumeric(stimSmoothFactor) && stimSmoothFactor>0 )
-        if ( stimSmoothFactor>=0 ) % exp weighted moving average
+		  if ( stimSmoothFactor>=0 ) % exp weighted moving average
 			 dv=dv*stimSmoothFactor + (1-stimSmoothFactor)*pred(:);
 		  else % store predictions in a ring buffer
 			 fbuff(:,mod(nEpochs-1,abs(stimSmoothFactor))+1)=pred(:); % store predictions in a ring buffer
 			 dv=mean(fbuff,2);
-        end
+		  end
 		else
 		  dv=pred;
 		end
