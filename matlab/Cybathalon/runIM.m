@@ -16,6 +16,7 @@ addpath('../imaginedMovement');
 			  'a) Artifacts'           'artifact';
            '1) Practice'            'practice';
 			  '2) Calibrate'           'calibrate'; 
+			  'r) Calibrate-runway'    'calibrate_runway'; 
 			  '3) Train Classifier'    'trainersp';
 			  '4) Epoch Feedback'      'epochfeedback';
 			  '5) Continuous Feedback' 'contfeedback';
@@ -154,7 +155,21 @@ while (ishandle(contFig))
 	 sendEvent(phaseToRun,'end');
 
    %---------------------------------------------------------------------------
-   case {'train','trainersp','trainersp_subset','train_subset'};
+   case {'calibrate_runway'};
+    sendEvent('subject',subject);
+    sendEvent('startPhase.cmd','calibrate')
+    sendEvent(phaseToRun,'start');
+    try
+      imCalibrateRunwayStimulus;
+    catch
+      le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+      sendEvent('training','end');    
+    end
+    sendEvent('calibrate','end');
+
+	 
+   %---------------------------------------------------------------------------
+   case {'train','trainersp'};
     sendEvent('subject',subject);
     sendEvent('startPhase.cmd',phaseToRun); % tell sig-proc what to do
     buffer_newevents(buffhost,buffport,[],phaseToRun,'end'); % wait until finished

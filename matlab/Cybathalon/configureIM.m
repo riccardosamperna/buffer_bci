@@ -65,39 +65,13 @@ feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
 axLim        =[-1.5 1.5]; % size of the display axes
 winColor     =[.0 .0 .0]; % window background color
 bgColor      =[.2 .2 .2]; % background/inactive stimuli color
-fixColor     =[.8  0  0]; % fixitation/get-ready cue point color
-tgtColor     =[0  .7  0]; % target color
-fbColor      =[0   0 .8]; % feedback color
+fixColor     =[1 0 0]; % fixitation/get-ready cue point color
+tgtColor     =[0 1 0]; % target color
+fbColor      =[0 0 1]; % feedback color
 txtColor     =[.9 .9 .9]; % color of the cue text
-errorColor   =[.8  0  0];  % error feedback color
-
 
 animateFix   = true; % do we animate the fixation point during training?
 frameDuration= .25; % time between re-draws when animating the fixation point
-animateStep  = diff(axLim)*.01; % amount by which to move point per-frame in fix animation
-
-
-%----------------------------------------------------------------------------------------------
-% stimulus type specific configuration
-calibrate_instruct ={'When instructed perform the indicated' 'actual movement'};
-
-epochfeedback_instruct={'When instructed perform the indicated' 'actual movement.  When trial is done ' 'classifier prediction with be shown' 'with a blue highlight'};
-
-contfeedback_instruct={'When instructed perform the indicated' 'actual movement.  The fixation point' 'will move to show the systems' 'current prediction'};
-contFeedbackTrialDuration =10;
-
-neurofeedback_instruct={'Perform mental tasks as you would like.' 'The fixation point will move to' 'show the systems current prediction'};
-neurofeedbackTrialDuration=30;
-
-centerout_instruct={'Complete the indicated tasks as rapidly as possible.' 'The fixation point will move to' 'show the current prediction' 'Trials end when fixation hits the target' 'or time runs out.' 'Hitting the wrong target incurs a time penalty'};
-earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
-%earlyStoppingFilt=@(x,s,e) gausOutlierFilt(x,s,2); % dv-filter to determine when a trial has ended
-
-%----------------------------------------------------------------------------------------------
-% classifier training configuration
-
-animateFix   = true; % do we animate the fixation point during training?
-frameDuration= .1; % time between re-draws when animating the fixation point
 animateStep  = diff(axLim)*.01; % amount by which to move point per-frame in fix animation
 
 
