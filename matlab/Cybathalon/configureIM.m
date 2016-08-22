@@ -63,15 +63,15 @@ warpCursor   = 1; % flag if in feedback BCI output sets cursor location or how t
 moveScale    = .1;
 
 axLim        =[-1.5 1.5]; % size of the display axes
-winColor     =[0 0 0]; % window background color
-bgColor      =[.5 .5 .5]; % background/inactive stimuli color
+winColor     =[.0 .0 .0]; % window background color
+bgColor      =[.2 .2 .2]; % background/inactive stimuli color
 fixColor     =[1 0 0]; % fixitation/get-ready cue point color
 tgtColor     =[0 1 0]; % target color
 fbColor      =[0 0 1]; % feedback color
-txtColor     =[.5 .5 .5]; % color of the cue text
+txtColor     =[.9 .9 .9]; % color of the cue text
 
 animateFix   = true; % do we animate the fixation point during training?
-frameDuration= .1; % time between re-draws when animating the fixation point
+frameDuration= .25; % time between re-draws when animating the fixation point
 animateStep  = diff(axLim)*.01; % amount by which to move point per-frame in fix animation
 
 
