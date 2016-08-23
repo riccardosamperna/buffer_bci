@@ -132,7 +132,12 @@ for si=1:nSeq;
     cursorPos=get(h(end),'position'); cursorPos=cursorPos(:);
 	 fixPos   =cursorPos(1:2)+.5*cursorPos(3:4); % center of the fix-point
 	 % relative or absolute cursor movement
-	 if ( warpCursor ) fixPos=dx; else fixPos=fixPos + dx*moveScale; end; 
+	 if ( warpCursor ) % absolute position on the screen
+		fixPos=dx;
+		if(feedbackMagFactor>1) fixPos=(fixPos-stimPos(:,end))*feedbackMagFactor + stimPos(:,end); end;
+	 else % relative movement
+		fixPos=fixPos + dx*moveScale;
+	 end;
 	 set(h(end),'position',[fixPos-.5*cursorPos(3:4) cursorPos(3:4)]);
     drawnow; % update the display after all events processed    
   end % while time to go
