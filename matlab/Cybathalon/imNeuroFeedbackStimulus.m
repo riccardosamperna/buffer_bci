@@ -122,7 +122,12 @@ while (timetogo>0)
 		  dx = [prob;0];
 		end
 		% relative or absolute cursor movement
-		if ( warpCursor ) fixPos=dx; else fixPos=fixPos + dx*moveScale; end; 
+		if ( warpCursor )
+		  fixPos=dx;
+		  if(feedbackMagFactor>1) fixPos=(fixPos-stimPos(:,end))*feedbackMagFactor + stimPos(:,end); end;
+		else
+		  fixPos=fixPos + dx*moveScale;
+		end; 
 	 end % loop over events to process
 		% now re-draw the display
 		set(h(end),'position',[fixPos-.5*cursorPos(3:4) cursorPos(3:4)]);
