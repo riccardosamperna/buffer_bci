@@ -112,23 +112,23 @@ for ei=1:size(stimSeq,2);
 		sendEvent('stimulus.baseline','start');
 		if ( ~isempty(baselineClass) ) % treat baseline as a special class
 		  sendEvent('stimulus.target',baselineClass);
-		  set(txthdl,'string',baselineClass,'color',txtColor,'visible','on');
+		  if ( verb>1 ) set(txthdl,'string',baselineClass,'color',txtColor,'visible','on'); end;
 		else
-		  set(txthdl,'string','rest');
+		  if ( verb>1 ) set(txthdl,'string','rest','color',txtColor,'visible','on'); end;
 		end
 	 else % target action epoch
 		tgtIdx=find(stimSeq(:,ei)>0);
 		if ( ~isempty(symbCue) )
-		  set(txthdl,'string',sprintf('%s ',symbCue{tgtIdx}),'color',txtColor,'visible','on');
 		  tgtNm = '';
 		  for ti=1:numel(tgtIdx);
 			 if(ti>1) tgtNm=[tgtNm ' + ']; end;
 			 tgtNm=sprintf('%s%d %s ',tgtNm,tgtIdx,symbCue{tgtIdx});
 		  end
 		else
-		  tgtNm = tgtIdx; % human-name is position number
+		  tgtNm = sprintf('%d',tgtIdx); % human-name is position number
 		end
 		fprintf('%d) tgt=%10s : \n',ei,tgtNm);
+		if ( verb>1 ) set(txthdl,'string',tgtNm,'color',txtColor,'visible','on'); end
 		sendEvent('stimulus.target',tgtNm);
 	 end
   end
@@ -138,6 +138,7 @@ for ei=1:size(stimSeq,2);
   fprintf('%d) Tgt=[%6.2f-%6.2f]\tTrue=%6.2f\tdiff=%g\n',ei,stimTime(ei:ei+1),et,et-stimTime(ei));
   animateDuration = stimTime(ei+1)-stimTime(ei);
   set(h,'visible','on');
+  % call the function to run the actual animation
   animateRunway
   
 end
@@ -145,6 +146,7 @@ end
 sendEvent('stimulus.training','end');
 
 if ( ishandle(fig) ) % thanks message
+  set(h,'visible','off');
 set(txthdl,'string',{'That ends the training phase.','Thanks for your patience'}, 'visible', 'on', 'color',[0 1 0]);
 pause(3);
 end
