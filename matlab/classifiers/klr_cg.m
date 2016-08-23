@@ -59,11 +59,16 @@ opts=struct('alphab',[],'dim',[],'mu',[],'Jconst',0,...
 opts.ridge=opts.ridge(:);
 if ( isempty(opts.maxEval) ) opts.maxEval=5*sum(Y(:)~=0); end
 % Ensure all inputs have a consistent precision
-if(isa(K,'double') & isa(Y,'single') ) Y=double(Y); end;
+if(isa(K,'double') && isa(Y,'single') ) Y=double(Y); end;
 if(isa(K,'single')) eps=1e-7; else eps=1e-16; end;
 opts.tol=max(opts.tol,eps); % gradient magnitude tolerence
 
-[dim,N]=size(K); Y=Y(:); % ensure Y is col vector
+dim=opts.dim;
+if ( isempty(dim) ) dim=ndims(K); end;
+szK=size(K); szK(end+1:max(dim))=1; % input size (padded with 1 for extra unity dimensions)
+nd=numel(szK); N=prod(szK(dim)); nf=prod(szK(setdiff(1:end,dim)));
+% reshape X to be 2d for simplicity
+K=reshape(K,[nf N]);
 
 % check for degenerate inputs
 if ( all(Y>=0) || all(Y<=0) )
@@ -257,8 +262,8 @@ for iter=1:min(opts.maxIter,2e6);  % stop some matlab versions complaining about
       end;
 
       % convergence test, and numerical res test
-      if(iter>1|j>3) % Ensure we do decent line search for 1st step size!
-         if ( abs(dtdJ) < opts.lstol0*abs(dtdJ0) | ... % Wolfe 2, gradient enough smaller
+      if(iter>1||j>3) % Ensure we do decent line search for 1st step size!
+         if ( abs(dtdJ) < opts.lstol0*abs(dtdJ0) || ... % Wolfe 2, gradient enough smaller
               abs(dtdJ*step) <= opts.tol )              % numerical resolution
             break;
          end
@@ -266,8 +271,8 @@ for iter=1:min(opts.maxIter,2e6);  % stop some matlab versions complaining about
       
       % now compute the new step size
       % backeting check, so it always decreases
-      if ( oodtdJ*odtdJ < 0 & odtdJ*dtdJ > 0 ...      % oodtdJ still brackets
-           & abs(step*dtdJ) > abs(odtdJ-dtdJ)*(abs(ostep+step)) ) % would jump outside 
+      if ( oodtdJ*odtdJ < 0 && odtdJ*dtdJ > 0 ...      % oodtdJ still brackets
+           && abs(step*dtdJ) > abs(odtdJ-dtdJ)*(abs(ostep+step)) ) % would jump outside 
         step = ostep + step; % make as if we jumped here directly.
         % but prev points gradient, this is necessary stop very steep orginal gradient preventing decent step sizes
         odtdJ = -sign(odtdJ)*sqrt(abs(odtdJ))*sqrt(abs(oodtdJ)); % geometric mean
@@ -364,7 +369,7 @@ if ( numel(Y)~=numel(incIdx) ) % map back to the full kernel space, if needed
    K=oK; Y=oY;
 end
 
-f = wb(1:end-1)'*K + wb(end); f = reshape(f,size(Y));
+f = wb(1:end-1)'*K + wb(end); f = reshape(f,size(Y)); 
 p = 1./(1+exp(-f)); % Pr(y==1|x,w,b)
 obj = [J Ew./muEig Ed];
 return;
