@@ -19,7 +19,7 @@ while ( elapsedTime<animateDuration )
 	 set(imgh,'cdata',visImg(:,fi+(0:visDur/frameDuration-1),:)); % update display
 	 drawnow;
   end
-  if ( verb>1 ) fprintf('%d) f=%d t=%g t_e=%g\n',ei,fi,getwTime()-t0,getwTime()-a0) end;
+  if ( verb>1 ) fprintf('%d) f=%d t=%g t_e=%g\n',ei,fi,getwTime()-t0,getwTime()-a0); end;
   sleepSec(frameDuration*.5);
   f0=getwTime();
   elapsedTime = f0-a0; % time left to run in this trial
