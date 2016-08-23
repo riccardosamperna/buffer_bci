@@ -90,8 +90,8 @@ trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','
 % Epoch feedback opts
 %%0) Use exactly the same classification window for feedback as for training, but
 %%   but also include a bias adaption system to cope with train->test transfer
-earlyStopping = true;
-epochFeedbackOpts={}; % raw output
+earlyStopping = false;
+epochFeedbackOpts={'trlen_ms',trialDuration*1000}; % raw output, from whole trials data
 %epochFeedbackOpts={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/50))}; % bias-adaption
 
 % Epoch feedback with early-stopping, config using the user feedback table
@@ -107,7 +107,7 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 
 %%2) Classify every welch-window-width (default 250ms), prediction is average of full trials worth of data, no-bias adaptation
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
-contFeedbackOpts ={'predFilt',-(trlen_ms/step_ms),'trlen_ms',welch_width_ms};
+contFeedbackOpts ={'predFilt',-(trialDuration*1000/step_ms),'trlen_ms',welch_width_ms};
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation
 %contFeedbackOpts ={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/400)),'trlen_ms',[]}; 
