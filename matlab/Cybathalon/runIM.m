@@ -1,4 +1,7 @@
 configureIM;
+% add the generic im experiment directory for the generic stimulus files
+addpath('../imaginedMovement');
+
 % create the control window and execute the phase selection loop
 %try
 %  contFig=controller(); info=guidata(contFig); 

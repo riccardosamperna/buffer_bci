@@ -89,6 +89,7 @@ trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','
 % Epoch feedback opts
 %%0) Use exactly the same classification window for feedback as for training, but
 %%   but also include a bias adaption system to cope with train->test transfer
+earlyStopping=false;
 epochFeedbackOpts={}; % raw output
 %epochFeedbackOpts={'predFilt',@(x,s) biasFilt(x,s,exp(log(.5)/50))}; % bias-apaption
 
