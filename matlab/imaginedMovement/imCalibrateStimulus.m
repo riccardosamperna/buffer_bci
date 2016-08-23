@@ -62,9 +62,25 @@ for si=1:nSeq;
   if ( ~isempty(baselineClass) ) % treat baseline as a special class
 	 sendEvent('stimulus.target',baselineClass);
   end
-  sleepSec(baselineDuration);
-  sendEvent('stimulus.baseline','end');
-  
+  if ( animateFix )
+	 animateDuration=baselineDuration;
+	 t0  =getwTime();
+	 timetogo=animateDuration;
+	 fixPos=[stimPos(:,end)-cursorSize/2;cursorSize*[1;1]];
+	 while ( timetogo > 0 )
+		dx=randn(2,1)*animateStep;
+		fixPos(1:2) = fixPos(1:2)+dx;
+		set(h(end),'position',fixPos);
+		drawnow;		
+		sleepSec(min(max(0,timetogo),frameDuration));
+		timetogo = animateDuration- (getwTime()-t0); % time left to run in this trial
+	 end
+	 % reset fix pos
+	 set(h(end),'position',[stimPos(:,end)-cursorSize/2;cursorSize*[1;1]]);
+  else
+	 sleepSec(baselineDuration);
+  end
+  sendEvent('stimulus.baseline','end');  
   
   % show the target
   tgtIdx=find(tgtSeq(:,si)>0);
@@ -80,14 +96,33 @@ for si=1:nSeq;
   else
 	 tgtNm = tgtIdx; % human-name is position number
   end
-  set(h(end),'facecolor',[0 1 0]); % green fixation indicates trial running
+  set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
   fprintf('%d) tgt=%10s : ',si,tgtNm);
-  sendEvent('stimulus.target',tgtNm);
-  drawnow;% expose; % N.B. needs a full drawnow for some reason
   sendEvent('stimulus.trial','start');
-  % wait for trial end
-  sleepSec(trialDuration);
-  
+  for ei=1:ceil(trialDuration./epochDuration);
+	 sendEvent('stimulus.target',tgtNm);
+	 if ( animateFix )
+		animateDuration=epochDuration;
+		t0  =getwTime();
+		timetogo=animateDuration;
+		fixPos=[stimPos(:,end)-cursorSize/2;cursorSize*[1;1]];
+		while ( timetogo > 0 )
+		  dx=randn(2,1)*animateStep;
+		  fixPos(1:2) = fixPos(1:2)+dx;
+		  set(h(end),'position',fixPos);
+		  drawnow;		
+		  sleepSec(min(max(0,timetogo),frameDuration));
+		  timetogo = animateDuration- (getwTime()-t0); % time left to run in this trial
+		end
+										  % reset fix pos
+		set(h(end),'position',[stimPos(:,end)-cursorSize/2;cursorSize*[1;1]]);
+	 else
+		drawnow;% expose; % N.B. needs a full drawnow for some reason
+				  % wait for trial end
+		sleepSec(epochDuration);
+	 end
+  end
+	 
   % reset the cue and fixation point to indicate trial has finished  
   set(h(:),'facecolor',bgColor);
   if ( ~isempty(symbCue) ) set(txthdl,'visible','off'); end

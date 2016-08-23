@@ -44,41 +44,47 @@ end
 verb         =1; % verbosity level for debug messages, 1=default, 0=quiet, 2=very verbose
 buffhost     ='localhost';
 buffport     =1972;
-nSymbs       =4; % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
-symbCue      ={'RH' 'rst' 'LH' 'FT'}; % sybmol cue in addition to positional one. E,N,W,S for 4 symbs
-baselineClass=[];
+nSymbs       =3; % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
+symbCue      ={'RH' 'LH' 'FT'}; % sybmol cue in addition to positional one. E,N,W,S for 4 symbs
+baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
 %nSymbs       =3;
 %symbCue      ={'rst' 'LH' 'RH'}; % string cue in addition to positional one. N,W,E for 3 symbs
 nSeq         =20*nSymbs; % 20 examples of each target
 
-trialDuration     =3;   % length in seconds of the task in seconds
-baselineDuration  =1;   % length in seconds of the get-ready cue
-intertrialDuration=3.5; % length in seconds of the post-task blank screen
-feedbackDuration  =1;   % length in seconds of the feedback post trial
+epochDuration     =1.5;
+trialDuration     =epochDuration*3; % = 4.5s trials
+baselineDuration  =epochDuration;   % = 1.5s baseline
+intertrialDuration=epochDuration;   % = 1.5s post-trial
+feedbackDuration  =epochDuration;
 
 contFeedbackTrialDuration =10;
 neurofeedbackTrialDuration=30;
 warpCursor   = 0; % flag if in feedback BCI output sets cursor location or how the cursor moves
 moveScale    = .1;
+feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
 
 axLim        =[-1.5 1.5]; % size of the display axes
-winColor     =[0 0 0]; % window background color
-bgColor      =[.5 .5 .5]; % background/inactive stimuli color
-fixColor     =[1 0 0]; % fixitation/get-ready cue point color
-tgtColor     =[0 1 0]; % target color
-fbColor      =[0 0 1]; % feedback color
-txtColor     =[.8 .8 .8]; % cue text color
+winColor     =[.0 .0 .0]; % window background color
+bgColor      =[.2 .2 .2]; % background/inactive stimuli color
+fixColor     =[1  0  0];  % fixitation/get-ready cue point color
+tgtColor     =[0 .9  0];  % target color
+fbColor      =[0  0 .9];  % feedback color
+txtColor     =[.9 .9 .9]; % color of the cue text
+
+animateFix   = true; % do we animate the fixation point during training?
+frameDuration= .25; % time between re-draws when animating the fixation point
+animateStep  = diff(axLim)*.01; % amount by which to move point per-frame in fix animation
 
 % classifier training options
-trlen_ms      =trialDuration*1000; % how often to run the classifier
+trlen_ms      =epochDuration*1000; % how often to run the classifier
 calibrateOpts ={};
 
 welch_width_ms=250; % width of welch window => spectral resolution
 step_ms=welch_width_ms/2;% N.B. welch defaults=.5 window overlap, use step=width/2 to simulate
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
-% whiten + direct multi-class training, ignoring the startup window after the cue
-trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','timeband_ms',[250 trlen_ms],'objFn','mlr_cg','binsp',0,'spMx','1vR'}; 
+trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
+%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','adaptspatialfilt',trialadaptfactor,'objFn','mlr_cg','binsp',0,'spMx','1vR'}; % adaptive-whiten + direct multi-class training
 %trainOpts = {'spType',{{1 3} {2 4}}}; % train 2 classifiers, 1=N vs S, 2=E vs W
 
 % Epoch feedback opts
@@ -99,7 +105,6 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 %%2) Classify every welch-window-width (default 250ms), prediction is average of full trials worth of data, no-bias adaptation
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
 contFeedbackOpts ={'predFilt',-(trlen_ms/step_ms),'trlen_ms',welch_width_ms};
-
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation
 %contFeedbackOpts ={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/400)),'trlen_ms',[]}; 
