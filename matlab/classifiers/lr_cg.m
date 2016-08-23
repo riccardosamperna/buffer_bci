@@ -71,7 +71,7 @@ else
 				  'CGmethod','PR','bPC',[],'wPC',[],'PCmethod','zero',...
 				  'incThresh',.66,'optBias',0,'maxTr',inf,...
               'getOpts',0);
-  opts=parseOpts(opts,varargin{:});
+  [opts,varargin]=parseOpts(opts,varargin{:});
   if ( opts.getOpts ) wb=opts; return; end;
 end
 if ( isempty(opts.maxEval) ) opts.maxEval=5*sum(Y(:)~=0); end
@@ -183,7 +183,10 @@ if ( isempty(wb) )
   %sb = pinv([wRw+wX*wX' sum(wX); sum(wX) sum(incInd)])*[wX*oY(incInd); sum(wghtY)];
   %w=w*sb(1); b=sb(2);
 else
-  w=wb(1:end-1); b=wb(end);
+  if ( numel(wb)>nf+1 )
+	 warning('Weight matrix contains more elements and features in X, extra features ignored!');
+  end
+  w=wb(1:nf); b=wb(nf+1);
 end 
 
 switch ( RType ) % diff types regularisor
@@ -194,9 +197,9 @@ switch ( RType ) % diff types regularisor
  case 5; Rw=tprod(w,rdimIdx,R,[-(1:numel(szRw)) 1:numel(szRw)]); % middle dims
 end
 wX   = w'*X;
-f   = wX+b;
+f    = wX+b;
 p    = 1./(1+exp(-f(:))); % =Pr(x|y+)
-Yerr = Y1-p.*sY;
+dLdf = Y1-p.*sY;
 
 % set the pre-conditioner
 % N.B. the Hessian for this problem is:
@@ -245,8 +248,8 @@ else
   PC = [];
 end
 
-dJ   = [2*Rw(:) + mu - X*Yerr; ...
-        -sum(Yerr)];
+dJ   = [2*Rw(:) + mu - X*dLdf; ...
+        -sum(dLdf)];
 % precond'd gradient:
 %  [H  0  ]^-1 [ Rw+mu-X'((1-g).Y))] 
 %  [0  bPC]    [      -1'((1-g).Y))] 
@@ -337,9 +340,9 @@ for iter=1:min(opts.maxIter,2e6);  % stop some matlab versions complaining about
 		  f    = f0 + tstep*df;
 		end
 		p    = 1./(1+exp(-f')); % =Pr(x|y+) [1 x N] % WARNING: transposed
-		Yerr = Y1-p.*sY; % WARNING: transposed, [N x 1]
-      dtdJ = -(2*(dRw+tstep*dRd) + dmu - df*Yerr);
-      %fprintf('.%d step=%g ddR=%g ddgdw=%g ddgdb=%g  sum=%g\n',j,tstep,2*(dRw+tstep*dRd),-dX*Yerr',-db*sum(Yerr),-dtdJ);
+		dLdf = Y1-p.*sY; % WARNING: transposed, [N x 1]
+      dtdJ = -(2*(dRw+tstep*dRd) + dmu - df*dLdf);
+      %fprintf('.%d step=%g ddR=%g ddgdw=%g ddgdb=%g  sum=%g\n',j,tstep,2*(dRw+tstep*dRd),-dX*dLdf',-db*sum(dLdf),-dtdJ);
             
       if ( opts.verb > 2 )
         %Ew   = w(:)'*Rw(:)+tstep*2*dRw+tstep.^2*dRd;  % w'*(R*reshape(w,szR));       % P(w,b|R);
@@ -403,8 +406,8 @@ for iter=1:min(opts.maxIter,2e6);  % stop some matlab versions complaining about
 	  p    = 1./(1+exp(-f')); % =Pr(x|y+) % WARNING: transposed [ N x 1 ]
 	end
    % compute the other bits needed for CG iteration
-   dJ = [2*Rw(:) + mu - X*Yerr;...
-         -sum(Yerr)];
+   dJ = [2*Rw(:) + mu - X*dLdf;...
+         -sum(dLdf)];
    if ( size(PC,2)==1 ) % vector pre-conditioner
      MdJ  = PC.*dJ; % pre-conditioned gradient
    else % matrix pre-conditioner
@@ -512,7 +515,7 @@ return;
 %-----------------------------------------------------------------------
 function [opts,varargin]=parseOpts(opts,varargin)
 % refined and simplified option parser with structure flatten
-i=1;
+  i=1; used=false(size(varargin));
 while i<=numel(varargin);  
    if ( iscell(varargin{i}) ) % flatten cells
       varargin={varargin{1:i} varargin{i}{:} varargin{i+1:end}};
@@ -520,12 +523,15 @@ while i<=numel(varargin);
       cellver=[fieldnames(varargin{i})'; struct2cell(varargin{i})'];
       varargin={varargin{1:i} cellver{:} varargin{i+1:end} };
    elseif( isfield(opts,varargin{i}) ) % assign fields
-      opts.(varargin{i})=varargin{i+1}; i=i+1;
+     opts.(varargin{i})=varargin{i+1};
+	  used(i)=true; used(i+1)=true;
+	  i=i+1; 
    else
       error('Unrecognised option');
    end
    i=i+1;
 end
+varargin=varargin(~used);
 return;
 
 %-----------------------------------------------------------------------------

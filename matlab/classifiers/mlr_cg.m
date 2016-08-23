@@ -63,36 +63,43 @@ else
               'verb',0,'step',0,'wght',[],'X',[],'maxLineSrch',50,...
               'maxStep',3,'minStep',5e-2,'marate',.95,'bPC',[],'wPC',1,...
 				  'incThresh',.66,'optBias',0,'maxTr',inf,...
-              'compBinp',1,'rescaledv',1,'getOpts',0);
-  opts=parseOpts(opts,varargin{:});
+              'compBinp',1,'rescaledv',0,'getOpts',0);
+  [opts,varargin]=parseOpts(opts,varargin{:});
   if ( opts.getOpts ) wb=opts; return; end;
 end
 if ( isempty(opts.maxEval) ) opts.maxEval=5*sum(Y(:)~=0); end
 % Ensure all inputs have a consistent precision
-if(isa(X,'double') && isa(Y,'single') ) Y=double(Y); end;
-if(isa(X,'single')) eps=1e-7; else eps=1e-16; end;
+if(islogical(Y))Y=single(Y); end;
+if(isa(X,'double') && ~isa(Y,'double') ) Y=double(Y); end;
+if(isa(X,'single')) eps=1e-7; minp=1e-40; else eps=1e-16; minp=1e-120; end;
 opts.tol=max(opts.tol,eps); % gradient magnitude tolerence
 
-if ( ~isempty(opts.dim) && opts.dim<ndims(X) ) % permute X to make dim the last dimension
+dim=opts.dim;
+if ( isempty(dim) ) dim=ndims(X); end;
+if ( ~isempty(dim) && max(dim)<ndims(X) ) % permute X to make dim the last dimension
    persistent warned
    if (isempty(warned) ) 
       warning('X has trials in other than the last dimension, permuting to make it so..');
       warned=true;
    end
-  X=permute(X,[1:opts.dim-1 opts.dim+1:ndims(X) opts.dim]);
-  if ( ~isempty(opts.rdim) && opts.rdim>opts.dim ) opts.rdim=opts.rdim-1; end; % shift other dim info
+	X=permute(X,[1:min(dim)-1 max(dim)+1:ndims(X) dim(:)']); dim=ndims(X)-numel(dim)+1:ndims(X);
+  if ( ~isempty(opts.rdim) && opts.rdim>dim ) opts.rdim=opts.rdim-1; end; % shift other dim info
 end
-szX=size(X); nd=numel(szX); N=szX(end); nf=prod(szX(1:end-1));
-binp=false;
+szX=size(X); szX(end+1:max(dim))=1; % input size (padded with 1 for extra unity dimensions)
+nd=numel(szX); N=prod(szX(dim)); nf=prod(szX(setdiff(1:end,dim)));
+
 if( size(Y,1)==N && size(Y,2)~=N ) Y=Y'; end; % ensure Y has examples in last dim
+binp=false;
 if( size(Y,1)==1 )
   if( all(Y(:)==-1 | Y(:)==0 | Y(:)==1) ) % binary problem
     binp=true;
-    Y=[Y>0; Y<0]; % convert to indicator
+    Y=[Y; -Y]; % convert to per-class labeling
   elseif ( all(Y(:)>=0 & Y(:)==ceil(Y(:))) ) % class labels input, convert to indicator matrix
 	 Yl=Y;key=unique(Y);key(key==0)=[];
 	 Y=zeros(numel(key),N);for l=1:numel(key); Y(l,:)=Yl==key(l); end;	 
   end
+elseif (size(Y,1)==2 && all((Y(:)>=0 & Y(:)<=1) | Y(:)==-1)) % binary indicator input
+  binp=true;
 end
 if ( size(Y,2)~=N ) error('Y should be [LxN]'); end;
 %if ( size(Y,1)==1 ) error('1-class problem input....'); end;
@@ -105,6 +112,17 @@ mu=opts.mu; if ( numel(mu)>1 ) mu=reshape(mu,[nf 1]); else mu=0; end;
 
 % check for degenerate inputs
 if ( all(diff(Y,1)==0) ) warning('Degnerate inputs, 1 class problem'); end
+
+% compute an example weighting if wanted
+wght=opts.wght;
+if ( ~isempty(opts.wght) ) % compute an example weighting
+  % weight ratio between classes
+  cwght=opts.wght; if ( strcmp(cwght,'bal') ) cwght=ones(size(Y,1),1); end; 
+  wght=zeros(size(Y));
+  for li=1:size(Y,1); wght(li,Y(li,:)>0)=cwght(li)./sum(Y(li,:)>0); end;
+  wght=sum(wght,1).*size(Y,2); % example weight = sum class+example weight, preserve total weight
+  Y = repop(Y,'*',wght); % example weight = sum class+example weight
+end
 
 % check if it's more efficient to sub-set the data, because of lots of ignored points
 oX=X; oY=Y;
@@ -122,34 +140,57 @@ if ( isempty(wb) )
   b=zeros(1,size(Y,1)); %w=zeros(nf,L);
   % prototype classifier seed
   alpha= single(Y>0); if ( size(Y,1)==1 ) alpha=[single(Y>0); single(Y<0)]; end
-  alpha=repop(alpha,'./',sum(alpha,2));
+  alpha= repop(alpha,'./',max(1,sum(alpha,2))); % guard divide by 0
   Xmu  = X*alpha'; % centroid of each class
   w    = repop(Xmu,'-',mean(Xmu,2)); % subtract the data center
   w    = repop(w,'/',sum(w.*w,1));   % scale to unit magnitude output
   b    = -(w'*mean(Xmu,2))';         % offset to average 0 for global mean point
+  if ( binp ) % discard the 2nd boundary if binary problem
+	 w=w(:,1); b=b(1);
+  end;
 else
-  if ( size(wb,1)==numel(wb) ) wb=reshape(wb,nf+1,L); end;
-  w=wb(1:end-1,:); b=wb(end,:);
+  if ( binp )
+	 w=wb(1:end-1); b=wb(end);
+  else
+	 w=reshape(wb(1:end-L),nf,L);
+	 b=wb(end-L+1:end);
+  end
 end 
 
 % build index expression so can quickly get the predictions on the true labels
 Y(Y<0)=0; % remove negative indicators
-sY    =sum(Y,1); % pre-comp scaling factor
+sY    =double(sum(Y,1)); % pre-comp scaling factor
+Y1    =Y(1,:);
 % BODGE/TODO : This is silly as if onetrue the only need to learn L-1 weight vectors.......
 onetrue=all((sY==1 & sum(Y>0,1)==1) | (sY==0 & sum(Y>0,1)==0));
+exInd  =find(sY==0);
 
 Rw   = R*w;
 wRw  = w(:)'*Rw(:);
-f    = repop(w'*X,'+',b');% [L x N]
-dv   = repop(f,'-',max(f,[],1)); % re-scale for numerical stability
-p    = exp(dv);
-p    = repop(p,'/',sum(p,1)); % [L x N] =Pr(x|y_i) = exp(w_ix+b)./sum_y(exp(w_yx+b));
-if ( onetrue ) % fast-path common case
-  dLdf = Y-p;                % [LxN] = dp_y, i.e. gradient of the log true class probability
-else
-  dLdf = Y-repop(p,'*',sY);  % [LxN] = dln(p_y), i.e. gradient of the expected log true class prob
+f    = repop(w'*X,'+',b(:));% [L x N]
+if ( size(f,1)>1 && max(abs(f(:)))>40 ) opts.rescaledv=1; end; % auto-rescale 
+if ( size(f,1)>1 && opts.rescaledv )
+  f  = repop(f,'-',max(f,[],1)); % re-scale for numerical stability
 end
-dLdf(:,exInd)=0; % ensure ignored points aren't included
+p    = exp(f);
+if ( size(p,1)==1 ) % binary problem
+  p  = p./(1+p);
+  if ( onetrue ) % fast-path common case of single true class with equal example weights
+	 dLdf= Y1 - p;
+	 dLdf(:,exInd)=0; % ensure ignored points aren't included (as not done above)
+  else
+	 dLdf = Y1 - p.*sY; % dLdf = Yerr % [L x N]
+  end
+  %dLdf= Y1 - p.*sY; % dLdf = Yerr % [L x N]
+else % multi-class
+  p    = repop(p,'/',sum(p,1)); % [L x N] =Pr(x|y_i) = exp(w_ix+b)./sum_y(exp(w_yx+b));
+  if ( onetrue ) % fast-path common case
+	 dLdf = Y-p;                % [LxN] = dp_y, i.e. gradient of the log true class probability
+	 dLdf(:,exInd)=0; % ensure ignored points aren't included (as not done above)
+  else
+	 dLdf = Y-repop(p,'*',sY);  % [LxN] = dln(p_y), i.e. gradient of the expected log true class prob
+  end
+end
 
 % set the pre-conditioner
 % N.B. the Hessian for this problem is:
@@ -193,8 +234,24 @@ d   = Mr;
 dtdJ=-(d(:)'*dJ(:));
 r2  = dtdJ;
 
-Ed  = -log(max(p(:),eps))'*Y(:); % -ln P(D|w,b,fp)
-%Ed  = -sum(log(g));    % -ln P(D|w,b,fp)
+% Ed = entropy loss = expected log-prob of the true class
+%Ed  = -log(max(p(:),eps))'*Y(:); % -ln P(D|w,b,fp)
+if ( onetrue ) % fast-path for the common case - 1 true class , equal weight
+  if ( size(p,1)==1 ) % binary problem
+	 Ed  = -(sum(log(p(Y(1,:)>0)+minp))+sum(log(1-p(Y(2,:)>0)+minp))); 
+  else
+	 Ed  = -sum(log(p(Y(:)>0)+minp)); % Ed = sum(-log(Pr(Y_true)))
+  end
+else
+  if ( size(p,1)==1 ) % binary problem
+	 Ed  = -(log(p(Y(1,:)>0)+minp)*Y(1,Y(1,:)>0)'+log(1-p(Y(2,:)>0)+minp)*Y(2,Y(2,:)>0)'); 
+  else % multi-class
+	 Ed  = 0;
+	 for li=1:size(p,1); % accumulate over the different possible classes
+	 	Ed = Ed + -log(p(li,Y(li,:)>0)+minp)*Y(li,Y(li,:)>0)';
+	 end
+  end  
+end
 Ew  = w(:)'*Rw(:);     % -ln P(w,b|R);
 if( ~isequal(mu,0) ) Emu=w'*mu; else Emu=0; end;
 J   = Ed + Ew + Emu + opts.Jconst;       % J=neg log posterior
@@ -233,7 +290,7 @@ for iter=1:min(opts.maxIter,2e6);  % stop some matlab versions complaining about
    % pre-compute for speed later
    f0  = f;
    dw  = d(1:end-1,:); db=d(end,:);
-   df  = repop(dw'*X,'+',db');
+   df  = repop(dw'*X,'+',db(:));
    if( ~isequal(mu,0) ) dmu = dw'*mu; else dmu=0; end;
    Rw=R*w;       dRw=dw(:)'*Rw(:);  % scalar or full matrix
    Rd=R*dw;      dRd=dw(:)'*Rd(:);
@@ -243,15 +300,27 @@ for iter=1:min(opts.maxIter,2e6);  % stop some matlab versions complaining about
       oodtdJ=odtdJ; odtdJ=dtdJ; % prev and 1 before grad values
       
 		f    = f0  + tstep*df;
-		dv   = f; if(opts.rescaledv) dv=repop(f,'-',max(f,[],1)); end;% re-scale for numerical stability
-		p    = exp(dv);
-		p    = repop(p,'/',sum(p,1)); % [L x N] =Pr(x|y_i) = exp(w_ix+b)./sum_y(exp(w_yx+b));
-		if ( onetrue ) 
-		  dLdf = Y-p;  % [LxN] = dp_y, i.e. gradient of the log probability of the true class
-		else
-		  dLdf = Y-repop(p,'*',sY);  % [LxN] = dln(p_y), i.e. gradient of the log prob true class
+		% re-scale for numerical stability
+		if(size(f,1)>1 && opts.rescaledv) f=repop(f,'-',max(f,[],1)); end;
+		p    = exp(f);
+		if ( size(p,1)==1 ) % binary problem
+		  p  = p./(1+p);
+		  if ( onetrue ) % fast-path common case
+			 dLdf = Y1-p;
+			 dLdf(:,exInd)=0; % ensure ignored points aren't included (as not done above)
+		  else
+			 dLdf = Y1-p.*sY;
+		  end
+		else % multi-class
+		  p    = repop(p,'/',sum(p,1)); % [L x N] =Pr(x|y_i) = exp(w_ix+b)./sum_y(exp(w_yx+b));
+		  if ( onetrue ) 
+			 dLdf = Y-p;  % [LxN] = dp_y, i.e. gradient of the log probability of the true class
+			 dLdf(:,exInd)=0; % ensure ignored points aren't included (as not done above)
+		  else
+          % [LxN] = dln(p_y), i.e. gradient of the log probability of the true class
+			 dLdf = Y-repop(p,'*',sY);  	 
+		  end
 		end
-		dLdf(:,exInd)=0;% ensure excluded are ignored
       dtdJ  = -(2*(dRw+tstep*dRd) + dmu - df(:)'*dLdf(:));
       %fprintf('.%d step=%g ddR=%g ddgdw=%g ddgdb=%g  sum=%g\n',j,tstep,2*(dRw+tstep*dRd),-dX*dLdf',-db*sum(dLdf),-dtdJ);
       if ( 0 ) 
@@ -265,14 +334,29 @@ for iter=1:min(opts.maxIter,2e6);  % stop some matlab versions complaining about
       end
 
 		if ( ~opts.rescaledv && isnan(dtdJ) ) % numerical issues detected, restart
-		  fprintf('Numerical issues falling back on re-scaled dv');
+		  fprintf('%d) Numerical issues falling back on re-scaled dv\n',iter);
 		  oodtdJ=odtdJ; dtdJ=odtdJ;%reset obj info
 		  opts.rescaledv=true; continue;
 		end;
 		
       if ( opts.verb > 2 )
-		  Ed  = -log(p(:))'*Y(:); % -ln P(D|w,b,fp)
-		  Ew   = w(:)'*Rw(:);     % -ln P(w,b|R);
+		  if ( onetrue ) % fast-path for the common case - 1 true class , equal weight
+			 if ( size(p,1)==1 ) % binary problem
+				Ed  = -(sum(log(p(Y(1,:)>0)+minp))+sum(log(1-p(Y(2,:)>0)+minp))); 
+			 else
+				Ed  = -sum(log(p(Y(:)>0)+minp)); % Ed = sum(-log(Pr(Y_true)))
+			 end
+		  else
+			 if ( size(p,1)==1 ) % binary problem
+				Ed  = -(log(p(Y(1,:)>0)+minp)*Y(1,Y(1,:)>0)'+log(1-p(Y(2,:)>0)+minp)*Y(2,Y(2,:)>0)'); 
+			 else % multi-class
+				Ed  = 0;
+				for li=1:size(Y,1); % accumulate over the different possible classes
+	 			  Ed = Ed + -log(p(li,Y(li,:)>0)+minp)*Y(li,Y(li,:)>0)';
+				end
+			 end  
+		  end
+		  Ew   = w(:)'*Rw(:) + 2*tstep*dRw + tstep*tstep*dRd;     % -ln P(w,b|R);
 		  if( ~isequal(mu,0) ) Emu=w'*mu; else Emu=0; end;
 		  J    = Ed + Ew + Emu + opts.Jconst;       % J=neg log posterior
         fprintf('.%d %g=%g @ %g (%g+%g)\n',j,tstep,dtdJ,J,Ed,Ew); 
@@ -320,7 +404,22 @@ for iter=1:min(opts.maxIter,2e6);  % stop some matlab versions complaining about
    r2 = abs(Mr(:)'*dJ(:)); 
 	
    % compute the function evaluation
-	Ed  = -log(max(p(:),eps))'*Y(:); % -ln P(D|w,b,fp)
+	if ( onetrue ) % fast-path for the common case - 1 true class , equal weight
+	  if ( size(p,1)==1 ) % binary problem
+		 Ed  = -(sum(log(p(Y(1,:)>0)+minp))+sum(log(1-p(Y(2,:)>0)+minp))); 
+	  else % multi-class
+		 Ed  = -sum(log(p(Y(:)>0)+minp)); % Ed = sum(-log(Pr(Y_true)))
+	  end
+	else % example weighting
+	  if ( size(p,1)==1 ) % binary problem
+		 Ed  =-(log(p(Y(1,:)>0)+minp)*Y(1,Y(1,:)>0)'+log(1-p(Y(2,:)>0)+minp)*Y(2,Y(2,:)>0)'); 
+	  else % multi-class
+		 Ed  = 0;
+		 for li=1:size(Y,1); % accumulate over the different possible classes
+	 		Ed = Ed + -log(p(li,Y(li,:)>0)+minp)*Y(li,Y(li,:)>0)';
+		 end
+	  end  
+	end
 	Ew = w(:)'*Rw(:);             % -ln P(w,b|R);
 	if( ~isequal(mu,0) ) Emu=w'*mu; else Emu=0; end;
 	J  = Ed + Ew + Emu + opts.Jconst;       % J=neg log posterior
@@ -371,11 +470,26 @@ end;
 
 % compute the final performance with untransformed input and solutions
 Rw   = R*w;
-dv   = f; if(opts.rescaledv) dv=repop(f,'-',max(f,[],1)); end;% re-scale for numerical stability
-dv   = repop(dv,'-',max(dv,[],1));  % re-scale for numerical stability
-p    = exp(dv);
-p    = repop(p,'/',sum(p,1));       % [1xN] = Pr(y_true)
-Ed   = -log(max(p(:),eps))'*Y(:); % -ln P(D|w,b,fp)
+if(opts.rescaledv) f=repop(f,'-',max(f,[],1)); end;% re-scale for numerical stability
+p    = exp(f);
+if ( size(p,1)==1 ) % binary problem
+  p  = p./(1+p);
+  if ( onetrue ) 
+	 Ed  = -(sum(log(p(Y(1,:)>0)+minp))+sum(log(1-p(Y(2,:)>0)+minp)));
+  else
+	 Ed  = -(log(p(Y(1,:)>0)+minp)*Y(1,Y(1,:)>0)'+log(1-p(Y(2,:)>0)+minp)*Y(2,Y(2,:)>0)'); 
+  end
+else % multi-class
+  p    = repop(p,'/',sum(p,1));       % [1xN] = Pr(y_true)
+  if ( onetrue ) 
+	 Ed  = -sum(log(p(Y(:)>0)+minp)); % Ed = sum(-log(Pr(Y_true)))
+  else
+	 Ed  = 0;
+	 for li=1:size(Y,1); % accumulate over the different possible classes
+	 	Ed = Ed + -log(p(li,Y(li,:)>0)+minp)*Y(li,Y(li,:)>0)';
+	 end	 
+  end
+end
 Ew   = w(:)'*Rw(:);                 % -ln P(w,b|R);
 if( ~isequal(mu,0) ) Emu=w'*mu; else Emu=0; end;
 J    = Ed + Ew + Emu + opts.Jconst;       % J=neg log posterior
@@ -386,8 +500,7 @@ end
 
 % compute final decision values.
 if ( ~all(size(X)==size(oX)) ) f   = repop(w'*oX,'+',b'); end;
-f = reshape(f,size(oY));
-if ( binp && opts.compBinp ) f=f(1,:); end;
+if ( ~binp ) f = reshape(f,size(oY)); end
 obj = [J Ew Ed];
 wb=[w;b];
 return;
@@ -408,16 +521,45 @@ Yi = lab2ind(Y); Yi(Yi<0)=0;
 % now with example weighting
 wght  = .5+rand(size(Yi,1),1)*.5;
 [wb,f,Jlr]=mlr_cg(X,repop(Yi,'*',wght),0,'verb',1);
-[wb,f,Jlr]=mlr_cg(X,Yi,0,'verb',1,'wght',wght);
+[wb,f,Jlr]=mlr_cg(X,Yi,0,'verb',1);
 % now with repeated-labels / universum examples
-Ywght=Yi; Ywght(1:10,:)=1;
+Ywght=Yi; Ywght(1:10,:)=1; % 1st 10 examples are universum examples
 [wb,f,Jlr]=mlr_cg(X,Ywght,0,'verb',1);
 % with repeated labels
 Ywght=cat(2,Yi,Yi);
 [wb,f,Jlr]=mlr_cg(X,Ywght,0,'verb',1);
 
+										  % universum examples
+% now with repeated-labels / universum examples
+% 2-class with universum examples
+nClass=200; nUniv=50;
+[X,Yl]=mkMultiClassTst([-1 0; 1 0; .5 1],[nClass nClass nUniv],[.3 .3; .3 .3;.2 .2],[]);[dim,N]=size(X);
+Y=lab2ind(Yl)';
+clf;labScatPlot(X,Y)
+
+[wb3,J3,f3]=mlr_cg(X,Y,0,'verb',1); % 3-class
+clf;plotLinDecisFn(X,Y,reshape(wb3(1:end-min(size(Y))),size(X,1),min(size(Y))),wb3(end-min(size(Y))+1:end))
+
+uY = Y(1:2,:); uY(:,end-(1:nUniv))=1; % last nUniv examples are universum examples
+[wbu,Ju,fu]=mlr_cg(X,uY,0,'verb',1);% universum
+L=size(uY,1); if(L==2) L=1; end; wb0=randn(size(X,1)+1,L);
+clf;plotLinDecisFn(X,uY,reshape(wbu(1:end-L),size(X,1),L),wbu(end-L+1:end))
+
+
+% unbalanced data
+										  % with unbalanced data + example weighting
+[X,Yl]=mkMultiClassTst([-1 0;1 0],[400 40],[.6 .6]);[dim,N]=size(X);
+Y=lab2ind(Yl);
+wb0=randn(size(X,1)+1,min(size(Y)));
+tic,[wb,f,J]=mlr_cg(X,Y,0,'verb',1,'objTol0',1e-10,'wb',wb0);toc,
+reshape(dv2conf(Y,f),max(2,min(size(Y))),[])
+
+tic,[wb,f,J]=mlr_cg(X,Y,0,'verb',1,'objTol0',1e-10,'wb',wb0,'wght','bal');toc
+reshape(dv2conf(Y,f),max(2,min(size(Y))),[])
+
+
 % plot the resulting decision function
-clf;plotLinDecisFn(X,Y,wb(1:end-1,:),wb(end,:));
+clf;plotLinDecisFn(X,Y,reshape(wb(1:end-min(size(Y))),size(X,1),min(size(Y))),wb(end-min(size(Y))+1:end))
 
 trnInd=true(size(X,2),1);
 fInds=gennFold(Y,10,'perm',1,'dim',1); 
