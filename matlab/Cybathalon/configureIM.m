@@ -61,6 +61,7 @@ contFeedbackTrialDuration =10;
 neurofeedbackTrialDuration=30;
 warpCursor   = 1; % flag if in feedback BCI output sets cursor location or how the cursor moves
 moveScale    = .1;
+feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
 
 axLim        =[-1.5 1.5]; % size of the display axes
 winColor     =[.0 .0 .0]; % window background color
