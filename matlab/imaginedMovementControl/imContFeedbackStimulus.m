@@ -31,7 +31,7 @@ set(fig,'Units','pixel');wSize=get(fig,'position');set(fig,'units','normalized')
 txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
-				  'color',[0.75 0.75 0.75],'visible','off');
+				  'color',txtColor,'visible','off');
 
 
 % play the stimulus
@@ -62,6 +62,12 @@ for si=1:nSeq;
   fprintf('%d) tgt=%d : ',si,find(tgtSeq(:,si)>0));
   set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
+<<<<<<< 14c904e0e42432454e43d4de4645e87663c5a1d7:matlab/imaginedMovementControl/imContFeedbackStimulus.m
+=======
+  if ( ~isempty(symbCue) )
+	 set(txthdl,'string',sprintf('%s ',symbCue{tgtSeq(:,si)>0}),'color',txtColor,'visible','on');
+  end
+>>>>>>> improved runway stuff:matlab/Cybathalon/imContFeedbackStimulus.m
   set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
   drawnow;% expose; % N.B. needs a full drawnow for some reason
   sendEvent('stimulus.target',find(tgtSeq(:,si)>0));
@@ -145,6 +151,6 @@ end % loop over sequences in the experiment
 sendEvent('stimulus.testing','end');
 
 if ( ishandle(fig) ) % thanks message
-set(txthdl,'string',{'That ends the feedback phase.','Thanks for your patience'}, 'visible', 'on');
+set(txthdl,'string',{'That ends the feedback phase.','Thanks for your patience'},'color',[0 1 0],'visible', 'on');
 pause(3);
 end

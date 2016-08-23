@@ -65,16 +65,14 @@ feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
 axLim        =[-1.5 1.5]; % size of the display axes
 winColor     =[.0 .0 .0]; % window background color
 bgColor      =[.2 .2 .2]; % background/inactive stimuli color
-fixColor     =[1 0 0]; % fixitation/get-ready cue point color
-tgtColor     =[0 1 0]; % target color
-fbColor      =[0 0 1]; % feedback color
+fixColor     =[1  0  0];  % fixitation/get-ready cue point color
+tgtColor     =[0 .9  0];  % target color
+fbColor      =[0  0 .9];  % feedback color
 txtColor     =[.9 .9 .9]; % color of the cue text
 
 animateFix   = true; % do we animate the fixation point during training?
 frameDuration= .25; % time between re-draws when animating the fixation point
 animateStep  = diff(axLim)*.01; % amount by which to move point per-frame in fix animation
-
-
 
 % Calibration/data-recording options
 trlen_ms      =epochDuration*1000; % how much data to use in each classifier training example
