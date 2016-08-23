@@ -63,8 +63,8 @@ else
               'verb',0,'step',0,'wght',[],'X',[],'maxLineSrch',50,...
               'maxStep',3,'minStep',5e-2,'marate',.95,'bPC',[],'wPC',1,...
 				  'incThresh',.66,'optBias',0,'maxTr',inf,...
-              'compBinp',1,'rescaledv',1,'getOpts',0);
-  opts=parseOpts(opts,varargin{:});
+              'compBinp',1,'rescaledv',0,'getOpts',0);
+  [opts,varargin]=parseOpts(opts,varargin{:});
   if ( opts.getOpts ) wb=opts; return; end;
 end
 if ( isempty(opts.maxEval) ) opts.maxEval=5*sum(Y(:)~=0); end
@@ -334,7 +334,7 @@ for iter=1:min(opts.maxIter,2e6);  % stop some matlab versions complaining about
       end
 
 		if ( ~opts.rescaledv && isnan(dtdJ) ) % numerical issues detected, restart
-		  if (opts.verb>0) fprintf('%d) Numerical issues falling back on re-scaled dv\n',iter); end
+		  fprintf('%d) Numerical issues falling back on re-scaled dv\n',iter);
 		  oodtdJ=odtdJ; dtdJ=odtdJ;%reset obj info
 		  opts.rescaledv=true; continue;
 		end;
