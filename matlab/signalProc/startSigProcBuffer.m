@@ -243,7 +243,9 @@ while ( true )
 		set(contFig,'userdata',[]);	 
 	 end
 										  % and convert to phase control events
-	 if ( ~isempty(phaseToRun) ) sendEvent(opts.phaseEventType,phaseToRun); phaseToRun=[]; drawnow; pause(1); end;
+	 if ( ~isempty(phaseToRun) )
+		sendEvent(opts.phaseEventType,phaseToRun); phaseToRun=[]; drawnow; pause(.2);
+	 end;
   else
 	 drawnow;
   end
