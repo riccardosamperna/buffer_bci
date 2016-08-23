@@ -83,21 +83,16 @@ welch_width_ms=250; % width of welch window => spectral resolution
 step_ms=welch_width_ms/2;% N.B. welch defaults=.5 window overlap, use step=width/2 to simulate
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
-<<<<<<< 8df6227f68170da6d6d866f883306e21e67d4e46
 trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR','wght','bal'}; % whiten + direct multi-class training with equal class weighting
 % whiten + direct multi-class training, ignoring the startup window after the cue
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','timeband_ms',[250 trlen_ms],'objFn','mlr_cg','binsp',0,'spMx','1vR'}; 
-=======
-trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
-%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','adaptspatialfilt',trialadaptfactor,'objFn','mlr_cg','binsp',0,'spMx','1vR'}; % adaptive-whiten + direct multi-class training
->>>>>>> refactor so single version of the imstimulus code in the imaginedMovement directory
 %trainOpts = {'spType',{{1 3} {2 4}}}; % train 2 classifiers, 1=N vs S, 2=E vs W
 
 % Epoch feedback opts
 %%0) Use exactly the same classification window for feedback as for training, but
 %%   but also include a bias adaption system to cope with train->test transfer
-earlyStopping = true;
-epochFeedbackOpts={}; % raw output
+earlyStopping = false;
+epochFeedbackOpts={'trlen_ms',trialDuration*1000}; % raw output, from whole trials data
 %epochFeedbackOpts={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/50))}; % bias-adaption
 
 % Epoch feedback with early-stopping, config using the user feedback table
@@ -113,7 +108,7 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 
 %%2) Classify every welch-window-width (default 250ms), prediction is average of full trials worth of data, no-bias adaptation
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
-contFeedbackOpts ={'predFilt',-(trlen_ms/step_ms),'trlen_ms',welch_width_ms};
+contFeedbackOpts ={'predFilt',-(trialDuration*1000/step_ms),'trlen_ms',welch_width_ms};
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation
 %contFeedbackOpts ={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/400)),'trlen_ms',[]}; 
