@@ -28,6 +28,16 @@ h(nSymbs+1)=rectangle('curvature',[1 1],'position',[stimPos(:,end)-stimRadius/4;
                       'facecolor',bgColor); 
 set(gca,'visible','off');
 
+%Create a text object with no text in it, center it, set font and color
+set(fig,'Units','pixel');wSize=get(fig,'position');set(fig,'units','normalized');% win size in pixels
+txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
+				  'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle',...
+				  'fontunits','pixel','fontsize',.05*wSize(4),...
+				  'color',txtColor,'visible','off');
+
+set(txthdl,'string', 'Click mouse when ready', 'visible', 'on'); drawnow;
+waitforbuttonpress;
+set(txthdl,'visible', 'off'); drawnow;
 
 % play the stimulus
 % reset the cue and fixation point to indicate trial has finished  
@@ -53,7 +63,7 @@ for si=1:nSeq;
   set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
   if ( ~isempty(symbCue) )
-	 set(txthdl,'string',sprintf('%s ',symbCue{tgtSeq(:,si)>0}),'color',[.1 .1 .1],'visible','on');
+	 set(txthdl,'string',sprintf('%s ',symbCue{tgtSeq(:,si)>0}),'color',txtColor,'visible','on');
   end
   set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
   drawnow;% expose; % N.B. needs a full drawnow for some reason
@@ -68,7 +78,6 @@ for si=1:nSeq;
     timetogo = trialDuration - (getwTime()-trlStartTime); % time left to run in this trial
     % wait for events to process *or* end of trial *or* out of time
     [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,{'stimulus.prediction' 'stimulus.testing'},[],timetogo*1000);
-    %[dat,events,state]=buffer_waitData(buffhost,buffport,state,'exitSet',{timetogo*1000 {'stimulus.prediction' 'stimulus.testing'}},'verb',verb);
     for ei=1:numel(events);
       ev=events(ei);
       if ( strcmp(ev.type,'stimulus.prediction') ) 
@@ -94,7 +103,7 @@ for si=1:nSeq;
   end % loop accumulating prediction events
 
   % give the feedback on the predicted class
-  dv = sum(dvs,2); prob=1./(1+exp(-dv)); prob=prob./sum(prob);
+  prob=exp((dv-max(dv))); prob=prob./sum(prob); % robust soft-max prob computation
   if ( verb>=0 ) 
     fprintf('dv:');fprintf('%5.4f ',pred);fprintf('\t\tProb:');fprintf('%5.4f ',prob);fprintf('\n'); 
   end;  
