@@ -41,19 +41,13 @@ h(nSymbs+1)=rectangle('curvature',[1 1],'position',[stimPos(:,end)-stimRadius/4;
 set(gca,'visible','off');
 
 %Create a text object with no text in it, center it, set font and color
+set(fig,'Units','pixel');wSize=get(fig,'position');set(fig,'units','normalized');% win size in pixels
 txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','off');
 
-% text object for the experiment progress bar
-progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d +%02d -%02d',0,nSeq,0,0),...
-				  'HorizontalAlignment', 'left', 'VerticalAlignment', 'top',...
-				  'fontunits','pixel','fontsize',.05*wSize(4),...
-				  'color',txtColor,'visible','on');
-
-
-set(txthdl,'string', {epochfeedback_instruct{:} '' 'Click mouse when ready'}, 'visible', 'on'); drawnow;
+set(txthdl,'string', 'Click mouse when ready', 'visible', 'on'); drawnow;
 waitforbuttonpress;
 set(txthdl,'visible', 'off'); drawnow;
 
@@ -101,14 +95,7 @@ for si=1:nSeq;
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
   set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
   if ( ~isempty(symbCue) )
-	 set(txthdl,'string',sprintf('%s ',symbCue{tgtIdx}),'color',txtColor,'visible','on');
-	 tgtNm = '';
-	 for ti=1:numel(tgtIdx);
-		if(ti>1) tgtNm=[tgtNm ' + ']; end;
-		tgtNm=sprintf('%s%d %s ',tgtNm,tgtIdx,symbCue{tgtIdx});
-	 end
-  else
-	 tgtNm = tgtIdx; % human-name is position number
+	 set(txthdl,'string',sprintf('%s ',symbCue{tgtSeq(:,si)>0}),'color',txtColor,'visible','on');
   end
   fprintf('%d) tgt=%10s : ',si,tgtNm);
   drawnow;% expose; % N.B. needs a full drawnow for some reason

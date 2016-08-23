@@ -79,7 +79,7 @@ while (timetogo>0)
 
 										  % process the prediction events
   if ( isempty(events) )
-	 if ( timetogo>.1 ) fprintf('%d) no predictions!\n',nsamples); end;
+	 if ( timetogo>.1 ) fprintf('%d) no predictions!\n',nsamples); drawnow; end;
   else
     [ans,si]=sort([events.sample],'ascend'); % proc in *temporal* order
     for ei=1:numel(events);

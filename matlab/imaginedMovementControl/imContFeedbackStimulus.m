@@ -62,12 +62,9 @@ for si=1:nSeq;
   fprintf('%d) tgt=%d : ',si,find(tgtSeq(:,si)>0));
   set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
-<<<<<<< 14c904e0e42432454e43d4de4645e87663c5a1d7:matlab/imaginedMovementControl/imContFeedbackStimulus.m
-=======
   if ( ~isempty(symbCue) )
 	 set(txthdl,'string',sprintf('%s ',symbCue{tgtSeq(:,si)>0}),'color',txtColor,'visible','on');
   end
->>>>>>> improved runway stuff:matlab/Cybathalon/imContFeedbackStimulus.m
   set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
   drawnow;% expose; % N.B. needs a full drawnow for some reason
   sendEvent('stimulus.target',find(tgtSeq(:,si)>0));

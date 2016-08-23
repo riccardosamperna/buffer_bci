@@ -108,6 +108,25 @@ for si=1:nSeq;
   if ( animateFix )										  % reset fix pos
 		set(h(end),'position',[stimPos(:,end)-cursorSize/2;cursorSize*[1;1]]);
   end
+  if ( animateFix )
+	 animateDuration=baselineDuration;
+	 t0  =getwTime();
+	 timetogo=animateDuration;
+	 fixPos=[stimPos(:,end)-cursorSize/2;cursorSize*[1;1]];
+	 while ( timetogo > 0 )
+		dx=randn(2,1)*animateStep;
+		fixPos(1:2) = fixPos(1:2)+dx;
+		set(h(end),'position',fixPos);
+		drawnow;		
+		sleepSec(min(max(0,timetogo),frameDuration));
+		timetogo = animateDuration- (getwTime()-t0); % time left to run in this trial
+	 end
+	 % reset fix pos
+	 set(h(end),'position',[stimPos(:,end)-cursorSize/2;cursorSize*[1;1]]);
+  else
+	 sleepSec(baselineDuration);
+  end
+  sendEvent('stimulus.baseline','end');  
   
   % show the target
   tgtIdx=find(tgtSeq(:,si)>0);
@@ -141,6 +160,8 @@ for si=1:nSeq;
 		  sleepSec(min(max(0,timetogo),frameDuration));
 		  timetogo = animateDuration- (getwTime()-t0); % time left to run in this trial
 		end
+										  % reset fix pos
+		set(h(end),'position',[stimPos(:,end)-cursorSize/2;cursorSize*[1;1]]);
 	 else
 		drawnow;% expose; % N.B. needs a full drawnow for some reason
 				  % wait for trial end

@@ -43,13 +43,6 @@ txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','off');
-% text object for the experiment progress bar
-progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d +%02d -%02d',0,nSeq,0,0),...
-				  'HorizontalAlignment', 'left', 'VerticalAlignment', 'top',...
-				  'fontunits','pixel','fontsize',.05*wSize(4),...
-				  'color',txtColor,'visible','on');
-
-
 
 set(txthdl,'string', {epochfeedback_instruct{:} '' 'Click mouse when ready'}, 'visible', 'on'); drawnow;
 waitforbuttonpress;
@@ -98,14 +91,7 @@ for si=1:nSeq;
   set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
   if ( ~isempty(symbCue) )
-	 set(txthdl,'string',sprintf('%s ',symbCue{tgtIdx}),'color',txtColor,'visible','on');
-	 tgtNm = '';
-	 for ti=1:numel(tgtIdx);
-		if(ti>1) tgtNm=[tgtNm ' + ']; end;
-		tgtNm=sprintf('%s%d %s ',tgtNm,tgtIdx,symbCue{tgtIdx});
-	 end
-  else
-	 tgtNm = tgtIdx; % human-name is position number
+	 set(txthdl,'string',sprintf('%s ',symbCue{tgtSeq(:,si)>0}),'color',txtColor,'visible','on');
   end
   fprintf('%d) tgt=%10s : ',si,tgtNm);
   drawnow;% expose; % N.B. needs a full drawnow for some reason
@@ -131,18 +117,10 @@ for si=1:nSeq;
   else
     sleepSec(trialDuration); 
 	 % wait for classifier prediction event
-<<<<<<< 6d4df5d452650bf1d1fc8217a0a3f14ba0fa3493
-	 if( verb>0 ) fprintf(1,'Waiting for predictions\n'); end;
-	 % wait for classifier prediction event
-	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],2000);
-  end
-  trlEndTime=getwTime();
-=======
 	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],2000);
   end
   trlEndTime=getwTime();
 
->>>>>>> stuff for the early stopping
   
   % do something with the prediction (if there is one), i.e. give feedback
   if( isempty(devents) ) % extract the decision value
@@ -150,10 +128,6 @@ for si=1:nSeq;
     set(h(:),'facecolor',bgColor);
     set(h(end),'facecolor',fbColor); % fix turns blue to show now pred recieved
     drawnow;
-<<<<<<< 6d4df5d452650bf1d1fc8217a0a3f14ba0fa3493
-    nMissed=nMissed+1;
-=======
->>>>>>> stuff for the early stopping
   else
 	 fprintf(1,'Prediction after %gs : %s',trlEndTime-trlStartTime,ev2str(devents(end)));
     dv = devents(end).value;
@@ -167,7 +141,7 @@ for si=1:nSeq;
     % give the feedback on the predicted class
     prob=exp((dv-max(dv))); prob=prob./sum(prob); % robust soft-max prob computation
     if ( verb>=0 ) 
-		fprintf('%d) dv:[%s]\tPr:[%s]\n',ev.sample,sprintf('%5.4f ',dv),sprintf('%5.4f ',prob));
+		fprintf('%d) dv:[%s]\tPr:[%s]\n',ev.sample,sprintf('%5.4f ',pred),sprintf('%5.4f ',prob));
     end;  
     [ans,predTgt]=max(dv); % prediction is max classifier output
     set(h(:),'facecolor',bgColor);

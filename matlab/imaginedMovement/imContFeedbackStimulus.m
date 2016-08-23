@@ -42,11 +42,14 @@ txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','off');
+<<<<<<< df1aa23611356e7759e8579f9fc65e1817c5e416
 % text object for the experiment progress bar
 progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d +%02d -%02d',0,nSeq,0,0),...
 				  'HorizontalAlignment', 'left', 'VerticalAlignment', 'top',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','on');
+=======
+>>>>>>> refactor so single version of the imstimulus code in the imaginedMovement directory
 
 
 % play the stimulus
@@ -98,6 +101,7 @@ for si=1:nSeq;
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
   set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
   if ( ~isempty(symbCue) )
+<<<<<<< df1aa23611356e7759e8579f9fc65e1817c5e416
 	 set(txthdl,'string',sprintf('%s ',symbCue{tgtIdx}),'color',txtColor,'visible','on');
 	 tgtNm = '';
 	 for ti=1:numel(tgtIdx);
@@ -106,6 +110,9 @@ for si=1:nSeq;
 	 end
   else
 	 tgtNm = tgtIdx; % human-name is position number
+=======
+	 set(txthdl,'string',sprintf('%s ',symbCue{tgtSeq(:,si)>0}),'color',txtColor,'visible','on');
+>>>>>>> refactor so single version of the imstimulus code in the imaginedMovement directory
   end
   fprintf('%d) tgt=%10s : ',si,tgtNm);
   drawnow;% expose; % N.B. needs a full drawnow for some reason
