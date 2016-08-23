@@ -51,6 +51,7 @@ symbCue      ={'Left&Right-Hand' 'Song' 'Left-Hand' 'Left-Vis-Attn' 'Feet' 'Righ
 nSymbs       =numel(symbCue); 
 baselineClass='99 rest'; % 'Rest';if set, treat baseline phase as a separate class to classify
 rtbClass     =[];
+nSeq         =12*nSymbs; % 20 examples of each target
 
 calibrate_instruct ={'When instructed perform the indicated' 'actual movement'};
 epochfeedback_instruct={'When instructed perform the indicated' 'actual movement.  When trial is done ' 'classifier prediction with be shown' 'with a blue highlight'};
@@ -60,7 +61,7 @@ neurofeedback_instruct={'Perform mental tasks as you would like.' 'The fixation 
 
 nSeq         =12*nSymbs; % 12 examples of each target
 epochDuration   =1.5;
-trialDuration   =epochDuration*5; % 12*5 = 60 classifiation trials for each target
+trialDuration   =epochDuration*5;
 baselineDuration=epochDuration;
 intertrialDuration=epochDuration;
 feedbackDuration=.5;
