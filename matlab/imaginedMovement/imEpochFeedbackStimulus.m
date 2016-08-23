@@ -141,7 +141,7 @@ for si=1:nSeq;
     % give the feedback on the predicted class
     prob=exp((dv-max(dv))); prob=prob./sum(prob); % robust soft-max prob computation
     if ( verb>=0 ) 
-		fprintf('%d) dv:[%s]\tPr:[%s]\n',ev.sample,sprintf('%5.4f ',pred),sprintf('%5.4f ',prob));
+		fprintf('%d) dv:[%s]\tPr:[%s]\n',ev.sample,sprintf('%5.4f ',dv),sprintf('%5.4f ',prob));
     end;  
     [ans,predTgt]=max(dv); % prediction is max classifier output
     set(h(:),'facecolor',bgColor);
