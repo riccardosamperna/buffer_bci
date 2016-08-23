@@ -47,10 +47,10 @@ buffport     =1972;
 nSymbs       =6; % E,NE,NW,W,SW,SE,E for 6 outputs
 symbCue      ={'RH' 'Tongue' 'Nav' 'LH' 'Math' 'Feet'};
 baselineClass='99 rest'; % 'Rest';if set, treat baseline phase as a separate class to classify
-nSeq         =20*nSymbs; % 20 examples of each target
+nSeq         =12*nSymbs; % 20 examples of each target
 
 epochDuration   =1.5;
-trialDuration   =epochDuration*3;
+trialDuration   =epochDuration*5;
 baselineDuration=epochDuration;
 intertrialDuration=epochDuration;
 feedbackDuration=.5;
@@ -61,12 +61,16 @@ warpCursor   = 0; % flag if in feedback BCI output sets cursor location or how t
 moveScale    = .1;
 
 axLim        =[-1.5 1.5]; % size of the display axes
-winColor     =[0 0 0]; % window background color
-bgColor      =[.5 .5 .5]; % background/inactive stimuli color
-fixColor     =[1 0 0]; % fixitation/get-ready cue point color
-tgtColor     =[0 1 0]; % target color
-fbColor      =[0 0 1]; % feedback color
-txtColor     =[.8 .8 .8]; % text color
+winColor     =[.0 .0 .0]; % window background color
+bgColor      =[.2 .2 .2]; % background/inactive stimuli color
+fixColor     =[.8  0  0];  % fixitation/get-ready cue point color
+tgtColor     =[0  .7  0];  % target color
+fbColor      =[0   0 .8];  % feedback color
+txtColor     =[.9 .9 .9]; % color of the cue text
+
+animateFix   = true; % do we animate the fixation point during training?
+frameDuration= .25; % time between re-draws when animating the fixation point
+animateStep  = diff(axLim)*.01; % amount by which to move point per-frame in fix animation
 
 										  % classifier training options
 if ( isempty(epochDuration) )
@@ -78,7 +82,9 @@ calibrateOpts ={'offset_ms',[250 250]};
 
 welch_width_ms=250; % width of welch window => spectral resolution
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
-trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','lr_cg','binsp',1,'spMx','1v1'}; % all-pairwise training
+%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','lr_cg','binsp',1,'spMx','1v1'}; % all-pairwise training
+trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
+
 
 % Epoch feedback opts
 %%0) Use exactly the same classification window for feedback as for training, but
