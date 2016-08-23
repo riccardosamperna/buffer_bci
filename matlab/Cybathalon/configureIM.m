@@ -65,9 +65,9 @@ feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
 axLim        =[-1.5 1.5]; % size of the display axes
 winColor     =[.0 .0 .0]; % window background color
 bgColor      =[.2 .2 .2]; % background/inactive stimuli color
-fixColor     =[1  0  0];  % fixitation/get-ready cue point color
-tgtColor     =[0 .9  0];  % target color
-fbColor      =[0  0 .9];  % feedback color
+fixColor     =[.8  0  0];  % fixitation/get-ready cue point color
+tgtColor     =[0  .7  0];  % target color
+fbColor      =[0   0 .8];  % feedback color
 txtColor     =[.9 .9 .9]; % color of the cue text
 
 animateFix   = true; % do we animate the fixation point during training?
@@ -114,7 +114,7 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 
 %%2) Classify every welch-window-width (default 250ms), prediction is running average of full trials worth of data, no-bias adaptation
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
-contFeedbackOpts ={'predFilt',-(trlen_ms/step_ms),'trlen_ms',welch_width_ms};
+contFeedbackOpts ={'predFilt',-(trialDuration*1000/step_ms),'trlen_ms',welch_width_ms};
 % classify every welch-window-width, update adapt-filt hl w.r.t. shorter input windows
 %contFeedbackOpts ={'predFilt',-(trlen_ms/step_ms),'trlen_ms',welch_width_ms,'adaptspatialfilt',exp(log(.5)/(adaptHalfLife_ms/welch_width_ms))};
 

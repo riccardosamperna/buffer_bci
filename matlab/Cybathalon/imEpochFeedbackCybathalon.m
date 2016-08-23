@@ -69,7 +69,22 @@ for si=1:nSeq;
 
   if ( ~ishandle(fig) || endTesting ) break; end;
   
-  %set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
+  sleepSec(intertrialDuration);
+  % show the screen to alert the subject to trial start
+  set(h(:),'faceColor',bgColor);
+  set(h(end),'facecolor',fixColor); % red fixation indicates trial about to start/baseline
+  drawnow;% expose; % N.B. needs a full drawnow for some reason
+  sendEvent('stimulus.baseline','start');
+  sleepSec(baselineDuration);
+  sendEvent('stimulus.baseline','end');
+
+  % show the target
+  fprintf('%d) tgt=%d : ',si,find(tgtSeq(:,si)>0));
+  set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
+  set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
+  if ( ~isempty(symbCue) )
+	 set(txthdl,'string',sprintf('%s ',symbCue{tgtSeq(:,si)>0}),'color',txtColor,'visible','on');
+  end
   set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
   drawnow;% expose; % N.B. needs a full drawnow for some reason
   if ( earlyStopping )

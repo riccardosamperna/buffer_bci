@@ -76,7 +76,7 @@ while (timetogo>0)
 
 										  % process the prediction events
   if ( isempty(events) )
-	 if ( timetogo>.1 ) fprintf('%d) no predictions!\n',nsamples); end;
+	 if ( timetogo>.1 ) fprintf('%d) no predictions!\n',nsamples); drawnow; end;
   else
     [ans,si]=sort([events.sample],'ascend'); % proc in *temporal* order
     for ei=1:numel(events);
@@ -106,7 +106,7 @@ while (timetogo>0)
 		end
 
 										  % convert from dv to normalised probability
-		prob = 1./(1+exp(-dv(:))); prob=prob./sum(prob); 
+		prob=exp((dv-max(dv))); prob=prob./sum(prob); % robust soft-max prob computation
 		if ( verb>=0 ) 
 		  fprintf('%d) dv:[%s]\tPr:[%s]\n',ev.sample,sprintf('%5.4f ',pred),sprintf('%5.4f ',prob));
 		end;		
