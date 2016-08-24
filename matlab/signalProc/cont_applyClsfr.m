@@ -48,6 +48,7 @@ opts=struct('buffhost','localhost','buffport',1972,'hdr',[],...
             'endType','stimulus.test','endValue','end','verb',0,...
 				'resetType','classifier.reset',...
             'predEventType','classifier.prediction',...
+            'rawpredEventType','',...
             'trlen_ms',[],'trlen_samp',[],'overlap',.5,'step_ms',[],...
             'predFilt',[],'timeout_ms',1000,'adaptspatialfilt',[]);
 [opts]=parseOpts(opts,varargin);
@@ -149,7 +150,12 @@ while( ~endTest )
     if ( numel(clsfr)>1 ) % combine individual classifier predictions, simple max-likelihood sum
       f=sum(f,2); fraw=sum(fraw,2);
     end
-    % smooth the classifier predictions if wanted
+    % send raw prediction event if wanted
+    if ( ~isempty(opts.rawpredEventType) )
+       sendEvent(opts.rawpredEventType,f,fin(si)-trlen_samp); %N.B. event sample is window-start!       
+    end
+
+    % filter the raw predictions if wanted
     if ( isempty(dv) && isempty(opts.predFilt) ) 
       dv=f;
     else
