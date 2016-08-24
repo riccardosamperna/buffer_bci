@@ -152,9 +152,6 @@ while( ~endTest )
     end
     % send raw prediction event if wanted
     if ( ~isempty(opts.rawpredEventType) )
-	   if(opts.verb>0)
-          fprintf('%3d)  raw Pred: s:%d->%d v:[%s]\n',fin(si),fin(si)-trlen_samp,fin(si),sprintf('%5.2f ',f));
-       end
        sendEvent(opts.rawpredEventType,f,fin(si)-trlen_samp); %N.B. event sample is window-start!       
     end
 

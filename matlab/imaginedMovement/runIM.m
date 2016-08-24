@@ -3,7 +3,11 @@ configureIM;
 % try
 %   contFig=controller(); info=guidata(contFig); 
 % catch
+<<<<<<< 3c8f80e17741060518c3c3e130ef046af9acedd5
   contFig=figure(1);clf;
+=======
+  contFig=figure(1);
+>>>>>>> updates for the center-out neuro-feedback training system
   set(contFig,'name','BCI Controller : close to quit','color',[0 0 0]);
   axes('position',[0 0 1 1],'visible','off','xlim',[0 1],'ylim',[0 1],'nextplot','add');
   set(contFig,'Units','pixel');wSize=get(contFig,'position');
@@ -106,6 +110,7 @@ while (ishandle(contFig))
    case 'practice';
     sendEvent('subject',subject);
     sendEvent(phaseToRun,'start');
+<<<<<<< 3c8f80e17741060518c3c3e130ef046af9acedd5
 	 try;
 		artifactCalibrationStimulus;
 	catch
@@ -118,6 +123,18 @@ while (ishandle(contFig))
 	  	end
 	  	msgbox({sprintf('Error in : %s',phaseToRun) 'OK to continue!'},'Error');
       sendEvent(phaseToRun,'end');    
+=======
+    onSeq=nSeq; nSeq=4; % override sequence number
+    try
+      imCalibrateStimulus;
+    catch
+       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
+>>>>>>> updates for the center-out neuro-feedback training system
     end
 	 sendEvent(phaseToRun,'end');
     
@@ -137,6 +154,10 @@ while (ishandle(contFig))
 	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
 	  	   end;
 	  	 end
+<<<<<<< 3c8f80e17741060518c3c3e130ef046af9acedd5
+=======
+      sendEvent('stimulus.training','end');    
+>>>>>>> updates for the center-out neuro-feedback training system
     end
     if ( ~isempty(strfind(phaseToRun,'calibrat')) ) sendEvent('calibrate','end'); end   
     sendEvent(phaseToRun,'end');
@@ -186,6 +207,21 @@ while (ishandle(contFig))
 	  	   end;
 	  	 end
     end
+    sendEvent('test','end');
+    sendEvent(phaseToRun,'end');
+
+   %---------------------------------------------------------------------------
+   case {'centerout'};
+    sendEvent('subject',subject);
+    %sleepSec(.1);
+    sendEvent(phaseToRun,'start');
+    %try
+      sendEvent('startPhase.cmd','contfeedback');
+      imCenterOutTrainingStimulus;
+      %catch
+      %le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+      % sleepSec(.1);
+      %end
     sendEvent('test','end');
     sendEvent(phaseToRun,'end');
 

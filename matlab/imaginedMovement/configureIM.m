@@ -46,15 +46,10 @@ buffhost     ='localhost';
 buffport     =1972;
 % N.B. tgts run anti-clock from start point with: odd->start at top (N), even->start at right (E)
 % 3-[N,SW,SE], 4-[E,N,W,S], 6-[E,NE,NW,W,SW,SE,E], 8-[E,NE,N,NW,W,SW,S,SE]
-symbCue      ={'RH' 'LH' 'FT'}; % sybmol cue in addition to positional one. E,N,W,S for 4 symbs
+symbCue      ={'FT' 'LH' 'RH'}; % sybmol cue in addition to positional one. E,N,W,S for 4 symbs
 nSymbs       =numel(symbCue); % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     ='99 RTB';% if set, treat post-trial return-to-baseline phase as separate class to classify
-
-calibrate_instruct ={'When instructed perform the indicated' 'actual movement'};
-epochfeedback_instruct={'When instructed perform the indicated' 'actual movement.  When trial is done ' 'classifier prediction with be shown' 'with a blue highlight'};
-contfeedback_instruct={'When instructed perform the indicated' 'actual movement.  The fixation point' 'will move to show the systems' 'current prediction'};
-neurofeedback_instruct={'Perform mental tasks as you would like.' 'The fixation point will move to' 'show the systems current prediction'};
 
 nSeq              =20*nSymbs; % 20 examples of each target
 epochDuration     =1.5;
@@ -62,10 +57,11 @@ trialDuration     =epochDuration*3; % = 4.5s trials
 baselineDuration  =epochDuration;   % = 1.5s baseline
 intertrialDuration=epochDuration;   % = 1.5s post-trial
 feedbackDuration  =epochDuration;
+errorDuration     =epochDuration*2; %= 3s penalty for mistake
 
 warpCursor   = 0; % flag if in feedback BCI output sets cursor location or how the cursor moves
 moveScale    = .1;
-feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
+feedbackMagFactor = 1.0; % how much we magnify the feedback cursor location
 
 axLim        =[-1.5 1.5]; % size of the display axes
 winColor     =[.0 .0 .0]; % window background color
@@ -74,12 +70,30 @@ fixColor     =[1  0  0];  % fixitation/get-ready cue point color
 tgtColor     =[0 .9  0];  % target color
 fbColor      =[0  0 .9];  % feedback color
 txtColor     =[.9 .9 .9]; % color of the cue text
+errorColor   =[.8  0 0];  % error feedback color
 
 animateFix   = true; % do we animate the fixation point during training?
 frameDuration= .25; % time between re-draws when animating the fixation point
 animateStep  = diff(axLim)*.01; % amount by which to move point per-frame in fix animation
 
-% classifier training options
+%----------------------------------------------------------------------------------------------
+% stimulus type specific configuration
+calibrate_instruct ={'When instructed perform the indicated' 'actual movement'};
+
+epochfeedback_instruct={'When instructed perform the indicated' 'actual movement.  When trial is done ' 'classifier prediction with be shown' 'with a blue highlight'};
+
+contfeedback_instruct={'When instructed perform the indicated' 'actual movement.  The fixation point' 'will move to show the systems' 'current prediction'};
+contFeedbackTrialDuration =10;
+
+neurofeedback_instruct={'Perform mental tasks as you would like.' 'The fixation point will move to' 'show the systems current prediction'};
+neurofeedbackTrialDuration=30;
+
+centerout_instruct={'Complete the indicated tasks as rapidly as possible.' 'The fixation point will move to' 'show the current prediction' 'Trials end when fixation hits the target' 'or time runs out.' 'Hitting the wrong target incurs a time penalty'};
+earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
+%earlyStoppingFilt=@(x,s,e) gausOutlierFilt(x,s,2.5); % dv-filter to determine when a trial has ended
+
+%----------------------------------------------------------------------------------------------
+% classifier training configuration
 trlen_ms      =epochDuration*1000; % how often to run the classifier
 calibrateOpts ={};
 
@@ -136,7 +150,8 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 
 %%2) Classify every welch-window-width (default 250ms), prediction is average of full trials worth of data, no-bias adaptation
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
-contFeedbackOpts ={'predFilt',-(trialDuration*1000/step_ms),'trlen_ms',welch_width_ms};
+%% Also send all raw predictions out for use in, e.g. center-out training
+contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',-(trialDuration*1000/step_ms),'trlen_ms',welch_width_ms}; % trlDuration average
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation
 %contFeedbackOpts ={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/400)),'trlen_ms',[]}; 
