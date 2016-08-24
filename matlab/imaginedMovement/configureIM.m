@@ -90,7 +90,7 @@ neurofeedbackTrialDuration=30;
 
 centerout_instruct={'Complete the indicated tasks as rapidly as possible.' 'The fixation point will move to' 'show the current prediction' 'Trials end when fixation hits the target' 'or time runs out.' 'Hitting the wrong target incurs a time penalty'};
 earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
-earlyStoppingFilt=@(x,s,e) gausOutlierFilt(x,s,2); % dv-filter to determine when a trial has ended
+%earlyStoppingFilt=@(x,s,e) gausOutlierFilt(x,s,2); % dv-filter to determine when a trial has ended
 
 %----------------------------------------------------------------------------------------------
 % classifier training configuration
@@ -110,6 +110,7 @@ trlen_ms      = max(epochDuration*1000,500); % how much data to take to run the 
 calibrateOpts ={};
 welch_width_ms=250; % width of welch window => spectral resolution
 step_ms=welch_width_ms/2;% N.B. welch defaults=.5 window overlap, use step=width/2 to simulate
+contFeedbackFiltLen=(trialDuration*1000/step_ms);
 
 epochtrlen_ms =trialDuration*1000; % amount of data to apply classifier to in epoch feedback
 conttrlen_ms  =welch_width_ms; % amount of data to apply classifier to in continuous feedback
@@ -151,7 +152,7 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 %%2) Classify every welch-window-width (default 250ms), prediction is average of full trials worth of data, no-bias adaptation
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
 %% Also send all raw predictions out for use in, e.g. center-out training
-contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',-(trialDuration*1000/step_ms),'trlen_ms',welch_width_ms}; % trlDuration average
+contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',-contfeedbackFiltLen,'trlen_ms',welch_width_ms}; % trlDuration average
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation
 %contFeedbackOpts ={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/400)),'trlen_ms',[]}; 

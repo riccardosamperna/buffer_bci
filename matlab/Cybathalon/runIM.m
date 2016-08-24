@@ -14,7 +14,7 @@ addpath('../imaginedMovement');
   %        Instruct String          Phase-name
   menustr={'0) EEG'                 'eegviewer';
 			  'a) Artifacts'           'artifact';
-           '1) Practice'            'practice';
+              '1) Practice'            'practice';
 			  '2) Calibrate'           'calibrate'; 
 			  'r) Calibrate-runway'    'calibrate_runway'; 
 			  '3) Train Classifier'    'trainersp';
@@ -185,6 +185,29 @@ while (ishandle(contFig))
       else
         sendEvent('startPhase.cmd','epochfeedback');
       end
+      imEpochFeedbackStimulus;
+    catch
+       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
+    end
+    sendEvent('test','end');
+    sendEvent(phaseToRun,'end');
+
+    %---------------------------------------------------------------------------
+   case {'cybathalon'};
+    sendEvent('subject',subject);
+    %sleepSec(.1);
+    sendEvent(phaseToRun,'start');
+    try
+		if ( earlyStopping ) % use the user-defined command
+        sendEvent('startPhase.cmd',userFeedbackTable{1});
+      else
+        sendEvent('startPhase.cmd','epochfeedback');
+      end
       imEpochFeedbackCybathalon;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
@@ -278,7 +301,7 @@ while (ishandle(contFig))
     sendEvent(phaseToRun,'start');
     try
       sendEvent('startPhase.cmd','contfeedback');
-      imCenteroutTrainingStimulus;
+      imCenterOutTrainingStimulus;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
 	  	 if ( ~isempty(le.stack) )

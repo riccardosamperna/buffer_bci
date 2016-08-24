@@ -168,7 +168,7 @@ for si=1:nSeq;
   % final predicted target is one fixPos is closest to
   tgtDis = repop(stimPos(:,1:end-1),'-',fixPos); tgtDis = sqrt(sum(tgtDis.^2));
   [md,predTgt]=min(tgtDis);
-  if ( predTgt>=nSymbs )     nMissed = nMissed+1;
+  if ( predTgt>nSymbs )      nMissed = nMissed+1;
   elseif ( predTgt~=tgtIdx ) nWrong  = nWrong+1;  % wrong (and not 'rest') .... do the penalty
   else                       nCorrect= nCorrect+1;% correct
   end
