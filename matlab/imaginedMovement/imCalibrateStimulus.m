@@ -83,30 +83,8 @@ for si=1:nSeq;
   set(h(end),'facecolor',fixColor); % red fixation indicates trial about to start/baseline
   drawnow;% expose; % N.B. needs a full drawnow for some reason
   ev=sendEvent('stimulus.baseline','start');
-  for ei=1:ceil(baselineDuration./epochDuration);  % loop over sub-trials in this phase
-	 if ( ~isempty(baselineClass) ) % treat baseline as a special class
-		sendEvent('stimulus.target',baselineClass);
-	 end
-	 if ( animateFix )	 
-		animateDuration=epochDuration;
-		t0  =getwTime();
-		timetogo=animateDuration;
-		fixPos=[stimPos(:,end)-cursorSize/2;cursorSize*[1;1]];
-		while ( timetogo > 0 )
-		  dx=randn(2,1)*animateStep;
-		  fixPos(1:2) = fixPos(1:2)+dx;
-		  set(h(end),'position',fixPos);
-		  drawnow;		
-		  sleepSec(min(max(0,timetogo),frameDuration));
-		  timetogo = animateDuration- (getwTime()-t0); % time left to run in this trial
-		end
-	 else
-		sleepSec(epochDuration);
-	 end
-  end
-  sendEvent('stimulus.baseline','end');  
-  if ( animateFix )										  % reset fix pos
-		set(h(end),'position',[stimPos(:,end)-cursorSize/2;cursorSize*[1;1]]);
+  if ( ~isempty(baselineClass) ) % treat baseline as a special class
+	 sendEvent('stimulus.target',baselineClass,ev.sample);
   end
   if ( animateFix )
 	 animateDuration=baselineDuration;
@@ -179,20 +157,14 @@ for si=1:nSeq;
   drawnow;
   ev=sendEvent('stimulus.trial','end');
   if ( ~isempty(rtbClass) ) % treat post-trial return-to-baseline as a special class
-	 for ei=1:ceil(intertrialDuration/epochDuration); % loop over sub-trials
-		if ( isequal(rtbClass,'trialClass') ) % label as part of the trial
-		  sendEvent('stimulus.target',tgtNm,ev.sample);
-		elseif ( isequal(rtbClass,'trialClass+rtb') ) % return-to-base version of trial class
-		  sendEvent('stimulus.target',[tgtNm '_rtb'],ev.sample);		
-		else
-		  sendEvent('stimulus.target',rtbClass,ev.sample);
-		end
-		sleepSec(epochDuration);
+	 if ( isequal(rtbClass,'trialClass') ) % label as part of the trial
+		sendEvent('stimulus.target',tgtNm,ev.sample);
+	 elseif ( isequal(rtbClass,'trialClass+rtb') ) % return-to-base version of trial class
+		sendEvent('stimulus.target',[tgtNm '_rtb'],ev.sample);		
+	 else
+		sendEvent('stimulus.target',rtbClass,ev.sample);
 	 end
-  else
-    sleepSec(intertrialDuration);
   end
-
   
   ftime=getwTime();
   fprintf('\n');
