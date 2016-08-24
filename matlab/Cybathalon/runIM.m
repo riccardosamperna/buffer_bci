@@ -20,7 +20,8 @@ addpath('../imaginedMovement');
 			  '3) Train Classifier'    'trainersp';
 			  '4) Epoch Feedback'      'epochfeedback';
 			  '5) Continuous Feedback' 'contfeedback';
-			  '6) NeuroFeedback'       'neurofeedback';
+           '6) Center-out Training' 'centerout';
+			  '7) NeuroFeedback'       'neurofeedback'
            '' '';
            'K) Keyboard Control'    'keyboardcontrol';
            'E) EMG Control'         'emgcontrol';
@@ -243,10 +244,14 @@ while (ishandle(contFig))
     sendEvent(phaseToRun,'start');
     try
       sendEvent('startPhase.cmd','contfeedback');
-      imCenteroutStimulus;
+      imCenteroutTrainingStimulus;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
-       sleepSec(.1);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
     end
     sendEvent('contfeedback','end');
     sendEvent('test','end');
