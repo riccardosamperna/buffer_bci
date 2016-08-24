@@ -43,6 +43,13 @@ txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','off');
+% text object for the experiment progress bar
+progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d +%02d -%02d',0,nSeq,0,0),...
+				  'HorizontalAlignment', 'left', 'VerticalAlignment', 'top',...
+				  'fontunits','pixel','fontsize',.05*wSize(4),...
+				  'color',txtColor,'visible','on');
+
+
 
 set(txthdl,'string', {epochfeedback_instruct{:} '' 'Click mouse when ready'}, 'visible', 'on'); drawnow;
 waitforbuttonpress;
@@ -55,24 +62,12 @@ sendEvent('stimulus.testing','start');
 state=[]; 
 endTesting=false; dvs=[];
 nWrong=0; nMissed=0; nCorrect=0; % performance recording
-waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
 for si=1:nSeq;
 
   if ( ~ishandle(fig) || endTesting ) break; end;
 
   % update progress bar
   set(progresshdl,'string',sprintf('%2d/%2d +%02d -%02d',si,nSeq,nCorrect,nWrong));
-
-  % Give user a break if too much time has passed
-  if ( getwTime() > waitforkeyTime )
-	 set(txthdl,'string', {'Break between blocks.' 'Click mouse when ready to continue.'}, 'visible', 'on');
-	 drawnow;
-	 waitforbuttonpress;
-	 set(txthdl,'visible', 'off');
-	 drawnow;	 
-	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
-	 sleepSec(intertrialDuration);
-  end
   
   sleepSec(intertrialDuration);
   % show the screen to alert the subject to trial start
@@ -87,6 +82,7 @@ for si=1:nSeq;
   sendEvent('stimulus.baseline','end');
 
   % show the target
+  fprintf('%d) tgt=%d : ',si,find(tgtSeq(:,si)>0));
   tgtIdx=find(tgtSeq(:,si)>0);
   set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
@@ -128,6 +124,7 @@ for si=1:nSeq;
     set(h(:),'facecolor',bgColor);
     set(h(end),'facecolor',fbColor); % fix turns blue to show now pred recieved
     drawnow;
+    nMissed=nMissed+1;
   else
 	 fprintf(1,'Prediction after %gs : %s',trlEndTime-trlStartTime,ev2str(devents(end)));
     dv = devents(end).value;
@@ -145,11 +142,11 @@ for si=1:nSeq;
     end;  
     [ans,predTgt]=max(dv); % prediction is max classifier output
     set(h(:),'facecolor',bgColor);
-    set(h(min(numel(h),predTgt)),'facecolor',fbColor);
+    set(h(min(end,predTgt)),'facecolor',fbColor);
 
-    if ( predTgt>nSymbs )         nMissed = nMissed+1; fprintf('missed!');
-    elseif(~any(predTgt~=tgtIdx)) nWrong  = nWrong+1;  fprintf('wrong!'); % wrong (and not 'rest') .... do the penalty
-    elseif(any(predTgt==tgtIdx))  nCorrect= nCorrect+1;fprintf('right!'); % correct
+    if ( predTgt>=nSymbs )     nMissed = nMissed+1;
+    elseif ( predTgt~=tgtIdx ) nWrong  = nWrong+1;  % wrong (and not 'rest') .... do the penalty
+    else                       nCorrect= nCorrect+1;% correct
     end
     % update progress bar
     set(progresshdl,'string',sprintf('%2d/%2d +%02d -%02d',si,nSeq,nCorrect,nWrong));

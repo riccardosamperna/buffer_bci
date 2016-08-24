@@ -90,7 +90,7 @@ neurofeedbackTrialDuration=30;
 
 centerout_instruct={'Complete the indicated tasks as rapidly as possible.' 'The fixation point will move to' 'show the current prediction' 'Trials end when fixation hits the target' 'or time runs out.' 'Hitting the wrong target incurs a time penalty'};
 earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
-%earlyStoppingFilt=@(x,s,e) gausOutlierFilt(x,s,2.5); % dv-filter to determine when a trial has ended
+earlyStoppingFilt=@(x,s,e) gausOutlierFilt(x,s,2); % dv-filter to determine when a trial has ended
 
 %----------------------------------------------------------------------------------------------
 % classifier training configuration
