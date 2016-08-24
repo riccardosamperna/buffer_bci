@@ -39,7 +39,7 @@ while (ishandle(contFig))
   if ( ~ishandle(contFig) ) break; end;
 
   phaseToRun=[];
-  if ( ~exist('OCTAVE_VERSION','builtin') && ~isempty(get(contFig,'tag')) ) 
+  if ( ~exist('OCTAVE_VERSION','builtin') && ~isempty(get(contFig,'tag')) )  % using the gui-figure-window
 	 uiwait(contFig);
     if ( ~ishandle(contFig) ) break; end;    
 	 info=guidata(contFig); 
