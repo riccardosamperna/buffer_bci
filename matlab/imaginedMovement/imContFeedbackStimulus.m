@@ -126,7 +126,7 @@ for si=1:nSeq;
 		  end
 
 		  % convert from dv to normalised probability
-        prob = 1./(1+exp(-dv)); prob=prob./sum(prob); % convert from dv to normalised probability
+        prob=exp((dv-max(dv))); prob=prob./sum(prob); % robust soft-max prob computation
         if ( verb>=0 ) 
 			 fprintf('%d) dv:[%s]\tPr:[%s]\n',ev.sample,sprintf('%5.4f ',pred),sprintf('%5.4f ',prob));
         end;
@@ -159,7 +159,7 @@ for si=1:nSeq;
   % final predicted target is one fixPos is closest to
   tgtDis = repop(stimPos(:,1:end-1),'-',fixPos); tgtDis = sqrt(sum(tgtDis.^2));
   [md,predTgt]=min(tgtDis);
-  if ( predTgt>=nSymbs )     nMissed = nMissed+1;
+  if ( predTgt>nSymbs )      nMissed = nMissed+1;
   elseif ( predTgt~=tgtIdx ) nWrong  = nWrong+1;  % wrong (and not 'rest') .... do the penalty
   else                       nCorrect= nCorrect+1;% correct
   end
@@ -167,7 +167,8 @@ for si=1:nSeq;
 
   % reset the cue and fixation point to indicate trial has finished  
   set(h(:),'facecolor',bgColor);
-  if ( ~isempty(symbCue) ) set(txthdl,'visible','off'); end
+  % show the predicted target
+  set(h(min(numel(h),predTgt)),'facecolor',fbColor);
   % also reset the position of the fixation point
   set(h(end),'position',[stimPos(:,end)-stimRadius/4;stimRadius/2*[1;1]]);
   drawnow;
