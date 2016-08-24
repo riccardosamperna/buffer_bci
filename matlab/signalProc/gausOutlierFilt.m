@@ -6,11 +6,12 @@ function [x,s]=gausOutlierFilt(x,s,zscore,maxn)
 % Inputs:
 %   x - [nd x 1] the data to filter
 %   s - [struct] internal state of the filter
-%   zscore - [float] minimum z-score for best x to generate prediction
-%   maxn   - [int] max number of predictions to accumulate before generating prediction
+%   zscore - [float] minimum z-score for best x to generate prediction                    (2)
+%   maxn   - [int] max number of predictions to accumulate before generating prediction   (inf)
 % Outputs:
 %   x - [nd x 1] filtered data
 %   s - [struct] updated filter state
+if ( nargin<3 ) zscore=2; end;
 if ( nargin<4 ) maxn=inf; end;
 if ( isempty(s) ) s=struct('x',zeros(size(x,1),1),'n',0,'mu',0,'var',1); end;
 % update internal state
@@ -39,6 +40,6 @@ x =ox;
 x =ox+0;  % constant offset 
 x(1,:)=x(1,:)+.2; % weak signal in clsfr 1
 zscore=2;
-s=[];tx=zeros(1,size(x,2));
-for i=1:size(x,2);[fx{i},s]=gausOutlierFilt(x(:,i),s,zscore);if(~isempty(fx{i}))tx(i)=1;end;end;
+s=[];tx=zeros(size(x));
+for i=1:size(x,2);[fx{i},s]=gausOutlierFilt(x(:,i),s,zscore);if(~isempty(fx{i}))[ans,mi]=max(fx{i});tx(mi,i)=1;end;end;
 clf;mcplot([x;tx]');
