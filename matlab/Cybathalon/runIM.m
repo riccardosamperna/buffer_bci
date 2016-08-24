@@ -278,7 +278,7 @@ while (ishandle(contFig))
     sendEvent(phaseToRun,'start');
     try
       sendEvent('startPhase.cmd','contfeedback');
-      imCenterOutTrainingStimulus;
+      imCenteroutTrainingStimulus;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
 	  	 if ( ~isempty(le.stack) )
