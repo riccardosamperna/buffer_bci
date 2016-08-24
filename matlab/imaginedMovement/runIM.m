@@ -187,21 +187,6 @@ while (ishandle(contFig))
     sendEvent(phaseToRun,'end');
 
    %---------------------------------------------------------------------------
-   case {'centerout'};
-    sendEvent('subject',subject);
-    %sleepSec(.1);
-    sendEvent(phaseToRun,'start');
-    %try
-      sendEvent('startPhase.cmd','contfeedback');
-      imCenterOutTrainingStimulus;
-      %catch
-      %le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
-      % sleepSec(.1);
-      %end
-    sendEvent('test','end');
-    sendEvent(phaseToRun,'end');
-
-   %---------------------------------------------------------------------------
    case {'neurofeedback'};
     sendEvent('subject',subject);
     %sleepSec(.1);
@@ -228,7 +213,7 @@ while (ishandle(contFig))
     sendEvent(phaseToRun,'start');
     try
       sendEvent('startPhase.cmd','contfeedback');
-      imCenteroutStimulus;
+      imCenteroutTrainingStimulus;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
 	  	 if ( ~isempty(le.stack) )
