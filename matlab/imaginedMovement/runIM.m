@@ -3,7 +3,7 @@ configureIM;
 % try
 %   contFig=controller(); info=guidata(contFig); 
 % catch
-  contFig=figure(1);
+  contFig=figure(1);clf;
   set(contFig,'name','BCI Controller : close to quit','color',[0 0 0]);
   axes('position',[0 0 1 1],'visible','off','xlim',[0 1],'ylim',[0 1],'nextplot','add');
   set(contFig,'Units','pixel');wSize=get(contFig,'position');

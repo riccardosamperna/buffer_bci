@@ -36,6 +36,11 @@ txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','off');
+% text object for the experiment progress bar
+progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d +%02d -%02d',0,nSeq,0,0),...
+				  'HorizontalAlignment', 'left', 'VerticalAlignment', 'top',...
+				  'fontunits','pixel','fontsize',.05*wSize(4),...
+				  'color',txtColor,'visible','on');
 
 
 % play the stimulus
@@ -49,10 +54,14 @@ set(txthdl,'visible', 'off'); drawnow;
 
 sendEvent('stimulus.testing','start');
 
+nWrong=0; nMissed=0; nCorrect=0; % performance recording
 for si=1:nSeq;
 
   if ( ~ishandle(fig) ) break; end;
   
+  % update progress bar
+  set(progresshdl,'string',sprintf('%2d/%2d +%02d -%02d',si,nSeq,nCorrect,nWrong));
+
   sleepSec(intertrialDuration);
   % show the screen to alert the subject to trial start
   set(h(:),'faceColor',bgColor);
@@ -64,6 +73,7 @@ for si=1:nSeq;
 
   % show the target
   fprintf('%d) tgt=%d : ',si,find(tgtSeq(:,si)>0));
+  tgtIdx=find(tgtSeq(:,si)>0);
   set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
   if ( ~isempty(symbCue) )
@@ -145,6 +155,15 @@ for si=1:nSeq;
 	 set(h(end),'position',[fixPos-.5*cursorPos(3:4) cursorPos(3:4)]);
     drawnow; % update the display after all events processed    
   end % while time to go
+
+  % final predicted target is one fixPos is closest to
+  tgtDis = repop(stimPos(:,1:end-1),'-',fixPos); tgtDis = sqrt(sum(tgtDis.^2));
+  [md,predTgt]=min(tgtDis);
+  if ( predTgt>=nSymbs )     nMissed = nMissed+1;
+  elseif ( predTgt~=tgtIdx ) nWrong  = nWrong+1;  % wrong (and not 'rest') .... do the penalty
+  else                       nCorrect= nCorrect+1;% correct
+  end
+
 
   % reset the cue and fixation point to indicate trial has finished  
   set(h(:),'facecolor',bgColor);
