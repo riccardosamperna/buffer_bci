@@ -45,13 +45,22 @@ verb         =0; % verbosity level for debug messages, 1=default, 0=quiet, 2=ver
 buffhost     ='localhost';
 buffport     =1972;
 symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
+<<<<<<< 786aa37580d3f6503b6103a00ccf33f93a33aeea
 %symbCue      ={'Tongue' 'Song' 'Right-Hand'}; % config for Toine
+=======
+>>>>>>> instruction strings and better mix of scoping tasks
 nSymbs       =numel(symbCue); % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     =[];
 
+calibrate_instruct ={'When instructed perform the indicated' 'actual movement'};
+epochfeedback_instruct={'When instructed perform the indicated' 'actual movement.  When trial is done ' 'classifier prediction with be shown' 'with a blue highlight'};
+contfeedback_instruct={'When instructed perform the indicated' 'actual movement.  The fixation point' 'will move to show the systems' 'current prediction'};
+neurofeedback_instruct={'Perform mental tasks as you would like.' 'The fixation point will move to' 'show the systems current prediction'};
+
+nSeq              =20*nSymbs; % 20 examples of each target
 epochDuration     =1.5;
-trialDuration     =epochDuration*3; % = 4.5s trials
+trialDuration     =epochDuration*3; % 3*20 = 60 classification trials per class = 4.5s trials
 baselineDuration  =epochDuration;   % = 1.5s baseline
 intertrialDuration=epochDuration;   % = 1.5s post-trial
 feedbackDuration  =epochDuration;
