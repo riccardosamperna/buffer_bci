@@ -3,9 +3,9 @@ configureIM;
 addpath('../imaginedMovement');
 
 % create the control window and execute the phase selection loop
-try
-  contFig=controller(); info=guidata(contFig); 
-catch
+%try
+%  contFig=controller(); info=guidata(contFig); 
+%catch
   contFig=figure(1);
   set(contFig,'name','BCI Controller : close to quit','color',[0 0 0]);
   axes('position',[0 0 1 1],'visible','off','xlim',[0 1],'ylim',[0 1],'nextplot','add');
@@ -14,14 +14,16 @@ catch
   %        Instruct String          Phase-name
   menustr={'0) EEG'                 'eegviewer';
 			  'a) Artifacts'           'artifact';
-           '1) Practice'            'practice';
+              '1) Practice'            'practice';
 			  '2) Calibrate'           'calibrate'; 
 			  'r) Calibrate-runway'    'calibrate_runway'; 
 			  '3) Train Classifier'    'trainersp';
 			  '4) Epoch Feedback'      'epochfeedback';
 			  '5) Continuous Feedback' 'contfeedback';
-           '6) Center-out Training' 'centerout';
+              '6) Center-out Training' 'centerout';
 			  '7) NeuroFeedback'       'neurofeedback'
+              '' ''
+			  'C) Cybathalon Control'  'cybathalon';
 			  'q) quit'                'quit';
           };
   txth=text(.25,.5,menustr(:,1),'fontunits','pixel','fontsize',.05*wSize(4),...
@@ -31,7 +33,7 @@ catch
   set(contFig,'keypressfcn',@(src,ev) set(src,'userdata',char(ev.Character(:)))); 
   set(contFig,'userdata',[]);
   drawnow; % make sure the figure is visible
-end
+%end
 subject='test';
 
 sendEvent('experiment.im','start');
@@ -163,9 +165,37 @@ while (ishandle(contFig))
       else
         sendEvent('startPhase.cmd','epochfeedback');
       end
+      imEpochFeedbackStimulus;
+    catch
+       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
+    end
+    sendEvent('test','end');
+    sendEvent(phaseToRun,'end');
+
+    %---------------------------------------------------------------------------
+   case {'cybathalon'};
+    sendEvent('subject',subject);
+    %sleepSec(.1);
+    sendEvent(phaseToRun,'start');
+    try
+		if ( earlyStopping ) % use the user-defined command
+        sendEvent('startPhase.cmd',userFeedbackTable{1});
+      else
+        sendEvent('startPhase.cmd','epochfeedback');
+      end
       imEpochFeedbackCybathalon;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
     end
     sendEvent('test','end');
     sendEvent(phaseToRun,'end');
@@ -180,7 +210,11 @@ while (ishandle(contFig))
       imContFeedbackStimulus;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
-       sleepSec(.1);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
     end
     sendEvent('test','end');
     sendEvent(phaseToRun,'end');
@@ -195,6 +229,11 @@ while (ishandle(contFig))
       imNeuroFeedbackStimulus;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
     end
     sendEvent('contfeedback','end');
     sendEvent('test','end');
@@ -207,7 +246,7 @@ while (ishandle(contFig))
     sendEvent(phaseToRun,'start');
     try
       sendEvent('startPhase.cmd','contfeedback');
-      imCenteroutTrainingStimulus;
+      imCenterOutTrainingStimulus;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
 	  	 if ( ~isempty(le.stack) )
