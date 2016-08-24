@@ -47,6 +47,7 @@ buffport     =1972;
 nSymbs       =3; % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
 symbCue      ={'RH' 'LH' 'FT'}; % sybmol cue in addition to positional one. E,N,W,S for 4 symbs
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
+rtbClass     ='99 RTB';% if set, treat post-trial return-to-baseline phase as separate class to classify
 %nSymbs       =3;
 %symbCue      ={'rst' 'LH' 'RH'}; % string cue in addition to positional one. N,W,E for 3 symbs
 nSeq         =20*nSymbs; % 20 examples of each target
