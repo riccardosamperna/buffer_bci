@@ -16,8 +16,9 @@ if ( isempty(s) ) s=struct('x',zeros(size(x,1),1),'n',0,'mu',0,'var',1); end;
 % update internal state
 s.x  =s.x  + x;
 s.n  =s.n  + 1;
-s.mu =s.mu + mean(x);
-s.var=sqrt(s.var.^2 + mean(x.^2));
+mux  =mean(x);
+s.mu =s.mu + mux;
+s.var=sqrt(s.var.^2 + mean((x-mux).^2));
 
 mx =max(s.x);
 if( mx > s.mu + zscore*s.var || s.n>maxn )
@@ -33,6 +34,11 @@ else
 end
 return;
 function testCase()
-x=randn(4,1000);
-s=[]; for i=1:size(x,2); [fx{i},s]=gausOutlierFilt(x(:,i),s,3); end;
-s=[]; for i=1:size(x,2); [fx{i},s]=gausOutlierFilt(x(:,i),s,100); end;
+ox=randn(4,1000); 
+x =ox;
+x =ox+0;  % constant offset 
+x(1,:)=x(1,:)+.2; % weak signal in clsfr 1
+zscore=2;
+s=[];tx=zeros(1,size(x,2));
+for i=1:size(x,2);[fx{i},s]=gausOutlierFilt(x(:,i),s,zscore);if(~isempty(fx{i}))tx(i)=1;end;end;
+clf;mcplot([x;tx]');
