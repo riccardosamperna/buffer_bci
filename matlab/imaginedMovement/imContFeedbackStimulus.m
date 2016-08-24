@@ -1,3 +1,4 @@
+% continous feedback within a cued trial based structure
 configureIM;
 if ( ~exist('contFeedbackTrialDuration') || isempty(contFeedbackTrialDuration) ) contFeedbackTrialDuration=trialDuration; end;
 
@@ -125,6 +126,7 @@ for si=1:nSeq;
 
     % feedback information... simply move in direction detected by the BCI
 	 if ( numel(prob)>=size(stimPos,2)-1 ) % per-target decomposition
+      if ( numel(prob)>size(stimPos,2) ) prob=[prob(1:size(stimPos,2)-1),sum(prob(size(stimPos,2):end))];end;
 		dx = stimPos(:,1:numel(prob))*prob(:); % change in position is weighted by class probs
 	 elseif ( numel(prob)==2 ) % direct 2d decomposition
 		dx = prob;

@@ -1,3 +1,4 @@
+% per-epoch feedback when using an event triggered classifier
 configureIM;
 
 % make the target sequence

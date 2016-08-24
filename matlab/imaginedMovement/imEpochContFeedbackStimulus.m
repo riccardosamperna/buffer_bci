@@ -1,4 +1,9 @@
+% per-epoch feedback when using a continuously applied classifier
+% This version of imEpoch feedback works directly with at continuous classifier by accumulating the 
+% individual classifier prediction internally from the start until the end of the trial and then generating 
+% a prediction
 configureIM;
+
 
 % make the target sequence
 tgtSeq=mkStimSeqRand(nSymbs,nSeq);
@@ -35,7 +40,7 @@ txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','off');
 
-set(txthdl,'string', 'Click mouse when ready', 'visible', 'on'); drawnow;
+set(txthdl,'string', {epochfeedback_instruct{:} '' 'Click mouse when ready'}, 'visible', 'on'); drawnow;
 waitforbuttonpress;
 set(txthdl,'visible', 'off'); drawnow;
 
