@@ -58,9 +58,9 @@ for si=1:nSeq;
   % show the screen to alert the subject to trial start
   set(h(end),'facecolor',fixColor); % red fixation indicates trial about to start/baseline
   drawnow;% expose; % N.B. needs a full drawnow for some reason
-  sendEvent('stimulus.baseline','start');
+  ev=sendEvent('stimulus.baseline','start');
   if ( ~isempty(baselineClass) ) % treat baseline as a special class
-	 sendEvent('stimulus.target',baselineClass);
+	 sendEvent('stimulus.target',baselineClass,ev.sample);
   end
   if ( animateFix )
 	 animateDuration=baselineDuration;
@@ -127,7 +127,16 @@ for si=1:nSeq;
   set(h(:),'facecolor',bgColor);
   if ( ~isempty(symbCue) ) set(txthdl,'visible','off'); end
   drawnow;
-  sendEvent('stimulus.trial','end');
+  ev=sendEvent('stimulus.trial','end');
+  if ( ~isempty(rtbClass) ) % treat post-trial return-to-baseline as a special class
+	 if ( isequal(rtbClass,'trialClass') ) % label as part of the trial
+		sendEvent('stimulus.target',tgtNm,ev.sample);
+	 elseif ( isequal(rtbClass,'trialClass+rtb') ) % return-to-base version of trial class
+		sendEvent('stimulus.target',[tgtNm '_rtb'],ev.sample);		
+	 else
+		sendEvent('stimulus.target',rtbClass,ev.sample);
+	 end
+  end
   
   ftime=getwTime();
   fprintf('\n');
