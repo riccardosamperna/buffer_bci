@@ -43,7 +43,7 @@ txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','off');
 % text object for the experiment progress bar
-progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d) +%02d -%02d',0,nSeq,0,0),...
+progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d +%02d -%02d',0,nSeq,0,0),...
 				  'HorizontalAlignment', 'left', 'VerticalAlignment', 'top',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','on');
@@ -129,7 +129,7 @@ for si=1:nSeq;
         % accumulate the predictions
         if ( isempty(dv) ) dv=pred; else dv = dv + pred; end;
 		  % convert from dv to normalised probability
-        prob=exp((dv-max(dv))); prob=prob./sum(prob); % robust soft-max prob computation
+        prob=exp((dv-max(dv))./contFeedbackFiltLen); prob=prob./sum(prob); % robust soft-max prob computation
         if ( verb>=0 ) 
 			 fprintf('%d) dv:[%s]\tPr:[%s]\n',ev.sample,sprintf('%5.4f ',dv),sprintf('%5.4f ',prob));
         end;
@@ -180,7 +180,7 @@ for si=1:nSeq;
   % check for penalties if we made an incorrect prediction
   if ( targetReached ) 
      [ans,predTgt]=max(dv); % get the predicted target
-     if ( predTgt>=nSymbs ) 
+     if ( predTgt>nSymbs ) 
         nMissed=nMissed+1;
      elseif ( predTgt~=tgtIdx ) % wrong (and not 'rest') .... do the penalty
        % show the mistake

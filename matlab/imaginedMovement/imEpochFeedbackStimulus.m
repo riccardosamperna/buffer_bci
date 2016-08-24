@@ -131,11 +131,11 @@ for si=1:nSeq;
     end;  
     [ans,predTgt]=max(dv); % prediction is max classifier output
     set(h(:),'facecolor',bgColor);
-    set(h(min(end,predTgt)),'facecolor',fbColor);
+    set(h(min(numel(h),predTgt)),'facecolor',fbColor);
 
-    if ( predTgt>=nSymbs )     nMissed = nMissed+1;
-    elseif ( predTgt~=tgtIdx ) nWrong  = nWrong+1;  % wrong (and not 'rest') .... do the penalty
-    else                       nCorrect= nCorrect+1;% correct
+    if ( predTgt>nSymbs )      nMissed = nMissed+1; fprintf('missed!');
+    elseif ( predTgt~=tgtIdx ) nWrong  = nWrong+1;  fprintf('wrong!'); % wrong (and not 'rest') .... do the penalty
+    else                       nCorrect= nCorrect+1;fprintf('right!'); % correct
     end
     % update progress bar
     set(progresshdl,'string',sprintf('%2d/%2d +%02d -%02d',si,nSeq,nCorrect,nWrong));
