@@ -44,15 +44,17 @@ end
 verb         =1; % verbosity level for debug messages, 1=default, 0=quiet, 2=very verbose
 buffhost     ='localhost';
 buffport     =1972;
-
-nSymbs       =3; % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
 symbCue      ={'RH' 'LH' 'FT'}; % sybmol cue in addition to positional one. E,N,W,S for 4 symbs
+nSymbs       =numel(symbCue); % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     ='99 RTB';% if set, treat post-trial return-to-baseline phase as separate class to classify
-%nSymbs       =3;
-%symbCue      ={'rst' 'LH' 'RH'}; % string cue in addition to positional one. N,W,E for 3 symbs
-nSeq         =20*nSymbs; % 20 examples of each target
 
+calibrate_instruct ={'When instructed perform the indicated' 'actual movement'};
+epochfeedback_instruct={'When instructed perform the indicated' 'actual movement.  When trial is done ' 'classifier prediction with be shown' 'with a blue highlight'};
+contfeedback_instruct={'When instructed perform the indicated' 'actual movement.  The fixation point' 'will move to show the systems' 'current prediction'};
+neurofeedback_instruct={'Perform mental tasks as you would like.' 'The fixation point will move to' 'show the systems current prediction'};
+
+nSeq              =20*nSymbs; % 20 examples of each target
 epochDuration     =1.5;
 trialDuration     =epochDuration*3; % = 4.5s trials
 baselineDuration  =epochDuration;   % = 1.5s baseline
