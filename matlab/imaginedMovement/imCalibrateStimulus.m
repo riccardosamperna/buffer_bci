@@ -46,7 +46,8 @@ txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 set(h(:),'facecolor',bgColor);
 sendEvent('stimulus.training','start');
 
-set(txthdl,'string', 'Click mouse when ready', 'visible', 'on'); drawnow;
+
+set(txthdl,'string', {calibrate_instruct{:} '' 'Click mouse when ready'}, 'visible', 'on'); drawnow;
 waitforbuttonpress;
 set(txthdl,'visible', 'off'); drawnow;
 
