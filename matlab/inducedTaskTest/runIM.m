@@ -90,19 +90,19 @@ while (ishandle(contFig))
     sendEvent('subject',subject);
     sendEvent('startPhase.cmd',phaseToRun); % tell sig-proc what to do
 														  % wait until capFitting is done
-	 %try;
+	 try;
 		artifactCalibrationStimulus;
-	%catch
-      % fprintf('Error in : %s',phaseToRun);
-      % le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
-	  	% if ( ~isempty(le.stack) )
-	  	%   for i=1:numel(le.stack);
-	  	% 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
-	  	%   end;
-	  	% end
-	  	% msgbox({sprintf('Error in : %s',phaseToRun) 'OK to continue!'},'Error');
-      % sendEvent(phaseToRun,'end');    
-    %end
+	catch
+      fprintf('Error in : %s',phaseToRun);
+      le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	if ( ~isempty(le.stack) )
+	  	  for i=1:numel(le.stack);
+	  		 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	  end;
+	  	end
+	  	msgbox({sprintf('Error in : %s',phaseToRun) 'OK to continue!'},'Error');
+      sendEvent(phaseToRun,'end');    
+    end
 
    %---------------------------------------------------------------------------
    case 'practice';

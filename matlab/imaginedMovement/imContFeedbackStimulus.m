@@ -42,7 +42,7 @@ txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 set(h(:),'facecolor',bgColor);
 
 % wait for user to become ready
-set(txthdl,'string', 'Click mouse when ready', 'visible', 'on'); drawnow;
+set(txthdl,'string', {contfeedback_instruct{:} '' 'Click mouse when ready'}, 'visible', 'on'); drawnow;
 waitforbuttonpress;
 set(txthdl,'visible', 'off'); drawnow;
 
