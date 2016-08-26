@@ -334,7 +334,7 @@ for iter=1:min(opts.maxIter,2e6);  % stop some matlab versions complaining about
       end
 
 		if ( ~opts.rescaledv && isnan(dtdJ) ) % numerical issues detected, restart
-		  fprintf('%d) Numerical issues falling back on re-scaled dv\n',iter);
+		  if (opts.verb>0) fprintf('%d) Numerical issues falling back on re-scaled dv\n',iter); end
 		  oodtdJ=odtdJ; dtdJ=odtdJ;%reset obj info
 		  opts.rescaledv=true; continue;
 		end;
