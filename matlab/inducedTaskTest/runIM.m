@@ -95,8 +95,6 @@ while (ishandle(contFig))
 		artifactCalibrationStimulus;
 	catch
       fprintf('Error in : %s',phaseToRun);
-<<<<<<< 786aa37580d3f6503b6103a00ccf33f93a33aeea
-=======
       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
 	  	if ( ~isempty(le.stack) )
 	  	  for i=1:numel(le.stack);
@@ -115,7 +113,6 @@ while (ishandle(contFig))
     try
       imCalibrateStimulus;
     catch
->>>>>>> instruction strings and better mix of scoping tasks
       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
 	  	if ( ~isempty(le.stack) )
 	  	  for i=1:numel(le.stack);
