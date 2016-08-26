@@ -101,29 +101,13 @@ while (ishandle(contFig))
       sendEvent(phaseToRun,'end');    
     end
 	 sendEvent(phaseToRun,'end');
-
-   %---------------------------------------------------------------------------
-   case 'practice';
-    sendEvent('subject',subject);
-    sendEvent(phaseToRun,'start');
-    onSeq=nSeq; nSeq=4; % override sequence number
-    try
-      imCalibrateStimulus;
-    catch
-       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
-	  	 if ( ~isempty(le.stack) )
-	  	   for i=1:numel(le.stack);
-	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
-	  	   end;
-	  	 end
-    end
-    sendEvent(phaseToRun,'end');
-    nSeq=onSeq;
     
    %---------------------------------------------------------------------------
-   case {'calibrate','calibration'};
-    sendEvent('subject',subject);
-    sendEvent('startPhase.cmd',phaseToRun)
+   case {'calibrate','calibration','practice'};
+     sendEvent('subject',subject);
+	  if ( ~isempty(strfind(phaseToRun,'calibrat')) ) % tell the sig-proc to go if real run
+		 sendEvent('startPhase.cmd',phaseToRun)
+	  end
     sendEvent(phaseToRun,'start');
     try
       imCalibrateStimulus;
