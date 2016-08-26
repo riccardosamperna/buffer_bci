@@ -315,7 +315,7 @@ while ( true )
     trainSubj=subject;
 
     %---------------------------------------------------------------------------------
-   case {'train','training','trainerp','trainersp'};
+   case {'train','training','trainerp','trainersp','train_subset','trainerp_subset','trainersp_subset','train_useropts','trainerp_useropts','trainersp_useropts'};
      %try
       if ( ~isequal(trainSubj,subject) || ~exist('traindata','var') )
         fname=[dname '_' subject '_' datestr];
@@ -332,23 +332,58 @@ while ( true )
 		% get type of classifier to train.
 		clsfr_type=opts.clsfr_type;
 		% phase command name overrides option if given
-		if ( strcmp(phaseToRun,'trainerp') ) clsfr_type='erp';
-		elseif ( strcmp(phaseToRun,'trainersp') ) clsfr_type='ersp';
+		if ( ~isempty(strfind(phaseToRun,'trainerp')) ) clsfr_type='erp';
+		elseif ( ~isempty(strfind(phaseToRun,'trainersp')) ) clsfr_type='ersp';
 		end
 
+										% get any additional user specified input arguments if needed
+		userOpts={};
+		if ( ~isempty(strfind(phaseToRun,'subset')) )
+		  if( ischar(traindevents(1).value) ) % string values
+			 clsnms = unique({traindevents.value});
+		  else % numeric values
+			 tmp = unique([traindevents.value]);
+			 clsnms={}; for i=1:numel(tmp); clsnms{i}=sprintf(tmp(i)); end;
+		  end		  
+		  userOpts = inputdlg(sprintf('Enter the sub-set of classes to train with:\nNote: available classes=%s',sprintf('%s,',clsnms{:})),'Specify subset of classes to use as: ''c1'',''c2'',''c3'',... ',2);
+		  try;
+          tgtClss =eval(['{' userOpts{:} '}']);
+		  catch;
+			 warning('invlald set of user options, ignored');
+			 break;
+		  end
+		  % build the spType spec for 1vR from the list of classes
+		  spType={};
+		  if ( numel(tgtClss)==2 ) 
+			 spType=tgtClss;		  % binary special case = 1 sub-problem
+		  else
+			 for ci=1:numel(tgtClss); spType{ci} = {tgtClss{ci} tgtClss([1:ci-1 ci+1:end])}; end
+		  end
+		  userOpts={'spMx',spType}; % set the options up
+		  
+		elseif ( ~isempty(strfind(phaseToRun,'useropts')) )
+		  userOpts= inputdlg('Enter additional options for the classifier training\nas valid eval-string','Enter user options');
+		  try
+			 userOpts=eval(userOpts);
+		  catch;
+			 warning('invlald set of user options, ignored');
+			 break;
+		  end
+		end
+		
       switch lower(clsfr_type);
        
        case {'erp','evoked'};
          [clsfr,res]=buffer_train_erp_clsfr(traindata,traindevents,hdr,'spatialfilter','car',...
                     'freqband',opts.freqband,'badchrm',1,'badtrrm',1,...
 						  'capFile',capFile,'overridechnms',overridechnms,'verb',opts.verb,...
-						  opts.trainOpts{:});
+						  opts.trainOpts{:},userOpts{:});
        
        case {'ersp','induced'};
          [clsfr,res]=buffer_train_ersp_clsfr(traindata,traindevents,hdr,'spatialfilter','car',...
 						   'freqband',opts.freqband,'badchrm',1,'badtrrm',1,...
 							'capFile',capFile,'overridechnms',overridechnms,'verb',opts.verb,...
-							opts.trainOpts{:});
+							opts.trainOpts{:},userOpts{:});
        
        otherwise;
         error('Unrecognised classifer type');
