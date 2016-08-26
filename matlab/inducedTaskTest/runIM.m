@@ -17,6 +17,7 @@ catch
            '1) Practice'            'practice';
 			  '2) Calibrate'           'calibrate'; 
 			  '3) Train Classifier'    'trainersp';
+			  'S) Train Classifier - subset classes'    'trainersp_subset';
 			  '4) Epoch Feedback'      'epochfeedback';
 			  '5) Continuous Feedback' 'contfeedback';
 			  '6) NeuroFeedback'       'neurofeedback'
@@ -56,9 +57,9 @@ while (ishandle(contFig))
 	 fprintf('key=%s\n',modekey);
 	 phaseToRun=[];
 	 if ( ischar(modekey(1)) )
-		ri = strmatch(modekey(1),menustr(:,1)); % get the row in the instructions
-		if ( ~isempty(ri) ) 
-		  phaseToRun = menustr{ri,2};
+		ri = strncmpi(modekey(1),menustr(:,1),1); % get the row in the instructions
+		if ( any(ri) ) 
+		  phaseToRun = menustr{find(ri,1),2};
 		elseif ( any(strcmp(modekey(1),{'q','Q'})) )
 		  break;
 		end
@@ -103,24 +104,13 @@ while (ishandle(contFig))
 	  	msgbox({sprintf('Error in : %s',phaseToRun) 'OK to continue!'},'Error');
       sendEvent(phaseToRun,'end');    
     end
-
-   %---------------------------------------------------------------------------
-   case 'practice';
-    sendEvent('subject',subject);
-    sendEvent(phaseToRun,'start');
-    onSeq=nSeq; nSeq=4; % override sequence number
-    try
-      imCalibrateStimulus;
-    catch
-      le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
-    end
-    sendEvent(phaseToRun,'end');
-    nSeq=onSeq;
     
    %---------------------------------------------------------------------------
-   case {'calibrate','calibration'};
+   case {'calibrate','calibration','practice'};
     sendEvent('subject',subject);
-    sendEvent('startPhase.cmd',phaseToRun)
+	  if ( ~isempty(strfind(phaseToRun,'calibrat')) ) % tell the sig-proc to go if real run
+		 sendEvent('startPhase.cmd',phaseToRun)
+	  end
     sendEvent(phaseToRun,'start');
     try
       imCalibrateStimulus;
@@ -131,11 +121,12 @@ while (ishandle(contFig))
     sendEvent(phaseToRun,'end');
 
    %---------------------------------------------------------------------------
-   case {'train','trainersp'};
+   case {'train','trainersp','trainersp_subset','train_subset'};
     sendEvent('subject',subject);
     sendEvent('startPhase.cmd',phaseToRun); % tell sig-proc what to do
     buffer_newevents(buffhost,buffport,[],phaseToRun,'end'); % wait until finished
-
+	 
+	 
    %---------------------------------------------------------------------------
    case {'epochfeedback'};
     sendEvent('subject',subject);
