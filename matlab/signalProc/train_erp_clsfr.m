@@ -267,7 +267,7 @@ else
 end
 
 if ( opts.visualize ) 
-  if ( size(res.tstconf,1)==numel(labels).^2 ) % confusion matrix is correct
+  if ( size(res.tstconf,2)==1 ) % confusion matrix is correct
      % plot the confusion matrix
     confMxFig=figure(3); set(confMxFig,'name','Class confusion matrix');	 
 	 if ( size(clsfr.spMx,1)==1 )

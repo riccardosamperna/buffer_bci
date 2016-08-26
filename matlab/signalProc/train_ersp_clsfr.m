@@ -282,9 +282,9 @@ if ( opts.visualize )
   for spi=1:size(Yidx,2);
     Yci=Yidx(:,spi);
     if( size(labels,1)==1 ) % plot sub-prob positive response only
-      mu(:,:,spi)=mean(X(:,:,Yci>0),3);      
+      mu(:,:,spi)=sum(X(:,:,Yci>0),3)./sum(Yci>0);      
     else % pos and neg sub-problem average responses
-      mu(:,:,1,spi)=mean(X(:,:,Yci>0),3); mu(:,:,2,spi)=mean(X(:,:,Yci<0),3);
+      mu(:,:,1,spi)=sum(X(:,:,Yci>0),3)./sum(Yci>0); mu(:,:,2,spi)=sum(X(:,:,Yci<0),3)./sum(Yci<0);
     end
     if(~(all(Yci(:)==Yci(1))) && ~(spi>1 && all(Yidx(:,1)==-Yidx(:,spi)))) 
       [aucci,sidx]=dv2auc(Yci,X,3,sidx); % N.B. re-seed with sidx to speed up later calls
@@ -326,14 +326,17 @@ else
 end
 
 if ( opts.visualize ) 
-  if ( size(res.tstconf,1)==numel(labels).^2 ) % confusion matrix is correct
+  if ( size(res.tstconf,2)==1 ) % confusion matrix is correct
      % plot the confusion matrix
-     confMxFig=figure(3); set(confMxFig,'name','Class confusion matrix');
-     imagesc(reshape(res.tstconf(:,:,res.opt.Ci),numel(labels),[]));
-     set(gca,'xtick',1:numel(labels),'xticklabel',labels,...
-             'ytick',1:numel(labels),'yticklabel',labels);
-     xlabel('True Class'); ylabel('Predicted Class'); colorbar;
-     title('Class confusion matrix');
+    confMxFig=figure(3); set(confMxFig,'name','Class confusion matrix');	 
+	 if ( size(clsfr.spMx,1)==1 ) clabels={clsfr.spKey{clsfr.spMx>0} clsfr.spKey{clsfr.spMx<0}};
+	 else                         [ans,li]=find(clsfr.spMx>0); clabels=clsfr.spKey(li);
+	 end
+    imagesc(reshape(res.tstconf(:,1,res.opt.Ci),sqrt(size(res.tstconf,1)),[]));
+    set(gca,'xtick',1:numel(clabels),'xticklabel',clabels,...
+        'ytick',1:numel(clabels),'yticklabel',clabels);
+    xlabel('True Class'); ylabel('Predicted Class'); colorbar;
+    title('Class confusion matrix');
   end
 end
 
