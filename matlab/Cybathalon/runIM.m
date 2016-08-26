@@ -18,6 +18,7 @@ addpath('../imaginedMovement');
 			  '2) Calibrate'           'calibrate'; 
 			  'r) Calibrate-runway'    'calibrate_runway'; 
 			  '3) Train Classifier'    'trainersp';
+			  's) Train Classifier on class subset'    'trainersp_subset';
 			  '4) Epoch Feedback'      'epochfeedback';
 			  '5) Continuous Feedback' 'contfeedback';
               '6) Center-out Training' 'centerout';
@@ -118,7 +119,12 @@ while (ishandle(contFig))
     try
       imCalibrateStimulus;
     catch
-      le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
     end
     sendEvent(phaseToRun,'end');
     nSeq=onSeq;
@@ -131,27 +137,38 @@ while (ishandle(contFig))
     try
       imCalibrateStimulus;
     catch
-      le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
       sendEvent('training','end');    
     end
     sendEvent(phaseToRun,'end');
 
    %---------------------------------------------------------------------------
-   case {'calibrate_runway'};
+   case {'calibrate_runway','practice_runway'};
     sendEvent('subject',subject);
-    sendEvent('startPhase.cmd','calibrate')
+	  if ( ~isempty(strfind(phaseToRun,'calibrat')) ) % tell the sig-proc to go if real run
+		 sendEvent('startPhase.cmd',phaseToRun)
+	  end
     sendEvent(phaseToRun,'start');
     try
       imCalibrateRunwayStimulus;
     catch
-      le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
       sendEvent('training','end');    
     end
-    sendEvent('calibrate','end');
-
+	 sendEvent(phaseToRun,'end');
 	 
    %---------------------------------------------------------------------------
-   case {'train','trainersp'};
+   case {'train','trainersp','trainersp_subset','train_subset'};
     sendEvent('subject',subject);
     sendEvent('startPhase.cmd',phaseToRun); % tell sig-proc what to do
     buffer_newevents(buffhost,buffport,[],phaseToRun,'end'); % wait until finished
