@@ -20,8 +20,10 @@ function [spMx]=mkspMx(classIDs,spType,compBinp,classNms)
 %                      Each sub-problem cell array holds the negative then positive class label 
 %                      sets, either as numbers which match the numbers in classIDs or as 
 %                      strings which match the labels in classNms
-%                      e.g. Yi=mkspMx(Y,{{1 0} {2 0} {[1 2] [3 4]})
-%                           Yi=mkspMx(Y,{{'c1' 'c2'} {'c3' {'c1' 'c2'}}},[],{'c1' 'c2' 'c3'})
+%                      N.B. if 'c2' is empty then this is treated as matching all classes
+%                      e.g. sp=mkspMx(Y,{{1 0} {2 0} {[1 2] [3 4]}) % sp: 1v0, 2v0, [1|2]v[3|4]
+%                           sp=mkspMx(Y,{{'c1' 'c2'} {'c3' {'c1' 'c2'}}},[],{'c1' 'c2' 'c3'})
+%                           sp=mkspMx(Y,{{'c1' ''} {{'c1' 'c2'} ''}); %sp: c1vR, [c1|c2]vR
 %  compBinp -- [bool] do we compress binary problems into single problem? (true)
 % Outputs:
 %  spMx   - [nSubProb x nClass] encoding/decoding matrix used to map from 
@@ -95,9 +97,11 @@ elseif( iscell(spType) ) %cell array of +ve/-ve class labels
   for spi=1:size(spMx,1);
     spIds = spType{spi};
     if ( isnumeric(spIds) && numel(spIds)==2 ) spIds   ={spIds{1} spIds{2}}; end; % single 2x1 array
-    if ( iscell(spIds{1}) || ischar(spIds{1}) ) spIds{1}=classIDs(matchClassNms(spIds{1},classNms)); end;
-    if ( iscell(spIds{2}) || ischar(spIds{2}) ) spIds{2}=classIDs(matchClassNms(spIds{2},classNms)); end;
-    if ( isempty(spIds{2})) spIds{2} = classIDs(setdiff(1:nClass,spIds{1})); end; % empty 2nd set = Rest
+    if ( iscell(spIds{1}) || ischar(spIds{1}) ) spIds{1}=classIDs(matchClassNms(spIds{1},classNms));end;
+	 % empty 2nd set=Rest
+	 if ( isempty(spIds{2}))                     spIds{2}=classIDs(setdiff(1:nClass,spIds{1})); 
+	 elseif(iscell(spIds{2})||ischar(spIds{2}))  spIds{2}=classIDs(matchClassNms(spIds{2},classNms));end;
+
     spMx(spi,any(repop(classIDs(:),'==',spIds{1}(:)'),2))=1;
     spMx(spi,any(repop(classIDs(:),'==',spIds{2}(:)'),2))=-1;
   end
@@ -113,7 +117,9 @@ if ( ischar(spNms) ) spNms={spNms}; end;
 tmp=zeros(numel(spNms),1);
 for i=1:numel(spNms); 
   t=strmatch(spNms{i},classNms,'exact'); 
-  if( ~isempty(t) ) tmp(i)=t; else error(sprintf('Couldnt match class name: %s',spNms{i})); end;
+  if( ~isempty(t) ) tmp(i)=t;
+  elseif( ~isempty(spNms{i}))error(sprintf('Couldnt match class name: %s',spNms{i})); %error if name
+  end;
 end
 return;
 
