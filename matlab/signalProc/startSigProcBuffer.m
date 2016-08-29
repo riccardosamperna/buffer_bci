@@ -7,7 +7,7 @@ function []=startSigProcBuffer(varargin)
 %  (startPhase.cmd,erpviewer)  -- show a running event-locked average viewer
 %                                 N.B. the event type used to lock to is given in the option:
 %                                    erpEventType
-%  (startPhase.cmd,calibrate)  -- start calibration phase processing (i.e. cat data)
+%  (startPhase.cmd,calibrate)  -- start calibration phase processing (i.e. concat data)
 %                                 Specifically for each epoch the specified block of data will be
 %                                 saved and labelled with the value of this event.
 %                                 N.B. the event type used to define an epoch is given in the option:
