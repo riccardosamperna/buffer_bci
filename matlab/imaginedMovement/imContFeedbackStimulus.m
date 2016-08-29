@@ -8,6 +8,7 @@ tgtSeq=mkStimSeqRand(nSymbs,nSeq);
 fig=figure(2);
 clf;
 set(fig,'Name','Imagined Movement','color',winColor,'menubar','none','toolbar','none','doublebuffer','on');
+set(fig,'Units','pixel');wSize=get(fig,'position');set(fig,'units','normalized');% win size in pixels
 ax=axes('position',[0.025 0.025 .95 .95],'units','normalized','visible','off','box','off',...
         'xtick',[],'xticklabelmode','manual','ytick',[],'yticklabelmode','manual',...
         'color',winColor,'DrawMode','fast','nextplot','replacechildren',...
@@ -31,7 +32,6 @@ h(nSymbs+1)=rectangle('curvature',[1 1],'position',[stimPos(:,end)-stimRadius/4;
 set(gca,'visible','off');
 
 %Create a text object with no text in it, center it, set font and color
-set(fig,'Units','pixel');wSize=get(fig,'position');set(fig,'units','normalized');% win size in pixels
 txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
@@ -61,7 +61,7 @@ for si=1:nSeq;
   
   % update progress bar
   set(progresshdl,'string',sprintf('%2d/%2d +%02d -%02d',si,nSeq,nCorrect,nWrong));
-
+  
   sleepSec(intertrialDuration);
   % show the screen to alert the subject to trial start
   set(h(:),'faceColor',bgColor);

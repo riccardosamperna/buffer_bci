@@ -57,6 +57,8 @@ baselineDuration  =epochDuration;   % = 1.5s baseline
 intertrialDuration=epochDuration;   % = 1.5s post-trial
 feedbackDuration  =epochDuration;
 errorDuration     =epochDuration*2; %= 3s penalty for mistake
+calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
+
 
 contFeedbackTrialDuration =10;
 neurofeedbackTrialDuration=30;
