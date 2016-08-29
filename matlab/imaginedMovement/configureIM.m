@@ -44,10 +44,10 @@ end
 verb         =1; % verbosity level for debug messages, 1=default, 0=quiet, 2=very verbose
 buffhost     ='localhost';
 buffport     =1972;
-% N.B. tgts run anti-clock from start point with: odd->start at top (N), even->start at right (E)
-% 3-[N,SW,SE], 4-[E,N,W,S], 6-[E,NE,NW,W,SW,SE,E], 8-[E,NE,N,NW,W,SW,S,SE]
+% N.B. tgts *always* start from the top (12 o'clock=N) and run anti-clock
+% 3-[N,SW,SE], 4-[N,W,S,E], 6-[N,NW,SW,S,SE,NE], 8-[N,NW,W,SW,S,SE,E,NE]
 symbCue      ={'FT' 'LH' 'RH'}; % sybmol cue in addition to positional one. E,N,W,S for 4 symbs
-nSymbs       =numel(symbCue); % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
+nSymbs       =numel(symbCue); 
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     ='99 RTB';% if set, treat post-trial return-to-baseline phase as separate class to classify
 
@@ -58,6 +58,8 @@ baselineDuration  =epochDuration;   % = 1.5s baseline
 intertrialDuration=epochDuration;   % = 1.5s post-trial
 feedbackDuration  =epochDuration;
 errorDuration     =epochDuration*2; %= 3s penalty for mistake
+calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
+
 
 warpCursor   = 0; % flag if in feedback BCI output sets cursor location or how the cursor moves
 moveScale    = .1;
@@ -152,7 +154,7 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 %%2) Classify every welch-window-width (default 250ms), prediction is average of full trials worth of data, no-bias adaptation
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
 %% Also send all raw predictions out for use in, e.g. center-out training
-contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',-contfeedbackFiltLen,'trlen_ms',welch_width_ms}; % trlDuration average
+contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',-contFeedbackFiltLen,'trlen_ms',welch_width_ms}; % trlDuration average
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation
 %contFeedbackOpts ={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/400)),'trlen_ms',[]}; 

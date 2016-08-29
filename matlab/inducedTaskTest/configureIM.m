@@ -44,7 +44,6 @@ end
 verb         =1; % verbosity level for debug messages, 1=default, 0=quiet, 2=very verbose
 buffhost     ='localhost';
 buffport     =1972;
-<<<<<<< 786aa37580d3f6503b6103a00ccf33f93a33aeea
 % N.B. tgts *always* start from the top (12 o'clock=N) and run anti-clock
 % 3-[N,SW,SE], 4-[N,W,S,E], 6-[N,NW,SW,S,SE,NE], 8-[N,NW,W,SW,S,SE,E,NE]
 %symbCue      ={'RH' 'Tongue' 'Song' 'LH' 'Math' 'Feet'}; %  for 6 outputs. 
@@ -52,16 +51,6 @@ symbCue      ={'Left&Right-Hand' 'Song' 'Left-Hand' 'Left-Vis-Attn' 'Feet' 'Righ
 nSymbs       =numel(symbCue); 
 baselineClass='99 rest'; % 'Rest';if set, treat baseline phase as a separate class to classify
 rtbClass     =[];
-nSeq         =12*nSymbs; % 20 examples of each target
-=======
-% N.B. tgts run anti-clock from start point with: odd->start at top (N), even->start at right (E)
-% Thus: 3-[N,SW,SE], 4-[E,N,W,S], 6-[E,NE,NW,W,SW,SE,E], 8-[E,NE,N,NW,W,SW,S,SE]
-%symbCue      ={'RH' 'Tongue' 'Song' 'LH' 'Math' 'Feet'}; %  for 6 outputs. 
-symbCue      ={'Right-Hand' 'Tongue' 'Left&Right-Hand' 'Song' 'Left-Hand' 'Left-Vis-Attn' 'Feet' 'Right-Vis-Attn'};
-nSymbs       =numel(symbCue); 
-baselineClass='99 rest'; % 'Rest';if set, treat baseline phase as a separate class to classify
-rtbClass     =[];
->>>>>>> instruction strings and better mix of scoping tasks
 
 calibrate_instruct ={'When instructed perform the indicated' 'actual movement'};
 epochfeedback_instruct={'When instructed perform the indicated' 'actual movement.  When trial is done ' 'classifier prediction with be shown' 'with a blue highlight'};

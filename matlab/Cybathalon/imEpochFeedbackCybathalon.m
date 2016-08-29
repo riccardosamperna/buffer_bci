@@ -3,16 +3,13 @@ configureIM;
 rtbDuration=.5; %.5s between commands
 
 cybathalon = struct('host','localhost','port',5555,'player',1,...
-                    'cmdlabels',{{'rotate' 'jump' 'slide' 'rest'}},'cmddict',[1 2 3 99],...
+                    'cmdlabels',{{'jump' 'slide' 'speed' 'rest'}},'cmddict',[2 3 1 99],...
                     'socket',[],'socketaddress',[]);
 % open socket to the cybathalon game
 [cybathalon.socket]=javaObject('java.net.DatagramSocket'); % create a UDP socket
 cybathalon.socketaddress=javaObject('java.net.InetSocketAddress',cybathalon.host,cybathalon.port);
 cybathalon.socket.connect(cybathalon.socketaddress); % connect to host/port
 connectionWarned=0;
-
-% make the target sequence
-tgtSeq=mkStimSeqRand(nSymbs,nSeq);
 
 % make the stimulus display
 fig=figure(2);
@@ -69,10 +66,7 @@ for si=1:nSeq;
 
   if ( ~ishandle(fig) || endTesting ) break; end;
   
-  % show the target
-  fprintf('%d) tgt=%d : ',si,find(tgtSeq(:,si)>0));
-  set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
-  set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
+  %set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
   drawnow;% expose; % N.B. needs a full drawnow for some reason
   if ( earlyStopping )
@@ -137,12 +131,13 @@ for si=1:nSeq;
 		  warning('Error sending to the Cybathalon game.  Is it running?\n');
 		end
 	 end
+
+										  % now wait a little to give some RTB time
+	 drawnow;
+	 sleepSec(rtbDuration);
+	 set(h(:),'facecolor',bgColor); % clear the feedback
 	 
-  end % if classifier prediction
-  
-  % reset the cue and fixation point to indicate trial has finished  
-  set(h(:),'facecolor',bgColor);
-  % also reset the position of the fixation point
+  end % if classifier prediction  
   drawnow;
   
 end % loop over sequences in the experiment

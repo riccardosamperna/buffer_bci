@@ -76,9 +76,17 @@ for si=1:nSeq;
 	 set(txthdl,'visible', 'off');
 	 drawnow;	 
 	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
+<<<<<<< cee057457310fb75723fccb3a4c47914e79f3d36
 	 sleepSec(intertrialDuration);
   end
   
+=======
+  end
+  
+
+  
+  sleepSec(intertrialDuration);
+>>>>>>> cybathalon changes
   % show the screen to alert the subject to trial start
   set(h(end),'facecolor',fixColor); % red fixation indicates trial about to start/baseline
   drawnow;% expose; % N.B. needs a full drawnow for some reason

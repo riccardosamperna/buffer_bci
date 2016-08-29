@@ -67,7 +67,7 @@ for si=1:nSeq;
   
   % update progress bar
   set(progresshdl,'string',sprintf('%2d/%2d +%02d -%02d',si,nSeq,nCorrect,nWrong));
-
+  
   sleepSec(intertrialDuration);
   % show the screen to alert the subject to trial start
   set(h(:),'faceColor',bgColor);
