@@ -7,6 +7,7 @@ tgtSeq=mkStimSeqRand(nSymbs,nSeq);
 %figure;
 fig=figure(2);
 set(fig,'Name','Imagined Movement','color',winColor,'menubar','none','toolbar','none','doublebuffer','on');
+set(fig,'Units','pixel');wSize=get(fig,'position');set(fig,'units','normalized');% win size in pixels
 clf;
 ax=axes('position',[0.025 0.025 .95 .95],'units','normalized','visible','off','box','off',...
         'xtick',[],'xticklabelmode','manual','ytick',[],'yticklabelmode','manual',...
@@ -16,17 +17,18 @@ ax=axes('position',[0.025 0.025 .95 .95],'units','normalized','visible','off','b
 stimPos=[]; h=[]; htxt=[];
 stimRadius=diff(axLim)/4;
 cursorSize=stimRadius/2;
-theta=linspace(0,2*pi,nSymbs+1);
-if ( mod(nSymbs,2)==1 ) theta=theta+pi/2; end; % ensure left-right symetric by making odd 0=up
+theta=linspace(0,2*pi,nSymbs+1)+pi/2; % N.B. pos1=N so always left-right symetric
 theta=theta(1:end-1);
 stimPos=[cos(theta);sin(theta)];
 for hi=1:nSymbs; 
   h(hi)=rectangle('curvature',[1 1],'position',[stimPos(:,hi)-stimRadius/2;stimRadius*[1;1]],...
                   'facecolor',bgColor); 
-  %if ( ~isempty(symbCue) ) % cue-text
-	% htxt(hi)=text(stimPos(1,hi),stimPos(2,hi),symbCue{hi},...
-	%					'HorizontalAlignment','center','color',[.1 .1 .1],'visible','on');
-  %end  
+  if ( ~isempty(symbCue) ) % cue-text
+	 htxt(hi)=text(stimPos(1,hi),stimPos(2,hi),symbCue{hi},...
+						'HorizontalAlignment','center',...
+						'fontunits','pixel','fontsize',.05*wSize(4),...
+						'color',txtColor,'visible','on');
+  end  
 end;
 % add symbol for the center of the screen
 stimPos(:,nSymbs+1)=[0 0];
@@ -35,11 +37,17 @@ h(nSymbs+1)=rectangle('curvature',[1 1],'position',[stimPos(:,nSymbs+1)-cursorSi
 set(gca,'visible','off');
 
 %Create a text object with no text in it, center it, set font and color
-set(fig,'Units','pixel');wSize=get(fig,'position');set(fig,'units','normalized');% win size in pixels
 txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','off');
+
+% text object for the experiment progress bar
+progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d',0,nSeq),...
+				  'HorizontalAlignment', 'left', 'VerticalAlignment', 'top',...
+				  'fontunits','pixel','fontsize',.05*wSize(4),...
+				  'color',txtColor,'visible','on');
+
 
 % play the stimulus
 % reset the cue and fixation point to indicate trial has finished  
@@ -51,10 +59,26 @@ set(txthdl,'string', {calibrate_instruct{:} '' 'Click mouse when ready'}, 'visib
 waitforbuttonpress;
 set(txthdl,'visible', 'off'); drawnow;
 
+waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
 for si=1:nSeq;
 
   if ( ~ishandle(fig) ) break; end;
 
+  % update progress bar
+  set(progresshdl,'string',sprintf('%2d/%2d',si,nSeq));
+
+  % Give user a break if too much time has passed
+  if ( getwTime() > waitforkeyTime )
+	 set(txthdl,'string', {'Break between blocks.' 'Click mouse when ready to continue.'}, 'visible', 'on');
+	 drawnow;
+	 waitforbuttonpress;
+	 set(txthdl,'visible', 'off');
+	 drawnow;	 
+	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
+  end
+  
+
+  
   sleepSec(intertrialDuration);
   % show the screen to alert the subject to trial start
   set(h(end),'facecolor',fixColor); % red fixation indicates trial about to start/baseline

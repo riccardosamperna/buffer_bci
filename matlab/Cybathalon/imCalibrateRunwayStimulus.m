@@ -65,6 +65,12 @@ txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','off');
 
+% text object for the experiment progress bar
+progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d',0,nSeq),...
+				  'HorizontalAlignment', 'left', 'VerticalAlignment', 'top',...
+				  'fontunits','pixel','fontsize',.05*wSize(4),...
+				  'color',txtColor,'visible','on');
+
 % wait for starting button press
 set(txthdl,'string', 'Click mouse when ready', 'visible', 'on'); drawnow;
 waitforbuttonpress;
@@ -78,6 +84,9 @@ sendEvent('stimulus.training','start');
 % animation loop
 t0=getwTime(); % absolute start time for the experiment
 for ei=1:size(stimSeq,2);
+
+  % update progress bar
+  set(progresshdl,'string',sprintf('%2d/%2d',ei,size(stimSeq,2)));
 
 										  % render stimSeq into the visImage
 										  % find epoch to start with

@@ -1,16 +1,15 @@
 configureIM;
 
+rtbDuration=.5; %.5s between commands
+
 cybathalon = struct('host','localhost','port',5555,'player',1,...
-                    'cmdlabels',{{'rotate' 'jump' 'slide' 'rest'}},'cmddict',[1 2 3 99],...
+                    'cmdlabels',{{'jump' 'slide' 'speed' 'rest'}},'cmddict',[2 3 1 99],...
                     'socket',[],'socketaddress',[]);
 % open socket to the cybathalon game
 [cybathalon.socket]=javaObject('java.net.DatagramSocket'); % create a UDP socket
 cybathalon.socketaddress=javaObject('java.net.InetSocketAddress',cybathalon.host,cybathalon.port);
 cybathalon.socket.connect(cybathalon.socketaddress); % connect to host/port
 connectionWarned=0;
-
-% make the target sequence
-tgtSeq=mkStimSeqRand(nSymbs,nSeq);
 
 % make the stimulus display
 fig=figure(2);
@@ -24,13 +23,19 @@ ax=axes('position',[0.025 0.025 .95 .95],'units','normalized','visible','off','b
 stimPos=[]; h=[];
 stimRadius=diff(axLim)/4;
 cursorSize=stimRadius/2;
-theta=linspace(0,2*pi,nSymbs+1);
-if ( mod(nSymbs,2)==1 ) theta=theta+pi/2; end; % ensure left-right symetric by making odd 0=up
+theta=linspace(0,2*pi,nSymbs+1) + pi/2; % 1st post=N
 theta=theta(1:end-1);
 stimPos=[cos(theta);sin(theta)];
 for hi=1:nSymbs; 
   h(hi)=rectangle('curvature',[1 1],'position',[stimPos(:,hi)-stimRadius/2;stimRadius*[1;1]],...
-                  'facecolor',bgColor); 
+                  'facecolor',bgColor);
+
+  if ( ~isempty(symbCue) ) % cue-text
+	 htxt(hi)=text(stimPos(1,hi),stimPos(2,hi),{symbCue{hi} '->' cybathalon.cmdlabels{hi}},...
+						'HorizontalAlignment','center',...
+						'fontunits','pixel','fontsize',.05*wSize(4),...
+						'color',txtColor,'visible','on');
+  end  
 end;
 % add symbol for the center of the screen
 stimPos(:,nSymbs+1)=[0 0];
@@ -59,22 +64,18 @@ for si=1:nSeq;
 
   if ( ~ishandle(fig) || endTesting ) break; end;
   
-  % show the target
-  fprintf('%d) tgt=%d : ',si,find(tgtSeq(:,si)>0));
-  set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
-  set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
+  %set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
   drawnow;% expose; % N.B. needs a full drawnow for some reason
-  ev=sendEvent('stimulus.target',find(tgtSeq(:,si)>0));
   if ( earlyStopping )
 	 % cont-classifier, so tell it to clear the prediction filter for start new trial
-	 sendEvent('classifier.reset','now',ev.sample); 
+	 sendEvent('classifier.reset','now'); 
   else
 	 % event-classifier, so send the event which triggers to classify this data-block
-	 sendEvent('classifier.apply','now',ev.sample); % tell the classifier to apply from now
+	 sendEvent('classifier.apply','now'); % tell the classifier to apply from now
   end
   trlStartTime=getwTime();
-  sendEvent('stimulus.trial','start',ev.sample);
+  ev=sendEvent('stimulus.trial','start');
   state=buffer('poll'); % Ensure we ignore any predictions before the trial start  
   if( verb>0 )
 	 fprintf(1,'Waiting for predictions after: (%d samp, %d evt)\n',...
@@ -89,7 +90,6 @@ for si=1:nSeq;
 	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],2000);
   end
   trlEndTime=getwTime();
-
   
   % do something with the prediction (if there is one), i.e. give feedback
   if( isempty(devents) ) % extract the decision value
@@ -113,7 +113,7 @@ for si=1:nSeq;
     % give the feedback on the predicted class
     prob=exp((dv-max(dv))); prob=prob./sum(prob); % robust soft-max prob computation
     if ( verb>=0 ) 
-      fprintf('dv:');fprintf('%5.4f ',dv);fprintf('\t\tProb:');fprintf('%5.4f ',prob);fprintf('\n'); 
+		fprintf('%d) dv:[%s]\tPr:[%s]\n',ev.sample,sprintf('%5.4f ',dv),sprintf('%5.4f ',prob));
     end;  
     [ans,predTgt]=max(dv); % prediction is max classifier output
     set(h(:),'facecolor',bgColor);
@@ -130,14 +130,13 @@ for si=1:nSeq;
 		end
 	 end
 
+										  % now wait a little to give some RTB time
+	 drawnow;
+	 sleepSec(rtbDuration);
+	 set(h(:),'facecolor',bgColor); % clear the feedback
 	 
-  end % if classifier prediction
-  
-  % reset the cue and fixation point to indicate trial has finished  
-  set(h(:),'facecolor',bgColor);
-  % also reset the position of the fixation point
+  end % if classifier prediction  
   drawnow;
-  sendEvent('stimulus.trial','end');
   
 end % loop over sequences in the experiment
 % end training marker

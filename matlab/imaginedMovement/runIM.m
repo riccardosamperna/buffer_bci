@@ -54,9 +54,9 @@ while (ishandle(contFig))
 	 fprintf('key=%s\n',modekey);
 	 phaseToRun=[];
 	 if ( ischar(modekey(1)) )
-		ri = strmatch(modekey(1),menustr(:,1)); % get the row in the instructions
-		if ( ~isempty(ri) ) 
-		  phaseToRun = menustr{ri,2};
+		ri = strncmpi(modekey(1),menustr(:,1),1); % get the row in the instructions
+		if ( any(ri) ) 
+		  phaseToRun = menustr{find(ri,1),2};
 		elseif ( any(strcmp(modekey(1),{'q','Q'})) )
 		  break;
 		end
