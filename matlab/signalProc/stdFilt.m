@@ -37,7 +37,6 @@ if( any(goodIdx) )
   x(goodIdx)=(x(goodIdx)-mu(goodIdx))./std(goodIdx);
 end
 return;
-
 function testCase()
 x=cumsum(randn(2,10000),2);
 mu=zeros(size(x)); std=zeros(size(x)); fx=zeros(size(x)); 
