@@ -154,7 +154,6 @@ while (ishandle(contFig))
     if ( ~isempty(strfind(phaseToRun,'calibrat')) ) sendEvent('calibrate','end'); end   
 	 sendEvent(phaseToRun,'end');
 
-	 
    %---------------------------------------------------------------------------
    case {'train','trainersp','trainersp_subset','train_subset'};
     sendEvent('subject',subject);
@@ -181,6 +180,7 @@ while (ishandle(contFig))
 	  	   end;
 	  	 end
     end
+    sendEvent('contfeedback','end');
     sendEvent('test','end');
     sendEvent(phaseToRun,'end');
 
