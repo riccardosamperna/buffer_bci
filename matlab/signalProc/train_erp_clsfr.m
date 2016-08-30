@@ -62,7 +62,7 @@ function [clsfr,res,X,Y]=train_erp_clsfr(X,Y,varargin)
 %  res    - [struct] results structure as returned by 'cvtrainFn'. 
 %                    use: help cvtrainFn for more information on its structure
 %  X      - [size(X)] the pre-processed data
-opts=struct('classify',1,'fs',[],'timeband',[],'freqband',[],'downsample',[],'detrend',1,'spatialfilter','car',...
+opts=struct('classify',1,'fs',[],'timeband_ms',[],'freqband',[],'downsample',[],'detrend',1,'spatialfilter','car',...
     'badchrm',1,'badchthresh',3.1,'badchscale',2,...
     'badtrrm',1,'badtrthresh',3,'badtrscale',2,...
     'ch_pos',[],'ch_names',[],'verb',0,'capFile','1010','overridechnms',0,...
@@ -159,8 +159,13 @@ end
 %4.2) time range selection
 timeIdx=[];
 if ( ~isempty(opts.timeband_ms) ) 
+<<<<<<< HEAD
   timeIdx = opts.timeband_ms * fs ./1000; % convert to sample indices
   timeIdx = max(min(round(timeIdx),size(X,2)),1); % ensure valid range
+=======
+  timeIdx = opts.timeband_ms * fs; % convert to sample indices
+  timeIdx = max(min(timeIdx,size(X,2)),1); % ensure valid range
+>>>>>>> master
   timeIdx = int32(timeIdx(1):timeIdx(2));
   X    = X(:,timeIdx,:);
 end
@@ -255,7 +260,14 @@ if ( opts.visualize )
   if ( size(res.tstconf,2)==1 ) % confusion matrix is correct
      % plot the confusion matrix
     confMxFig=figure(3); set(confMxFig,'name','Class confusion matrix');	 
+<<<<<<< HEAD
 	 if ( size(clsfr.spMx,1)==1 ) clabels={clsfr.spKey{clsfr.spMx>0} clsfr.spKey{clsfr.spMx<0}};
+=======
+	 if ( size(clsfr.spMx,1)==1 )
+		if ( iscell(clsfr.spKey) ) clabels={clsfr.spKey{clsfr.spMx>0} clsfr.spKey{clsfr.spMx<0}};
+		else                       clabels={sprintf('%g',clsfr.spKey(clsfr.spMx>0)) sprintf('%g',clsfr.spKey(clsfr.spMx<0))};
+		end
+>>>>>>> master
 	 else                         [ans,li]=find(clsfr.spMx>0); clabels=clsfr.spKey(li);
 	 end
     imagesc(reshape(res.tstconf(:,1,res.opt.Ci),sqrt(size(res.tstconf,1)),[]));
@@ -291,6 +303,7 @@ clsfr.dvstats.std = [std(tstf(res.Y(:,1)>0))  std(tstf(res.Y(:,1)<=0))  std(tstf
 %  bins=[-inf -200:5:200 inf]; clf;plot([bins(1)-1 bins(2:end-1) bins(end)+1],[histc(tstf(Y>0),bins) histc(tstf(Y<=0),bins)]); 
 
 if ( opts.visualize >= 1 ) 
+  summary='';
   if ( clsfr.binsp ) % print individual classifier outputs with info about what problem it is
      for spi=1:size(res.opt.tstbin,2);
         summary = [summary sprintf('%-40s=\t\t%4.1f\n',clsfr.spDesc{spi},res.opt.tstbin(:,spi)*100)];

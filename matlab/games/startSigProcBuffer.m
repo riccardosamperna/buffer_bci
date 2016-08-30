@@ -6,13 +6,17 @@
 %  (startPhase.cmd,testing)    -- start test phase, i.e. on-line prediction generation
 %  (startPhase.cmd,exit)       -- stop everything
 configureGame;
+thresh=[.5 3];  badchThresh=.5;   overridechnms=0;
 if( ~exist('capFile','var') || isempty(capFile) ) 
-  [fn,pth]=uigetfile('../../resources/caps/*.txt','Pick cap-file'); capFile=fullfile(pth,fn);
-  if ( isequal(fn,0) || isequal(pth,0) ) capFile='1010.txt'; end; % 1010 default if not selected
+  mdir=fileparts(mfilename('fullpath'));
+  [fn,pth]=uigetfile(fullfile(mdir,'..','../resources/caps/*.txt'),'Pick cap-file'); 
+  if ( isequal(fn,0) || isequal(pth,0) ) capFile='1010.txt'; 
+  else                                   capFile=fullfile(pth,fn);
+  end; % 1010 default if not selected
 end
 if ( ~isempty(strfind(capFile,'1010.txt')) ) overridechnms=0; else overridechnms=1; end; % force default override
-thresh=[.5 3];  badchThresh=.5;
 if ( ~isempty(strfind(capFile,'tmsi')) ) thresh=[.0 .1 .2 5]; badchThresh=1e-4; end;
+
 datestr = datevec(now); datestr = sprintf('%02d%02d%02d',datestr(1)-2000,datestr(2:3));
 dname='training_data';
 cname='clsfr';
@@ -29,9 +33,8 @@ while ( true )
   drawnow;
   
   % wait for a phase control event
-  if ( verb>0 ) fprintf('Waiting for phase command\n'); end;
-  [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,{'startPhase.cmd' 'subject'},[],5000);
-  %[data,devents,state]=buffer_waitData(buffhost,buffport,state,'trlen_ms',0,'exitSet',{{'startPhase.cmd' 'subject'}},'verb',verb,'timeOut_ms',5000);   
+  if ( verb>=0 ) fprintf('Waiting for phase command\n'); end;
+  [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,{'startPhase.cmd' 'subject'},[],1000);
   if ( numel(devents)==0 ) 
     continue;
   elseif ( numel(devents)>1 ) 
@@ -80,7 +83,7 @@ while ( true )
     trainSubj=subject;
 
     %---------------------------------------------------------------------------------
-   case {'train','training'};
+   case {'train','training','trainerp'};
     %try
       if ( ~isequal(trainSubj,subject) || ~exist('traindata','var') )
         fprintf('Loading training data from : %s\n',[dname '_' subject '_' datestr]);
@@ -90,8 +93,8 @@ while ( true )
       if ( verb>0 ) fprintf('%d epochs\n',numel(traindevents)); end;
 
       [clsfr,res]=buffer_train_erp_clsfr(traindata,traindevents,hdr,'spatialfilter','car','freqband',[.1 .3 8 10],...
-										'badchrm',1,'badchscale',3,'badtrrm',1,'badtrscale',10,...
-										'objFn','lr_cg','compKernel',0,'dim',3,'capFile',capFile,'overridechnms',overridechnms);
+										'objFn','lr_cg','dim',3,'capFile',capFile,'overridechnms',overridechnms,...
+                                        trainOpts{:});
       clsSubj=subject;
       fprintf('Saving classifier to : %s\n',[cname '_' subject '_' datestr]);
       save([cname '_' subject '_' datestr],'-struct','clsfr');
@@ -110,7 +113,7 @@ while ( true )
       clsSubj = subject;
     end;
 
-    gameApplyClsfr(clsfr,'nSymbs',nSymbs,'verb',verb,'margin',15,'minEvents',nSymbs,'saveFile',[testname '_' subject '_' datestr]);
+    gameApplyClsfr(clsfr,'nSymbs',nSymbs,'verb',verb,'margin',15,'minEvents',nSymbs,'saveFile',[testname '_' subject '_' datestr],contFeedbackOpts{:});
 
     
     %---------------------------------------------------------------------------------

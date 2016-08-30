@@ -1,7 +1,7 @@
-function [x,s,mu,std]=stdFilt(x,s,alpha)
+function [x,s,mu,std]=avestdFilt(x,s,alpha)
 % standardising moving average filter
 %
-%   [x,s,mu,std]=stdFilt(x,s,alpha)
+%   [x,s,mu,std]=avestdFilt(x,s,alpha)
 %
 % Inputs:
 %   x - [nd x 1] the data to filter
