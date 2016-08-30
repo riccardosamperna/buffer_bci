@@ -19,11 +19,12 @@ addpath('../imaginedMovement');
 			  '3) Train Classifier'    'trainersp';
 			  '4) Epoch Feedback'      'epochfeedback';
 			  '5) Continuous Feedback' 'contfeedback';
-           '6) Center-out Training' 'centerout';
+           '6) Center-out Feedback Training' 'centerout';
 			  '7) NeuroFeedback'       'neurofeedback'
            '' ''
 			  'p) Practice - runway'    'practice_runway'; 
 			  'r) Calibrate - runway'   'calibrate_runway'; 
+			  'f) Continuous Feedback - runway'   'contfeedback_runway'; 
 			  'c) Cybathalon Control'   'cybathalon';
 			  'q) quit'                 'quit';
           };
@@ -95,19 +96,19 @@ while (ishandle(contFig))
     sendEvent('subject',subject);
     sendEvent('startPhase.cmd',phaseToRun); % tell sig-proc what to do
 														  % wait until capFitting is done
-	 %try;
+	 try;
 		artifactCalibrationStimulus;
-	%catch
-      % fprintf('Error in : %s',phaseToRun);
-      % le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
-	  	% if ( ~isempty(le.stack) )
-	  	%   for i=1:numel(le.stack);
-	  	% 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
-	  	%   end;
-	  	% end
-	  	% msgbox({sprintf('Error in : %s',phaseToRun) 'OK to continue!'},'Error');
-      % sendEvent(phaseToRun,'end');    
-    %end
+	 catch
+      fprintf('Error in : %s',phaseToRun);
+      le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	if ( ~isempty(le.stack) )
+	  	  for i=1:numel(le.stack);
+	  		 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	  end;
+	  	end
+	  	msgbox({sprintf('Error in : %s',phaseToRun) 'OK to continue!'},'Error');
+      sendEvent(phaseToRun,'end');    
+    end
     
    %---------------------------------------------------------------------------
    case {'calibrate','calibration','practice'};
@@ -148,7 +149,7 @@ while (ishandle(contFig))
       sendEvent('training','end');    
     end
 	 sendEvent(phaseToRun,'end');
-	 
+
    %---------------------------------------------------------------------------
    case {'train','trainersp','trainersp_subset','train_subset'};
     sendEvent('subject',subject);
@@ -175,6 +176,7 @@ while (ishandle(contFig))
 	  	   end;
 	  	 end
     end
+    sendEvent('contfeedback','end');
     sendEvent('test','end');
     sendEvent(phaseToRun,'end');
 
@@ -217,6 +219,7 @@ while (ishandle(contFig))
 	  	   end;
 	  	 end
     end
+    sendEvent('contfeedback','end');
     sendEvent('test','end');
     sendEvent(phaseToRun,'end');
 
@@ -260,6 +263,24 @@ while (ishandle(contFig))
     sendEvent('test','end');
     sendEvent(phaseToRun,'end');
 
+   %---------------------------------------------------------------------------
+   case {'feedback_runway','contfeedback_runway'};
+    sendEvent('subject',subject);
+    sendEvent(phaseToRun,'start');
+    try
+      sendEvent('startPhase.cmd','contfeedback');
+      imContFeedbackRunway
+    catch
+       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
+    end
+    sendEvent('contfeedback','end');
+	 sendEvent(phaseToRun,'end');
+	 
    %---------------------------------------------------------------------------
    case {'quit','exit'};
     break;
