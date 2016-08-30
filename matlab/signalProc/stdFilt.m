@@ -11,6 +11,10 @@ function [x,s,mu,std]=stdFilt(x,s,alpha)
 %           fx(t) = (\sum_0^inf x(t-i)*alpha^i)/(\sum_0^inf alpha^i)
 %           fx(t) = (1-alpha) x(t) + alpha fx(t)
 %           N.B. alpha = exp(log(.5)./(half-life))
+%          OR
+%           [1x2] 2 decay factors.  
+%                    alpha(1) = decay for averaging raw inputs
+%                    alpha(2) = decay for mu/std estimation
 % Outputs:
 %   x - [nd x 1] filtered data
 %   s - [struct] updated filter state
@@ -25,8 +29,11 @@ std=sqrt(abs((s.sx2-s.sx.^2./s.N)./s.N));
 std(std<eps)=1; % deal with 0-variance channels
 if ( s.N>(1-alpha) ) x=(x-mu)./std; end;
 return;
+<<<<<<< 91e0fc54475eb1285ae300ce7b6d64be50c6bdc0
 
 function testCase()
+=======
+>>>>>>> correct the file names
 x=cumsum(randn(2,10000),2);
 mu=zeros(size(x)); std=zeros(size(x)); fx=zeros(size(x)); 
 s=[]; for i=1:size(x,2); [fx(:,i),s,mu(:,i),std(:,i)]=stdFilt(x(:,i),s,exp(log(.5)/100)); end;
