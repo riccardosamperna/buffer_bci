@@ -156,7 +156,11 @@ for ei=1:size(stimSeq,2);
 	 % do other slow stuff/display update in here
 	 processNewPredictionEvents;
 	 % update the feedback display -- change size of the row labels
-    for hi=1:nSymbs; set(h(hi+1),'fontSize',symbSize_px*(1+.5*(prob(hi)-1/nSymbs))); end;	 
+	 [ans,predTgt]=max(prob);
+    for hi=1:nSymbs;
+		set(h(hi+1),'fontSize',symbSize_px*(1+.5*(prob(hi)-1/nSymbs)),'color',txtColor);
+		if(hi==predTgt) set(h(hi+1),'color',fbColor); end;
+	 end;	 
 	 
 	 % update the runway display
 	 et=getwTime()-t0;
@@ -172,7 +176,7 @@ for ei=1:size(stimSeq,2);
 	 et=getwTime()-t0;
   end
 										  % send the predicted target
-  [ans,predTgt]=max(dv); sendEvent('stimulus.predTgt',predTgt);
+  sendEvent('stimulus.predTgt',predTgt);
 end
 % end training marker
 sendEvent('stimulus.training','end');
