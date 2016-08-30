@@ -32,7 +32,7 @@ end;
 s.N =alpha(:,1).*s.N  + (1-alpha(:,1)).*1; % weight accumulated so far, for warmup
 s.sx=alpha(:,1).*s.sx + (1-alpha(:,1)).*x; % weighted sum of x
 if ( verb>0 ) fprintf('x=[%s]\ts=[%s]',sprintf('%g ',x),sprintf('%g ',s.sx./s.N)); end;
-x=x-s.sx./s.N;
+x=x-s.sx./s.N; % bias adapt
 if ( verb>0 ) fprintf(' => x_new=[%s]\n',sprintf('%g ',x)); end;
 return;
 function testCase()
