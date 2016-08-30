@@ -108,7 +108,7 @@ earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
 trlen_ms      =epochDuration*1000; % how much data to use in each classifier training example
 offset_ms     =[0 0];%[250 250]; % give .25s for user to start/finish
 calibrateOpts ={'offset_ms',offset_ms};
-adaptHalfLife_ms = 10*1000; %10s
+adaptHalfLife_ms = 30*1000; %30s
 
 										% classifier training options
 welch_width_ms=250; % width of welch window => spectral resolution
@@ -116,6 +116,7 @@ step_ms       =welch_width_ms/2;% N.B. welch defaults=.5 window overlap, use ste
 trialadaptfactor=exp(log(.5)/(adaptHalfLife_ms/trlen_ms)); % adapt rate when apply per-trial
 contadaptfactor =exp(log(.5)/(adaptHalfLife_ms/welch_width_ms)); % adapt rate when apply per welch-win
 contFeedbackFiltLen=(trialDuration*1000/step_ms); % number cont-feedback predictions to average to get output
+contfeedbackFiltFactor=exp(log(.5)./contFeedbackFiltLen);
 
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
@@ -149,6 +150,8 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',-contFeedbackFiltLen,'trlen_ms',welch_width_ms};
 % classify every welch-window-width, update adapt-filt hl w.r.t. shorter input windows
 %contFeedbackOpts ={'predFilt',-(trlen_ms/step_ms),'trlen_ms',welch_width_ms,'adaptspatialfilt',exp(log(.5)/(adaptHalfLife_ms/welch_width_ms))};
+% --- as above but using a doubly adaptive filter for both smoothing and bias-adaption
+contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',@(x,s,e) biasFilt(x,s,[contadaptfactor contFeedbackFiltFactor]),'trlen_ms',welch_width_ms};
 
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation
