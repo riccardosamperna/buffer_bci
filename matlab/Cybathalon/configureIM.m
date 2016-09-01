@@ -44,7 +44,8 @@ end
 verb         =1; % verbosity level for debug messages, 1=default, 0=quiet, 2=very verbose
 buffhost     ='localhost';
 buffport     =1972;
-symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
+%symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
+symbCue      ={'Tongue' 'Song' 'Right-Hand'}; % config for Toine
 nSymbs       =numel(symbCue); % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     =[];
