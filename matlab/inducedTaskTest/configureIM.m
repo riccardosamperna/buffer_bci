@@ -64,6 +64,7 @@ trialDuration   =epochDuration*5; % 12*5 = 60 classifiation trials for each targ
 baselineDuration=epochDuration;
 intertrialDuration=epochDuration;
 feedbackDuration=.5;
+calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
 
 contFeedbackTrialDuration =10;
 neurofeedbackTrialDuration=30;
