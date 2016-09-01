@@ -4,8 +4,8 @@ if ( isempty(events) )
   if ( eventWaitTime>.3 ) fprintf('%d) no predictions!\n',nsamples); end;
 else
   [ans,si]=sort([events.sample],'ascend'); % proc in *temporal* order
-  for ei=1:numel(events);
-    ev=events(si(ei));% event to process
+  for predEventi=1:numel(events);
+    ev=events(si(predEventi));% event to process
 	 %fprintf('pred-evt=%s\n',ev2str(ev));
 	 pred=ev.value;
 	 % now do something with the prediction....

@@ -106,7 +106,7 @@ while (ishandle(contFig))
    case {'calibrate','calibration','practice'};
      sendEvent('subject',subject);
 	  if ( ~isempty(strfind(phaseToRun,'calibrat')) ) % tell the sig-proc to go if real run
-		 sendEvent('startPhase.cmd',phaseToRun)
+		 sendEvent('startPhase.cmd','calibrate')
 	  end
     sendEvent(phaseToRun,'start');
     try
@@ -118,8 +118,8 @@ while (ishandle(contFig))
 	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
 	  	   end;
 	  	 end
-      sendEvent('stimulus.training','end');    
     end
+    if ( ~isempty(strfind(phaseToRun,'calibrat')) ) sendEvent('calibrate','end'); end   
     sendEvent(phaseToRun,'end');
 
    %---------------------------------------------------------------------------
