@@ -135,7 +135,6 @@ while (ishandle(contFig))
 	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
 	  	   end;
 	  	 end
-      sendEvent('stimulus.training','end');    
     end
     if ( ~isempty(strfind(phaseToRun,'calibrat')) ) sendEvent('calibrate','end'); end   
     sendEvent(phaseToRun,'end');
