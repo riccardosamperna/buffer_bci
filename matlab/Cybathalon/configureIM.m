@@ -112,7 +112,7 @@ step_ms       =welch_width_ms/2;% N.B. welch defaults=.5 window overlap, use ste
 trialadaptfactor=exp(log(.5)/(adaptHalfLife_ms/trlen_ms)); % adapt rate when apply per-trial
 contadaptfactor =exp(log(.5)/(adaptHalfLife_ms/welch_width_ms)); % adapt rate when apply per welch-win
 contFeedbackFiltLen=(trialDuration*1000/step_ms); % number cont-feedback predictions to average to get output
-contfeedbackFiltFactor=exp(log(.5)./contFeedbackFiltLen);
+contFeedbackFiltFactor=exp(log(.5)./contFeedbackFiltLen);
 
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
@@ -147,7 +147,7 @@ contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',-con
 % classify every welch-window-width, update adapt-filt hl w.r.t. shorter input windows
 %contFeedbackOpts ={'predFilt',-(trlen_ms/step_ms),'trlen_ms',welch_width_ms,'adaptspatialfilt',exp(log(.5)/(adaptHalfLife_ms/welch_width_ms))};
 % --- as above but using a doubly adaptive filter for both smoothing and bias-adaption
-contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',@(x,s,e) biasFilt(x,s,[contadaptfactor contFeedbackFiltFactor]),'trlen_ms',welch_width_ms};
+%contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',@(x,s,e) biasFilt(x,s,[contadaptfactor contFeedbackFiltFactor]),'trlen_ms',welch_width_ms};
 
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation

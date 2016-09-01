@@ -23,7 +23,7 @@ stimSeq(:,trlEP:trlEP:end)=0;  eventSeq(1,trlEP:trlEP:end)=false;
 										  % setup image to hold the task runway
 visDur   = 10;
 % number frames store in the visible window, padded with enough extra to not need updating during trial
-visFrames= (visDur+trialDuration)./frameDuration; 
+visFrames= (trialDuration+visDur)./frameDuration; 
 visImg   = zeros(nSymbs,visFrames,3); % rgb image to render
 visT0    = 0; % absolute time visible fragement of the image starts
 visEnd   = 0; % index of the end of the valid part of the image
