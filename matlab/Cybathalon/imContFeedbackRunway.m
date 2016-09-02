@@ -26,7 +26,7 @@ stimSeq(:,trlEP:trlEP:end)=0;  eventSeq(1,trlEP:trlEP:end)=false;
 % visible window is just 10s
 visDur   = 10;
 % number frames store in the visible window, padded with enough extra to not need updating during trial
-visFrames= (stimTime(end)+trialDuration)./frameDuration;  % whole sequence in window
+visFrames= (stimTime(end)+visDur)./frameDuration;  % whole sequence in window
 visImg   = zeros(nSymbs,visFrames,3); % rgb image to render
 visT0    = 0; % absolute time visible fragement of the image starts
 visEnd   = 0; % index of the end of the valid part of the image
@@ -174,6 +174,9 @@ for ei=1:size(stimSeq,2);
 	 drawnow;
 	 % get update elapsed time
 	 et=getwTime()-t0;
+  end
+  if ( et < stimTime(ei+1) )
+      keyboard;
   end
 										  % send the predicted target
   sendEvent('stimulus.predTgt',predTgt);

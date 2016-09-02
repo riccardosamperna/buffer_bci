@@ -3,9 +3,9 @@ configureIM;
 addpath('../imaginedMovement');
 
 % create the control window and execute the phase selection loop
-try
-  contFig=controller(); info=guidata(contFig); 
-catch
+%try
+%  contFig=controller(); info=guidata(contFig); 
+%catch
   contFig=figure(1);
   set(contFig,'name','BCI Controller : close to quit','color',[0 0 0]);
   axes('position',[0 0 1 1],'visible','off','xlim',[0 1],'ylim',[0 1],'nextplot','add');
@@ -30,7 +30,7 @@ catch
   set(contFig,'keypressfcn',@(src,ev) set(src,'userdata',char(ev.Character(:)))); 
   set(contFig,'userdata',[]);
   drawnow; % make sure the figure is visible
-end
+%end
 subject='test';
 
 sendEvent('experiment.im','start');
