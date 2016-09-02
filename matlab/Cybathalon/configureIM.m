@@ -51,12 +51,12 @@ rtbClass     =[];
 
 
 nSeq              =20*nSymbs; % 20 examples of each target
-epochDuration     =1.5;
-trialDuration     =epochDuration*3; % 3*20 = 60 classification trials per class = 4.5s trials
-baselineDuration  =epochDuration;   % = 1.5s baseline
-intertrialDuration=epochDuration;   % = 1.5s post-trial
-feedbackDuration  =epochDuration;
-errorDuration     =epochDuration*2; %= 3s penalty for mistake
+epochDuration     =.5;
+trialDuration     =epochDuration*3*3; % 3*20 = 60 classification trials per class = 4.5s trials
+baselineDuration  =epochDuration*3;   % = 1.5s baseline
+intertrialDuration=epochDuration*3;   % = 1.5s post-trial
+feedbackDuration  =epochDuration*3;
+errorDuration     =epochDuration*2*3; %= 3s penalty for mistake
 calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
 
 
