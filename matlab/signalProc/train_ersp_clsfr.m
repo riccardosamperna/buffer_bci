@@ -123,9 +123,23 @@ end
 
 %3.a) Spatial filter/re-reference (data-dependent-unsupervised)
 R=[];
+sfApplied=false;
 if ( size(X,1)>=4 && any(strcmpi(opts.spatialfilter,{'wht','whiten','trwht','adaptspatialfilt'})) ) 
   fprintf('3) whiten\n');
-  [R,Sigma]=whiten(X,1,1,0,0,1); % symetric whiten	 
+  if ( strcmpi(opts.spatialfilter,'trwht') ) % single-trial whitening
+	 [trR,Sigma,X]=whiten(X,[1 3],1,0,0,1);
+	 R=trR(:,:,end);
+	 sfApplied=true;
+  elseif( strcmpi(opts.spatialfilter,'adaptspatialfilt'))  % adaptive whitening
+	 % construct weight vector equivalent to exp-moving-average-filter
+	 hl   = ceil(log(.5)./log(opts.adaptspatialfilt)); % half-life
+	 wght = (1-opts.adaptspatialfilt)*(opts.adaptspatialfilt.^[2*hl:-1:0]);
+    [trR,Sigma,X]=whiten(X,[1 3],1,0,0,1);
+	 R=trR(:,:,end);
+	 sfApplied=true;
+  else			
+	 [R,Sigma]=whiten(X,1,1,0,0,1); % symetric whiten
+  end
 end
 
 %2.2) time range selection
@@ -184,7 +198,7 @@ if ( size(X,1)>=4 ) % only spatial filter if enough channels
    otherwise; warning(sprintf('Unrecog spatial filter type: %s. Ignored!',opts.spatialfilter ));
   end
 end
-if ( ~isempty(R) ) % apply the spatial filter
+if ( ~isempty(R) && ~sfApplied ) % apply the spatial filter
   X=tprod(X,[-1 2 3],R,[1 -1]); 
 end
 
