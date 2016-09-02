@@ -75,20 +75,30 @@ for si=1:nSeq;
   set(h(end),'facecolor',fixColor); % red fixation indicates trial about to start/baseline
   drawnow;% expose; % N.B. needs a full drawnow for some reason
   sendEvent('stimulus.baseline','start');
+  if ( ~isempty(baselineClass) ) % treat baseline as a special class
+	 sendEvent('stimulus.target',baselineClass);
+  end
   sleepSec(baselineDuration);
   sendEvent('stimulus.baseline','end');
 
   % show the target
-  fprintf('%d) tgt=%d : ',si,find(tgtSeq(:,si)>0));
   tgtIdx=find(tgtSeq(:,si)>0);
   set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
   if ( ~isempty(symbCue) )
-	 set(txthdl,'string',sprintf('%s ',symbCue{tgtSeq(:,si)>0}),'color',txtColor,'visible','on');
+	 set(txthdl,'string',sprintf('%s ',symbCue{tgtIdx}),'color',txtColor,'visible','on');
+	 tgtNm = '';
+	 for ti=1:numel(tgtIdx);
+		if(ti>1) tgtNm=[tgtNm ' + ']; end;
+		tgtNm=sprintf('%s%d %s ',tgtNm,tgtIdx,symbCue{tgtIdx});
+	 end
+  else
+	 tgtNm = tgtIdx; % human-name is position number
   end
-  set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
+  fprintf('%d) tgt=%10s : ',si,tgtNm);
   drawnow;% expose; % N.B. needs a full drawnow for some reason
-  ev=sendEvent('stimulus.target',find(tgtSeq(:,si)>0));
+  sendEvent('stimulus.target',tgtNm);
+  sendEvent('stimulus.trial','start');
   if ( earlyStopping )
 	 % cont-classifier, so tell it to clear the prediction filter for start new trial
 	 sendEvent('classifier.reset','now',ev.sample); 
@@ -112,7 +122,6 @@ for si=1:nSeq;
 	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],2000);
   end
   trlEndTime=getwTime();
-
   
   % do something with the prediction (if there is one), i.e. give feedback
   if( isempty(devents) ) % extract the decision value
