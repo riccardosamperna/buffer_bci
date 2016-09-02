@@ -52,12 +52,12 @@ baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to c
 rtbClass     ='99 RTB';% if set, treat post-trial return-to-baseline phase as separate class to classify
 
 nSeq              =20*nSymbs; % 20 examples of each target
-epochDuration     =.5; % lots of short (500ms / trial) epochs for training the classifier
-trialDuration     =epochDuration*9; % = 4.5s trials
-baselineDuration  =epochDuration*3; % = 1.5s baseline
-intertrialDuration=epochDuration*3; % = 1.5s post-trial
-feedbackDuration  =epochDuration*3;
-errorDuration     =epochDuration*6; %= 3s penalty for mistake
+epochDuration     =.75;% lots of short (750ms/trial) epochs for training the classifier
+trialDuration     =epochDuration*3*2; % = 4.5s trials
+baselineDuration  =epochDuration*2; % = 1.5s baseline
+intertrialDuration=epochDuration*2; % = 1.5s post-trial
+feedbackDuration  =epochDuration*2;
+errorDuration     =epochDuration*2*2;%= 3s penalty for mistake
 calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
 
 
@@ -68,11 +68,11 @@ feedbackMagFactor = 1.0; % how much we magnify the feedback cursor location
 axLim        =[-1.5 1.5]; % size of the display axes
 winColor     =[.0 .0 .0]; % window background color
 bgColor      =[.2 .2 .2]; % background/inactive stimuli color
-fixColor     =[1  0  0];  % fixitation/get-ready cue point color
-tgtColor     =[0 .9  0];  % target color
-fbColor      =[0  0 .9];  % feedback color
+fixColor     =[.8  0  0]; % fixitation/get-ready cue point color
+tgtColor     =[0  .7  0]; % target color (N.B. green is perceptually brighter, so lower)
+fbColor      =[0   0 .8]; % feedback color = blue
 txtColor     =[.9 .9 .9]; % color of the cue text
-errorColor   =[.8  0 0];  % error feedback color
+errorColor   =[.8  0  0]; % error feedback color
 
 animateFix   = true; % do we animate the fixation point during training?
 frameDuration= .25; % time between re-draws when animating the fixation point
@@ -104,7 +104,8 @@ step_ms=welch_width_ms/2;% N.B. welch defaults=.5 window overlap, use step=width
 contFeedbackFiltLen=(trialDuration*1000/step_ms); % accumulate whole trials data before feedback
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
-trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
+%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
+trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','adaptspatialfilt',trialadaptfactor,'objFn','mlr_cg','binsp',0,'spMx','1vR'}; % adaptive-whiten + direct multi-class training
 %trainOpts = {'spType',{{1 3} {2 4}}}; % train 2 classifiers, 1=N vs S, 2=E vs W
 
