@@ -52,12 +52,12 @@ baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to c
 rtbClass     ='99 RTB';% if set, treat post-trial return-to-baseline phase as separate class to classify
 
 nSeq              =20*nSymbs; % 20 examples of each target
-epochDuration     =1.5;
-trialDuration     =epochDuration*3; % = 4.5s trials
-baselineDuration  =epochDuration;   % = 1.5s baseline
-intertrialDuration=epochDuration;   % = 1.5s post-trial
-feedbackDuration  =epochDuration;
-errorDuration     =epochDuration*2; %= 3s penalty for mistake
+epochDuration     =.5; % lots of short (500ms / trial) epochs for training the classifier
+trialDuration     =epochDuration*9; % = 4.5s trials
+baselineDuration  =epochDuration*3; % = 1.5s baseline
+intertrialDuration=epochDuration*3; % = 1.5s post-trial
+feedbackDuration  =epochDuration*3;
+errorDuration     =epochDuration*6; %= 3s penalty for mistake
 calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
 
 
@@ -96,11 +96,11 @@ earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
 
 %----------------------------------------------------------------------------------------------
 % classifier training configuration
-trlen_ms      =epochDuration*1000; % how often to run the classifier
+trlen_ms      = max(epochDuration*1000,500); % how much data to take to run the classifier on, min 500ms
 calibrateOpts ={};
 welch_width_ms=250; % width of welch window => spectral resolution
 step_ms=welch_width_ms/2;% N.B. welch defaults=.5 window overlap, use step=width/2 to simulate
-contFeedbackFiltLen=(trialDuration*1000/step_ms);
+contFeedbackFiltLen=(trialDuration*1000/step_ms); % accumulate whole trials data before feedback
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
 trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR','wght','bal'}; % whiten + direct multi-class training with equal class weighting
