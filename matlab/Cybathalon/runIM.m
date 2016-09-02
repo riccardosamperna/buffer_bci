@@ -176,7 +176,11 @@ while (ishandle(contFig))
 	  	   end;
 	  	 end
     end
-    sendEvent('contfeedback','end');
+	 if ( earlyStopping ) % use the user-defined command
+      sendEvent(userFeedbackTable{1},'end');
+    else
+      sendEvent('epochfeedback','end');
+    end
     sendEvent('test','end');
     sendEvent(phaseToRun,'end');
 
