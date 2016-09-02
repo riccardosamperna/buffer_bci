@@ -64,8 +64,6 @@ errorDuration     =epochDuration*2; %= 3s penalty for mistake
 calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
 
 
-contFeedbackTrialDuration =10;
-neurofeedbackTrialDuration=30;
 warpCursor   = 1; % flag if in feedback BCI output sets cursor location or how the cursor moves
 moveScale    = .1;
 feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
@@ -73,11 +71,11 @@ feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
 axLim        =[-1.5 1.5]; % size of the display axes
 winColor     =[.0 .0 .0]; % window background color
 bgColor      =[.2 .2 .2]; % background/inactive stimuli color
-fixColor     =[.8  0  0];  % fixitation/get-ready cue point color
-tgtColor     =[0  .7  0];  % target color
-fbColor      =[0   0 .8];  % feedback color
+fixColor     =[.8  0  0]; % fixitation/get-ready cue point color
+tgtColor     =[0  .7  0]; % target color
+fbColor      =[0   0 .8]; % feedback color
 txtColor     =[.9 .9 .9]; % color of the cue text
-errorColor   =[.8  0 0];  % error feedback color
+errorColor   =[.8  0  0];  % error feedback color
 
 
 animateFix   = true; % do we animate the fixation point during training?
