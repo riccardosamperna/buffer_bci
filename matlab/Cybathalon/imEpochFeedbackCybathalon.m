@@ -4,6 +4,7 @@ rtbDuration=.5; %.5s between commands
 
 cybathalon = struct('host','localhost','port',5555,'player',1,...
                     'cmdlabels',{{'jump' 'slide' 'speed' 'rest'}},'cmddict',[2 3 1 99],...
+						  'cmdColors',[.6 0 .6;.6 .6 0;0 .5 0;.3 .3 .3]',...
                     'socket',[],'socketaddress',[]);
 % open socket to the cybathalon game
 [cybathalon.socket]=javaObject('java.net.DatagramSocket'); % create a UDP socket
@@ -135,7 +136,8 @@ for si=1:nSeq;
 										  % now wait a little to give some RTB time
 	 drawnow;
 	 sleepSec(rtbDuration);
-	 set(h(:),'facecolor',bgColor); % clear the feedback
+	 set(h(predTgt),'facecolor',cybathalon.cmdColors(:,predTgt));
+	 set(h(end),'facecolor',bgColor); % clear the feedback
 	 
   end % if classifier prediction  
   drawnow;
