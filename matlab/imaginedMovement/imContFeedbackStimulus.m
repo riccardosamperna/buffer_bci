@@ -61,6 +61,7 @@ set(txthdl,'visible', 'off'); drawnow;
 sendEvent('stimulus.testing','start');
 
 nWrong=0; nMissed=0; nCorrect=0; % performance recording
+waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
 for si=1:nSeq;
 
   if ( ~ishandle(fig) ) break; end;
@@ -68,6 +69,17 @@ for si=1:nSeq;
   % update progress bar
   set(progresshdl,'string',sprintf('%2d/%2d +%02d -%02d',si,nSeq,nCorrect,nWrong));
   
+  % Give user a break if too much time has passed
+  if ( getwTime() > waitforkeyTime )
+	 set(txthdl,'string', {'Break between blocks.' 'Click mouse when ready to continue.'}, 'visible', 'on');
+	 drawnow;
+	 waitforbuttonpress;
+	 set(txthdl,'visible', 'off');
+	 drawnow;	 
+	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
+	 sleepSec(intertrialDuration);
+  end
+
   sleepSec(intertrialDuration);
   % show the screen to alert the subject to trial start
   set(h(:),'faceColor',bgColor);
