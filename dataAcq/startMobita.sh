@@ -1,8 +1,6 @@
 #! /usr/bin/env bash
 cd `dirname ${BASH_SOURCE[0]}`
-buffdir=`dirname $0`
-cd `dirname ${BASH_SOURCE[0]}`
-buffdir=`dirname $0`
+buffdir=`pwd`
 execname='mobita2ft'
 if [ `uname -s` == 'Linux' ]; then
 	 if  [ "`uname -a`" == 'armv6l' ]; then
@@ -10,7 +8,7 @@ if [ `uname -s` == 'Linux' ]; then
     else
 		  arch='glnx86';
    fi
-   sudo killall -STOP NetworkManager
+   #sudo killall -STOP NetworkManager
 else # Mac
 	 arch='maci'
 fi
@@ -39,5 +37,6 @@ fi
 $buffexe 10.11.12.13:4242 $bufferhost 50 4 "$@"
 
 if [ `uname -s` == 'Linux' ]; then
-   sudo killall -CONT NetworkManager
+   echo 1
+   #sudo killall -CONT NetworkManager
 fi
