@@ -125,13 +125,15 @@ end
 R=[];
 sfApplied=false;
 if ( size(X,1)>=4 && any(strcmpi(opts.spatialfilter,{'wht','whiten','trwht','adaptspatialfilt'})) ) 
-  fprintf('3) whiten\n');
+  fprintf('3) whiten');
   if ( strcmpi(opts.spatialfilter,'trwht') ) % single-trial whitening
+	 fprintf(' trwht');
 	 [trR,Sigma,X]=whiten(X,[1 3],1,0,0,1,1);
 	 R=trR(:,:,end);
 	 sfApplied=true;
   elseif( strcmpi(opts.spatialfilter,'adaptspatialfilt'))  % adaptive whitening
-	 % construct weight vector equivalent to exp-moving-average-filter
+	 fprintf(' exp-trwht %g',opts.adaptspatialfilt);
+			  % construct weight vector equivalent to exp-moving-average-filter
 	 hl   = ceil(log(.5)./log(opts.adaptspatialfilt)); % half-life
 	 wght = (1-opts.adaptspatialfilt)*(opts.adaptspatialfilt.^[2*hl:-1:0]);
     [trR,Sigma,X]=whiten(X,[1 3],1,0,0,1,wght);
@@ -140,6 +142,7 @@ if ( size(X,1)>=4 && any(strcmpi(opts.spatialfilter,{'wht','whiten','trwht','ada
   else			
 	 [R,Sigma]=whiten(X,1,1,0,0,1); % symetric whiten
   end
+  fprintf('\n');
 end
 
 %2.2) time range selection
