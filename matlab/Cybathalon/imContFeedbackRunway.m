@@ -18,10 +18,16 @@ eventSeq=true(1,size(stimSeq,2));           % when to send events
 stimSeq(1:nSymbs,:)=reshape(repmat(tgtSeq,trlEP,1),size(tgtSeq,1),[]); % tgts
 stimSeq(nSymbs+1,:)=0; % add a stimseq for the rest/baseline cue
 										  % the baseline phase
-stimSeq(:,1:trlEP:end)=0;      stimSeq(nSymbs+1,1:trlEP:end)=1;
+										  % the baseline phase
+for ei=1:ceil(baselineDuration/epochDuration);
+  stimSeq(:,ei:trlEP:end)=0; % everybody else is off
+  stimSeq(nSymbs+1,ei:trlEP:end)=1; % rest is on
+end
 			% the RTB phase at end of every trial ends with a RTB = no stimulus & no event
-stimSeq(:,trlEP:trlEP:end)=0;  eventSeq(1,trlEP:trlEP:end)=false;
-
+for ei=1:ceil(intertrialDuration/epochDuration);
+  stimSeq(:,trlEP+1-ei:trlEP:end)=0;
+  eventSeq(1,trlEP+1-ei:trlEP:end)=false; % don't send event
+end
 
 % visible window is just 10s
 visDur   = 10;
@@ -32,28 +38,28 @@ visT0    = 0; % absolute time visible fragement of the image starts
 visEnd   = 0; % index of the end of the valid part of the image
 
 										  % render stimSeq into the visImage
-  epI=[];
-  for fi=visEnd+1:size(visImg,2); % render into the frameBuffer
-	 visImg(:,fi,:) = repmat(bgColor,size(visImg,1),1); % start as background color
-	 starttfi= visT0+(fi-1)*frameDuration; % start time for the current frame
-	 % find which epoch contains this frame
-	 if ( isempty(epI) ) 
-		epI=find(starttfi>=stimTime,1,'last');
-	 else
-		if ( starttfi>=stimTime(min(end,epI+1)) ) epI=epI+1; end % move to next epoch of needed
-	 end
-	 if ( ~isempty(epI) && epI<size(stimSeq,2) )
-		ss=stimSeq(:,epI);
-		if ( any(ss>0) ) % set target cols
-		  if ( ss(end) ) % rest
-			 visImg(:,fi,:)             =repmat(fixColor,nSymbs,1);
-		  else % tgt
-			 visImg(ss(1:nSymbs)>0,fi,:)=repmat(tgtColor,sum(ss(1:nSymbs)>0),1);
-		  end
+epI=[];
+for fi=visEnd+1:size(visImg,2); % render into the frameBuffer
+  visImg(:,fi,:) = repmat(bgColor,size(visImg,1),1); % start as background color
+  starttfi= visT0+(fi-1)*frameDuration; % start time for the current frame
+										  % find which epoch contains this frame
+  if ( isempty(epI) ) 
+	 epI=find(starttfi>=stimTime,1,'last');
+  else
+	 if ( starttfi>=stimTime(min(end,epI+1)) ) epI=epI+1; end % move to next epoch of needed
+  end
+  if ( ~isempty(epI) && epI<size(stimSeq,2) )
+	 ss=stimSeq(:,epI);
+	 if ( any(ss>0) ) % set target cols
+		if ( ss(end) ) % rest
+		  visImg(:,fi,:)             =repmat(fixColor,nSymbs,1);
+		else % tgt
+		  visImg(ss(1:nSymbs)>0,fi,:)=repmat(tgtColor,sum(ss(1:nSymbs)>0),1);
 		end
 	 end
   end
-  visEnd=fi; % update the end valid-data indicator
+end
+visEnd=fi; % update the end valid-data indicator
 
 
 % make the stimulus
@@ -111,14 +117,34 @@ sendEvent('stimulus.training','start');
 state  = [];
 dv     = zeros(nSymbs+1,1);
 prob   = ones(nSymbs+1,1)./(nSymbs+1); % start with equal prob over everything
+nWrong=0; nMissed=0; nCorrect=0; % performance recording
 
 ofi=-1;
 t0=getwTime(); % absolute start time for the experiment
+waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
 for ei=1:size(stimSeq,2);
 
   % update progress bar
-  set(progresshdl,'string',sprintf('%2d/%2d',ei,size(stimSeq,2)));
+  set(progresshdl,'string',sprintf('%2d/%2d +%02d -%02d',ei,size(stimSeq,2),nCorrect,nWrong));
+
+  % Give user a break if too much time has passed
+  if ( getwTime() > waitforkeyTime )
+	 b0=getwTime();
+	 set(txthdl,'string', {'Break between blocks.' 'Click mouse when ready to continue.'}, 'visible', 'on');
+	 drawnow;
+	 waitforbuttonpress;
+	 set(txthdl,'visible', 'off');
+	 drawnow;
+	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
+	 sleepSec(intertrialDuration);
+
+	 % update the start time, as if started later to compensate for the time spent waiting
+	 t0 = t0+getwTime()-b0;;
+  end
+
+
   
+  tgtIdx=find(stimSeq(:,ei)>0);
   % send the epoch events
   if ( ~eventSeq(ei) ) % should we send an event
 	 set(txthdl,'string','','color',txtColor,'visible','on');		  
@@ -132,7 +158,6 @@ for ei=1:size(stimSeq,2);
 		  if ( verb>1 ) set(txthdl,'string','rest','color',txtColor,'visible','on'); end;
 		end
 	 else % target action epoch
-		tgtIdx=find(stimSeq(:,ei)>0);
 		if ( ~isempty(symbCue) )
 		  tgtNm = '';
 		  for ti=1:numel(tgtIdx);
@@ -180,6 +205,15 @@ for ei=1:size(stimSeq,2);
   end
 										  % send the predicted target
   sendEvent('stimulus.predTgt',predTgt);
+
+										  % update the score
+  if ( ~isempty(tgtIdx) && any(tgtIdx<=nSymbs) ) 
+	 if ( predTgt>nSymbs )          nMissed = nMissed+1; 
+	 elseif(~any(predTgt==tgtIdx) ) nWrong  = nWrong+1;  % wrong (and not 'rest') .... do the penalty
+	 elseif( any(predTgt==tgtIdx) ) nCorrect= nCorrect+1;% correct
+	 end
+  end
+
 end
 % end training marker
 sendEvent('stimulus.training','end');
