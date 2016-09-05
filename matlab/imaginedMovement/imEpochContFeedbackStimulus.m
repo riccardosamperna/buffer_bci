@@ -46,6 +46,13 @@ txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','off');
 
+% text object for the experiment progress bar
+progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d +%02d -%02d',0,nSeq,0,0),...
+				  'HorizontalAlignment', 'left', 'VerticalAlignment', 'top',...
+				  'fontunits','pixel','fontsize',.05*wSize(4),...
+				  'color',txtColor,'visible','on');
+
+
 set(txthdl,'string', {epochfeedback_instruct{:} '' 'Click mouse when ready'}, 'visible', 'on'); drawnow;
 waitforbuttonpress;
 set(txthdl,'visible', 'off'); drawnow;
@@ -59,6 +66,22 @@ endTesting=false; dvs=[];
 for si=1:nSeq;
 
   if ( ~ishandle(fig) || endTesting ) break; end;
+
+  % update progress bar
+  set(progresshdl,'string',sprintf('%2d/%2d +%02d -%02d',si,nSeq,nCorrect,nWrong));
+
+  % Give user a break if too much time has passed
+  if ( getwTime() > waitforkeyTime )
+	 set(txthdl,'string', {'Break between blocks.' 'Click mouse when ready to continue.'}, 'visible', 'on');
+	 drawnow;
+	 waitforbuttonpress;
+	 set(txthdl,'visible', 'off');
+	 drawnow;	 
+	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
+	 sleepSec(intertrialDuration);
+  end
+
+
   
   sleepSec(intertrialDuration);
   % show the screen to alert the subject to trial start
@@ -134,6 +157,13 @@ for si=1:nSeq;
   set(h(predTgt),'facecolor',tgtColor);
   drawnow;
   sendEvent('stimulus.predTgt',predTgt);
+
+  % update the score
+  if ( predTgt>nSymbs )      nMissed = nMissed+1; fprintf('missed!');
+  elseif ( predTgt~=tgtIdx ) nWrong  = nWrong+1;  fprintf('wrong!'); % wrong (and not 'rest') .... do the penalty
+  else                       nCorrect= nCorrect+1;fprintf('right!'); % correct
+  end
+
   sleepSec(feedbackDuration);
   
   % reset the cue and fixation point to indicate trial has finished  
