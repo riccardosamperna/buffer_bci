@@ -127,14 +127,14 @@ sfApplied=false;
 if ( size(X,1)>=4 && any(strcmpi(opts.spatialfilter,{'wht','whiten','trwht','adaptspatialfilt'})) ) 
   fprintf('3) whiten\n');
   if ( strcmpi(opts.spatialfilter,'trwht') ) % single-trial whitening
-	 [trR,Sigma,X]=whiten(X,[1 3],1,0,0,1);
+	 [trR,Sigma,X]=whiten(X,[1 3],1,0,0,1,1);
 	 R=trR(:,:,end);
 	 sfApplied=true;
   elseif( strcmpi(opts.spatialfilter,'adaptspatialfilt'))  % adaptive whitening
 	 % construct weight vector equivalent to exp-moving-average-filter
 	 hl   = ceil(log(.5)./log(opts.adaptspatialfilt)); % half-life
 	 wght = (1-opts.adaptspatialfilt)*(opts.adaptspatialfilt.^[2*hl:-1:0]);
-    [trR,Sigma,X]=whiten(X,[1 3],1,0,0,1);
+    [trR,Sigma,X]=whiten(X,[1 3],1,0,0,1,wght);
 	 R=trR(:,:,end);
 	 sfApplied=true;
   else			
