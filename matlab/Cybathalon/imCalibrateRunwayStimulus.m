@@ -15,10 +15,15 @@ eventSeq=true(1,size(stimSeq,2));           % when to send events
 stimSeq(1:nSymbs,:)=reshape(repmat(tgtSeq,trlEP,1),size(tgtSeq,1),[]); % tgts
 stimSeq(nSymbs+1,:)=0; % add a stimseq for the rest/baseline cue
 										  % the baseline phase
-stimSeq(:,1:trlEP:end)=0;      stimSeq(nSymbs+1,1:trlEP:end)=1;
+for ei=1:ceil(baselineDuration/epochDuration);
+  stimSeq(:,ei:trlEP:end)=0; % everybody else is off
+  stimSeq(nSymbs+1,ei:trlEP:end)=1; % rest is on
+end
 			% the RTB phase at end of every trial ends with a RTB = no stimulus & no event
-stimSeq(:,trlEP:trlEP:end)=0;  eventSeq(1,trlEP:trlEP:end)=false;
-
+for ei=1:ceil(intertrialDuration/epochDuration);
+  stimSeq(:,trlEP+1-ei:trlEP:end)=0;
+  eventSeq(1,trlEP+1-ei:trlEP:end)=false; % don't send event
+end
 
 										  % setup image to hold the task runway
 visDur   = 10;
@@ -66,7 +71,7 @@ txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'color',txtColor,'visible','off');
 
 % text object for the experiment progress bar
-progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d',0,nSeq),...
+progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d',0,size(stimSeq,2)),...
 				  'HorizontalAlignment', 'left', 'VerticalAlignment', 'top',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',txtColor,'visible','on');

@@ -4,6 +4,7 @@ rtbDuration=.5; %.5s between commands
 
 cybathalon = struct('host','localhost','port',5555,'player',1,...
                     'cmdlabels',{{'jump' 'slide' 'speed' 'rest'}},'cmddict',[2 3 1 99],...
+						  'cmdColors',[.6 0 .6;.6 .6 0;0 .5 0;.3 .3 .3]',...
                     'socket',[],'socketaddress',[]);
 % open socket to the cybathalon game
 [cybathalon.socket]=javaObject('java.net.DatagramSocket'); % create a UDP socket
@@ -27,8 +28,9 @@ theta=linspace(0,2*pi,nSymbs+1) + pi/2; % 1st post=N
 theta=theta(1:end-1);
 stimPos=[cos(theta);sin(theta)];
 for hi=1:nSymbs; 
+  % set tgt to the color of that part of the game
   h(hi)=rectangle('curvature',[1 1],'position',[stimPos(:,hi)-stimRadius/2;stimRadius*[1;1]],...
-                  'facecolor',bgColor);
+                  'facecolor',cybathalon.cmdColors(:,hi));
 
   if ( ~isempty(symbCue) ) % cue-text
 	 htxt(hi)=text(stimPos(1,hi),stimPos(2,hi),{symbCue{hi} '->' cybathalon.cmdlabels{hi}},...
@@ -55,11 +57,12 @@ waitforbuttonpress;
 set(txthdl,'visible', 'off'); drawnow;
 
 % play the stimulus
-set(h(:),'facecolor',bgColor);
+set(h(end),'facecolor',bgColor);
 sendEvent('stimulus.testing','start');
 % initialize the state so don't miss classifier prediction events
 state=[]; 
 endTesting=false; dvs=[];
+waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
 for si=1:nSeq;
 
   if ( ~ishandle(fig) || endTesting ) break; end;
@@ -94,7 +97,7 @@ for si=1:nSeq;
   % do something with the prediction (if there is one), i.e. give feedback
   if( isempty(devents) ) % extract the decision value
     fprintf(1,'Error! no predictions after %gs, continuing (%d samp, %d evt)\n',trlEndTime-trlStartTime,state.nSamples,state.nEvents);
-    set(h(:),'facecolor',bgColor);
+    set(h(end),'facecolor',bgColor);
     set(h(end),'facecolor',fbColor); % fix turns blue to show now pred recieved
     drawnow;
   else
@@ -116,7 +119,7 @@ for si=1:nSeq;
 		fprintf('%d) dv:[%s]\tPr:[%s]\n',ev.sample,sprintf('%5.4f ',dv),sprintf('%5.4f ',prob));
     end;  
     [ans,predTgt]=max(dv); % prediction is max classifier output
-    set(h(:),'facecolor',bgColor);
+    set(h(end),'facecolor',bgColor);
     set(h(predTgt),'facecolor',fbColor);
     drawnow;
     sendEvent('stimulus.predTgt',predTgt);
@@ -133,7 +136,8 @@ for si=1:nSeq;
 										  % now wait a little to give some RTB time
 	 drawnow;
 	 sleepSec(rtbDuration);
-	 set(h(:),'facecolor',bgColor); % clear the feedback
+	 set(h(predTgt),'facecolor',cybathalon.cmdColors(:,predTgt));
+	 set(h(end),'facecolor',bgColor); % clear the feedback
 	 
   end % if classifier prediction  
   drawnow;
