@@ -44,19 +44,19 @@ end
 verb         =1; % verbosity level for debug messages, 1=default, 0=quiet, 2=very verbose
 buffhost     ='localhost';
 buffport     =1972;
-%symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
-symbCue      ={'Tongue' 'Song' 'Right-Hand'}; % config for Toine
+symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
+%symbCue      ={'Tongue' 'Song' 'Right-Hand'}; % config for Toine
 nSymbs       =numel(symbCue); % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     =[];
 
 
 nSeq              =20*nSymbs; % 20 examples of each target
-epochDuration     =.5;
-trialDuration     =epochDuration*3*3; % 3*20 = 60 classification trials per class = 4.5s trials
-baselineDuration  =epochDuration*3;   % = 1.5s baseline
-intertrialDuration=epochDuration*3;   % = 1.5s post-trial
-feedbackDuration  =epochDuration*3;
+epochDuration     =.75;
+trialDuration     =epochDuration*3*2; % 3*20 = 60 classification trials per class = 4.5s trials
+baselineDuration  =epochDuration*2;   % = 1.5s baseline
+intertrialDuration=epochDuration*2;   % = 1.5s post-trial
+feedbackDuration  =epochDuration*2;
 errorDuration     =epochDuration*2*3; %= 3s penalty for mistake
 calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
 
