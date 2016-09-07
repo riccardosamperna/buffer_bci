@@ -24,12 +24,13 @@ function [x,s]=biasFilt(x,s,alpha,verb)
 %   x - [nd x 1] filtered data,  x(t) = x(t) - fx(t)
 %   s - [struct] updated filter state, s.N = total weight, s.sx = smoothed estimate of x
 if ( nargin<4 || isempty(verb) ) verb=0; end;
-if ( isempty(s) ) s=struct('sx',zeros(size(x)),'N',0); end;
+if ( isempty(s) ) s=struct('sx',zeros(size(x)),'N',0,'x',0); end;
 if(any(alpha>1)) alpha=exp(log(.5)./alpha); end; % convert to decay factor
-if ( size(alpha,2)>1 ) % moving average filter the raw inputs
-  s.x= alpha(:,2).*s.x + (1-alpha(:,2)).*x; x=s.x; 
-end;
 s.N =alpha(:,1).*s.N  + (1-alpha(:,1)).*1; % weight accumulated so far, for warmup
+if ( size(alpha,2)>1 ) % moving average filter the raw inputs
+  s.x= alpha(:,2).*s.x + (1-alpha(:,2)).*x; 
+  x=s.x./s.N; % update input with the running average
+end;
 s.sx=alpha(:,1).*s.sx + (1-alpha(:,1)).*x; % weighted sum of x
 if ( verb>0 ) fprintf('x=[%s]\ts=[%s]',sprintf('%g ',x),sprintf('%g ',s.sx./s.N)); end;
 x=x-s.sx./s.N; % bias adapt
