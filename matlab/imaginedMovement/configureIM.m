@@ -101,7 +101,20 @@ calibrateOpts ={};
 
 welch_width_ms=250; % width of welch window => spectral resolution
 step_ms=welch_width_ms/2;% N.B. welch defaults=.5 window overlap, use step=width/2 to simulate
+
+epochtrlen_ms =trialDuration*1000; % amount of data to apply classifier to in epoch feedback
+conttrlen_ms  =welch_width_ms; % amount of data to apply classifier to in continuous feedback
+
+% smoothing parameters for feedback in continuous feedback mode
 contFeedbackFiltLen=(trialDuration*1000/step_ms); % accumulate whole trials data before feedback
+contFeedbackFiltFactor=exp(log(.5)/contFeedbackFiltLen); % convert to exp-move-ave weighting factor
+
+% paramters for on-line adaption to signal changes
+adaptHalfLife_ms = 30*1000; %30s amount of data to use for adapting spatialfilter/biasadapt
+conttrialAdaptHL=(adaptHalfLife_ms/step_ms); % half-life in number of calls to apply clsfr
+conttrialAdaptFactor=exp(log(.5)./conttrialAdaptHL) ;% convert to exp-move-ave weighting factor 
+epochtrialAdaptHL=(adaptHalfLife_ms/epochtrlen_ms); % half-life in number called to apply-clsfr in epoch feedback
+epochtrailAdaptFactor=exp(log(.5)/epochtrialAdaptHL); % convert to exp-move-ave weight factor
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
@@ -113,8 +126,8 @@ trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn'
 %%0) Use exactly the same classification window for feedback as for training, but
 %%   but also include a bias adaption system to cope with train->test transfer
 earlyStopping = false;
-epochFeedbackOpts={'trlen_ms',trialDuration*1000}; % raw output, from whole trials data
-%epochFeedbackOpts={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/50))}; % bias-adaption
+epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials data
+%epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) biasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
 
 % different feedback configs (should all give similar results)
 
@@ -128,6 +141,8 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
 %% Also send all raw predictions out for use in, e.g. center-out training
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',-contFeedbackFiltLen,'trlen_ms',welch_width_ms}; % trlDuration average
+% as above but include an additional bias-adaption as well as classifier output smoothing
+contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor contFeedbackFiltFactor]),'trlen_ms',welch_width_ms}; % trlDuration average
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation
 %contFeedbackOpts ={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/400)),'trlen_ms',[]}; 
