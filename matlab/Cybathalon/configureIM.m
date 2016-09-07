@@ -151,7 +151,7 @@ contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',-con
 % --- as above but using a doubly adaptive filter for both smoothing and bias-adaption
 %contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',@(x,s,e) biasFilt(x,s,[contadaptfactor contFeedbackFiltFactor]),'trlen_ms',welch_width_ms};
 
-
-%%3) Classify every welch-window-width (default 500ms), with bias-adaptation
-%contFeedbackOpts ={'predFilt',@(x,s) biasFilt(x,s,exp(log(.5)/400)),'trlen_ms',[]}; 
-%stimSmoothFactor= -(trlen_ms/500);% actual prediction is average of trail-length worth of predictions
+% Epoch feedback with early-stopping, config using the user feedback table
+userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,trialDuration*1000./step_ms)}};
+% Epoch feedback with early-stopping, (cont-classifer, so update adaptive whitener constant)
+userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,trialDuration*1000./step_ms),'adaptspatialfilt',conttrialAdaptFactor}};
