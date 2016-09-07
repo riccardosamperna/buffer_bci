@@ -128,7 +128,7 @@ for ei=1:size(stimSeq,2);
   set(progresshdl,'string',sprintf('%2d/%2d +%02d -%02d',ei,size(stimSeq,2),nCorrect,nWrong));
 
   % Give user a break if too much time has passed
-  if ( getwTime() > waitforkeyTime )
+  if ( getwTime() > waitforkeyTime && stimSeq(end,ei) ) % only wait in a inter-trial phase
 	 b0=getwTime();
 	 set(txthdl,'string', {'Break between blocks.' 'Click mouse when ready to continue.'}, 'visible', 'on');
 	 drawnow;
@@ -138,11 +138,12 @@ for ei=1:size(stimSeq,2);
 	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
 	 sleepSec(intertrialDuration);
 
+    % process any events which came in while we were waiting
+	 processNewPredictionEvents;
+
 	 % update the start time, as if started later to compensate for the time spent waiting
 	 t0 = t0+getwTime()-b0;;
   end
-
-
   
   tgtIdx=find(stimSeq(:,ei)>0);
   % send the epoch events
