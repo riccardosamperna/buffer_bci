@@ -41,7 +41,7 @@ end
 
 %----------------------------------------------------------------------
 % Application specific config
-verb         =1; % verbosity level for debug messages, 1=default, 0=quiet, 2=very verbose
+verb         =0; % verbosity level for debug messages, 1=default, 0=quiet, 2=very verbose
 buffhost     ='localhost';
 buffport     =1972;
 symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
@@ -101,8 +101,9 @@ earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
 
 % Calibration/data-recording options
 trlen_ms      =epochDuration*1000; % how much data to use in each classifier training example
-offset_ms     =[0 0]; % give .25s for user to start/finish
+offset_ms     =[0 0];%[250 250]; % give .25s for user to start/finish
 calibrateOpts ={'offset_ms',offset_ms};
+adaptHalfLife_ms = 10*1000; % 14*.75 s = 10s
 
 										% classifier training options
 welch_width_ms=250; % width of welch window => spectral resolution
@@ -124,7 +125,8 @@ epochtrailAdaptFactor=exp(log(.5)/epochtrialAdaptHL); % convert to exp-move-ave 
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
 trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
-%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','adaptspatialfilt',trialadaptfactor,'objFn','mlr_cg','binsp',0,'spMx','1vR'}; % adaptive-whiten + direct multi-class training
+trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % local-whiten + direct multi-class training
+trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','adaptspatialfilt','adaptspatialfilt',trialadaptfactor,'objFn','mlr_cg','binsp',0,'spMx','1vR'};% adaptive-whiten + direct multi-class training
 %trainOpts = {'spType',{{1 3} {2 4}}}; % train 2 classifiers, 1=N vs S, 2=E vs W
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
