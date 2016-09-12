@@ -7,7 +7,7 @@ addpath('../imaginedMovement');
 %  contFig=controller(); info=guidata(contFig); 
 %catch
   contFig=figure(1);
-  set(contFig,'name','BCI Controller : close to quit','color',[0 0 0]);
+  set(contFig,'name','BCI Controller : close to quit','color',[0 0 0],'menubar','none','toolbar','none');
   axes('position',[0 0 1 1],'visible','off','xlim',[0 1],'ylim',[0 1],'nextplot','add');
   set(contFig,'Units','pixel');wSize=get(contFig,'position');
   fontSize = .05*wSize(4);
