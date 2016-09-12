@@ -22,12 +22,13 @@ addpath('../imaginedMovement');
            '6) Center-out Feedback Training' 'centerout';
 			  '7) NeuroFeedback'       'neurofeedback'
            '' '';
-           'K) Keyboard Control'    'keyboardcontrol';
-           'E) EMG Control'         'emgcontrol';
 			  'p) Practice - runway'    'practice_runway'; 
 			  'r) Calibrate - runway'   'calibrate_runway'; 
 			  'f) Continuous Feedback - runway'   'contfeedback_runway'; 
 			  'c) Cybathalon Control'   'cybathalon';
+           '' '';
+           'K) Keyboard Control'    'keyboardcontrol';
+           'E) EMG Control'         'emgcontrol';
 			  'q) quit'                 'quit';
           };
   txth=text(.25,.5,menustr(:,1),'fontunits','pixel','fontsize',.05*wSize(4),...
@@ -37,7 +38,7 @@ addpath('../imaginedMovement');
   set(contFig,'keypressfcn',@(src,ev) set(src,'userdata',char(ev.Character(:)))); 
   set(contFig,'userdata',[]);
   drawnow; % make sure the figure is visible
-           %end
+%end
 subject='test';
 
 sendEvent('experiment.im','start');
