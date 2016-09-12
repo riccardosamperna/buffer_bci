@@ -2,6 +2,7 @@ configureIM;
 initgetwTime;
 initsleepSec;
 
+%-------------------------------------------------------------------------------------
 % pre-build the time-line for the whole experiment
 tgtSeq=mkStimSeqRand(nSymbs,nSeq);
 % insert the rest between tgts to make a complete stim sequence + event seq with times
@@ -33,7 +34,7 @@ visImg   = zeros(nSymbs,visFrames,3); % rgb image to render
 visT0    = 0; % absolute time visible fragement of the image starts
 visEnd   = 0; % index of the end of the valid part of the image
 
-
+%-------------------------------------------------------------------------------------
 % make the stimulus
 %figure;
 fig=figure(2);
@@ -85,7 +86,7 @@ set(txthdl,'visible', 'off'); drawnow;
 sendEvent('stimulus.training','start');
 
 
-
+%-------------------------------------------------------------------------------------
 % play the stimulus
 % animation loop
 t0=getwTime(); % absolute start time for the experiment
@@ -140,6 +141,9 @@ for ei=1:size(stimSeq,2);
   if ( ~eventSeq(ei) ) % should we send an event
 	 set(txthdl,'string','','color',txtColor,'visible','on');		  
   else
+     % validate that what's at thestart of the runway is actually what it should be....
+     runStart = squeeze(visImg(:,1,:)); runTgt = all(repop(runStart,'==',tgtColor(:)'),2); % runway elements with tgtColor
+     fprintf('%d) runStart=[%s] runTgt=[%s]\n',ei,sprintf('%4.2f ',runStart),sprintf('%1d',runTgt));
 	 if ( stimSeq(end,ei) ) % baseline epoch
 		sendEvent('stimulus.baseline','start');
 		if ( ~isempty(baselineClass) ) % treat baseline as a special class
@@ -150,6 +154,9 @@ for ei=1:size(stimSeq,2);
 		end
 	 else % target action epoch
 		tgtIdx=find(stimSeq(:,ei)>0);
+        if ( ~all((stimSeq(1:nSymbs,ei)>0)==runTgt(:)) )
+            error('Huh! mis-alignment between the stimSeq and the visImg');
+        end        
 		if ( ~isempty(symbCue) )
 		  tgtNm = '';
 		  for ti=1:numel(tgtIdx);
