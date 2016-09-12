@@ -45,13 +45,9 @@ verb         =0; % verbosity level for debug messages, 1=default, 0=quiet, 2=ver
 buffhost     ='localhost';
 buffport     =1972;
 symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
-<<<<<<< 786aa37580d3f6503b6103a00ccf33f93a33aeea
-%symbCue      ={'Tongue' 'Song' 'Right-Hand'}; % config for Toine
-=======
->>>>>>> instruction strings and better mix of scoping tasks
 nSymbs       =numel(symbCue); % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
-rtbClass     =[];
+rtbClass     ='trialClass+rtb'; %'rtb';% 'trialClass';%  'rtb';% [];%
 
 
 nSeq              =20*nSymbs; % 20 examples of each target
@@ -120,7 +116,7 @@ contFeedbackFiltFactor=exp(log(.5)./contFeedbackFiltLen);
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
 trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % local-whiten + direct multi-class training
-%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','adaptspatialfilt','adaptspatialfilt',epochtrialAdaptFactor,'objFn','mlr_cg','binsp',0,'spMx','1vR'};% adaptive-whiten + direct multi-class training
+%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','adaptspatialfilt','adaptspatialfilt',conttrialAdaptFactor,'objFn','mlr_cg','binsp',0,'spMx','1vR'};% adaptive-whiten + direct multi-class training
 %trainOpts = {'spType',{{1 3} {2 4}}}; % train 2 classifiers, 1=N vs S, 2=E vs W
 
 % Epoch feedback opts
@@ -154,4 +150,4 @@ contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welc
 % Epoch feedback with early-stopping, config using the user feedback table
 userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,contFeedbackFiltLen)}};
 % Epoch feedback with early-stopping, (cont-classifer, so update adaptive whitener constant)
-%userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,contFeedbackFiltLen),'adaptspatialfilt',conttrialAdaptFactor}};
+%userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,trialDuration*1000./step_ms),'adaptspatialfilt',conttrialAdaptFactor}};
