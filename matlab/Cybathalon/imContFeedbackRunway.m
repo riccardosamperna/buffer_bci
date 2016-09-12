@@ -26,7 +26,9 @@ end
 			% the RTB phase at end of every trial ends with a RTB = no stimulus & no event
 for ei=1:ceil(intertrialDuration/epochDuration);
   stimSeq(:,trlEP+1-ei:trlEP:end)=0;
-  eventSeq(1,trlEP+1-ei:trlEP:end)=false; % don't send event
+  if ( isempty(rtbClass) ) 
+	 eventSeq(1,trlEP+1-ei:trlEP:end)=false; % don't send event
+  end
 end
 
 % visible window is just 10s
@@ -159,7 +161,7 @@ for ei=1:size(stimSeq,2);
 		else
 		  if ( verb>1 ) set(txthdl,'string','rest','color',txtColor,'visible','on'); end;
 		end
-	 else % target action epoch
+	 elseif ( any(stimSeq(1:nSymbs,ei)>0) ) % target action epoch
 		if ( ~isempty(symbCue) )
 		  tgtNm = '';
 		  for ti=1:numel(tgtIdx);
@@ -172,6 +174,16 @@ for ei=1:size(stimSeq,2);
 		fprintf('%d) tgt=%10s : \n',ei,tgtNm);
 		if ( verb>1 ) set(txthdl,'string',tgtNm,'color',txtColor,'visible','on'); end
 		sendEvent('stimulus.target',tgtNm);
+	 else % return to base-line phase
+		if ( ~isempty(rtbClass) ) % send a special RTB event to mark this up
+		  if ( ischar(rtbClass) && strcmp(rtbClass,'trialClass') ) % label as part of the trial
+			 sendEvent('stimulus.target',tgtNm);
+		  elseif ( ischar(rtbClass) && strcmp(rtbClass,'trialClass+rtb') ) % return-to-base + trial class
+			 sendEvent('stimulus.target',[tgtNm '_rtb']);		
+		  else
+			 sendEvent('stimulus.target',rtbClass);
+		  end
+		end
 	 end
   end
 
