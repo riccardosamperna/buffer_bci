@@ -10,7 +10,7 @@ addpath('../imaginedMovement');
   set(contFig,'name','BCI Controller : close to quit','color',[0 0 0]);
   axes('position',[0 0 1 1],'visible','off','xlim',[0 1],'ylim',[0 1],'nextplot','add');
   set(contFig,'Units','pixel');wSize=get(contFig,'position');
-  fontSize = .05*wSize(4);
+  fontSize = .04*wSize(4);
   %        Instruct String          Phase-name
   menustr={'0) EEG'                 'eegviewer';
 			  'a) Artifacts'           'artifact';
@@ -30,7 +30,7 @@ addpath('../imaginedMovement');
            'E) EMG Control'         'emgcontrol';
 			  'q) quit'                 'quit';
           };
-  txth=text(.25,.5,menustr(:,1),'fontunits','pixel','fontsize',.05*wSize(4),...
+  txth=text(.25,.5,menustr(:,1),'fontunits','pixel','fontsize',fontSize,...
 				'HorizontalAlignment','left','color',[1 1 1]);
   ph=plot(1,0,'k'); % BODGE: point to move around to update the plot to force key processing
   % install listener for key-press mode change
