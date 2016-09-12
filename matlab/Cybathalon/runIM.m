@@ -21,11 +21,14 @@ addpath('../imaginedMovement');
 			  '5) Continuous Feedback' 'contfeedback';
            '6) Center-out Feedback Training' 'centerout';
 			  '7) NeuroFeedback'       'neurofeedback'
-           '' ''
+           '' '';
 			  'p) Practice - runway'    'practice_runway'; 
 			  'r) Calibrate - runway'   'calibrate_runway'; 
 			  'f) Continuous Feedback - runway'   'contfeedback_runway'; 
 			  'c) Cybathalon Control'   'cybathalon';
+           '' '';
+           'K) Keyboard Control'    'keyboardcontrol';
+           'E) EMG Control'         'emgcontrol';
 			  'q) quit'                 'quit';
           };
   txth=text(.25,.5,menustr(:,1),'fontunits','pixel','fontsize',.05*wSize(4),...
@@ -226,6 +229,40 @@ while (ishandle(contFig))
     end
     sendEvent('contfeedback','end');
     sendEvent('test','end');
+    sendEvent(phaseToRun,'end');
+
+   %---------------------------------------------------------------------------
+   case {'keyboardcontrol'};
+    sendEvent(phaseToRun,'start');
+    %try
+      cybathlon_keyboard_control;
+      %catch
+      % fprintf('Error in : %s',phaseToRun);
+      % le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	% if ( ~isempty(le.stack) )
+	  	%   for i=1:numel(le.stack);
+	  	% 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	%   end;
+	  	% end
+      %end
+    sendEvent(phaseToRun,'end');
+
+
+   %---------------------------------------------------------------------------
+   case {'emgcontrol'};
+    sendEvent(phaseToRun,'start');
+    %try
+       [emgdata,emgevents,emghdr]=EMGtraining();
+       EMGcontroller(emgdata,emgevents,'hdr',emghdr,'difficulty',10);
+       %catch
+      % fprintf('Error in : %s',phaseToRun);
+      % le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	% if ( ~isempty(le.stack) )
+	  	%   for i=1:numel(le.stack);
+	  	% 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	%   end;
+	  	% end
+      %end
     sendEvent(phaseToRun,'end');
 
    %---------------------------------------------------------------------------

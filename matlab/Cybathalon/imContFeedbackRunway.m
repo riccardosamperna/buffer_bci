@@ -73,6 +73,7 @@ ax=axes('position',[0.025 0.025 .95 .95],'units','normalized','visible','off','b
         'xlim',axLim,'xlimmode','manual','ylim',axLim,'ylimmode','manual','Ydir','normal');
 set(fig,'Units','pixel');wSize=get(fig,'position');set(fig,'units','normalized');% win size in pixels
 
+clear h;
 % setup for the runway: N.B. xdata/ydata are the centers of the pixels!
 xdata=[axLim(1)+.3*diff(axLim) axLim(2)]; ydata=axLim;
 h(1)=image('xdata',mean(xdata)+diff(xdata)/2*[-1 1]*(visFrames-1)/visFrames,...

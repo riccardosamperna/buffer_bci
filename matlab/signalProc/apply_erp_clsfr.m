@@ -33,11 +33,7 @@ if ( isfield(clsfr,'detrend') && clsfr.detrend ) % detrend over time
     if ( verb>0 ) fprintf('1) Detrend\n'); end
     X=detrend(X,2); % detrend over time
   elseif ( isequal(clsfr.detrend,2) )
-<<<<<<< HEAD
     if ( verb>0 ) fprintf('1) Center\n'); end;
-=======
-    if ( verb>0) fprintf('1) Center\n'); end
->>>>>>> master
     X=repop(X,'-',mean(X,2));
   end
 end 

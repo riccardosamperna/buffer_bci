@@ -159,13 +159,8 @@ end
 %4.2) time range selection
 timeIdx=[];
 if ( ~isempty(opts.timeband_ms) ) 
-<<<<<<< HEAD
   timeIdx = opts.timeband_ms * fs ./1000; % convert to sample indices
   timeIdx = max(min(round(timeIdx),size(X,2)),1); % ensure valid range
-=======
-  timeIdx = opts.timeband_ms * fs; % convert to sample indices
-  timeIdx = max(min(timeIdx,size(X,2)),1); % ensure valid range
->>>>>>> master
   timeIdx = int32(timeIdx(1):timeIdx(2));
   X    = X(:,timeIdx,:);
 end
@@ -260,14 +255,10 @@ if ( opts.visualize )
   if ( size(res.tstconf,2)==1 ) % confusion matrix is correct
      % plot the confusion matrix
     confMxFig=figure(3); set(confMxFig,'name','Class confusion matrix');	 
-<<<<<<< HEAD
-	 if ( size(clsfr.spMx,1)==1 ) clabels={clsfr.spKey{clsfr.spMx>0} clsfr.spKey{clsfr.spMx<0}};
-=======
 	 if ( size(clsfr.spMx,1)==1 )
 		if ( iscell(clsfr.spKey) ) clabels={clsfr.spKey{clsfr.spMx>0} clsfr.spKey{clsfr.spMx<0}};
 		else                       clabels={sprintf('%g',clsfr.spKey(clsfr.spMx>0)) sprintf('%g',clsfr.spKey(clsfr.spMx<0))};
 		end
->>>>>>> master
 	 else                         [ans,li]=find(clsfr.spMx>0); clabels=clsfr.spKey(li);
 	 end
     imagesc(reshape(res.tstconf(:,1,res.opt.Ci),sqrt(size(res.tstconf,1)),[]));
