@@ -159,9 +159,9 @@ for si=1:nSeq;
   ev=sendEvent('stimulus.trial','end');
   if ( ~isempty(rtbClass) ) % treat post-trial return-to-baseline as a special class
 	 for ei=1:ceil(intertrialDuration/epochDuration); % loop over sub-trials
-		if ( isequal(rtbClass,'trialClass') ) % label as part of the trial
+		if ( ischar(rtbClass) && strcmp(rtbClass,'trialClass') ) % label as part of the trial
 		  sendEvent('stimulus.target',tgtNm,ev.sample);
-		elseif ( isequal(rtbClass,'trialClass+rtb') ) % return-to-base version of trial class
+		elseif ( ischar(rtbClass) && strcmp(rtbClass,'trialClass+rtb')) %return-to-base ver of trial class
 		  sendEvent('stimulus.target',[tgtNm '_rtb'],ev.sample);		
 		else
 		  sendEvent('stimulus.target',rtbClass,ev.sample);

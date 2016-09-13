@@ -81,9 +81,6 @@ for si=1:nSeq;
 	 sleepSec(intertrialDuration);
   end
 
-
-  
-  sleepSec(intertrialDuration);
   % show the screen to alert the subject to trial start
   set(h(:),'faceColor',bgColor);
   set(h(end),'facecolor',fixColor); % red fixation indicates trial about to start/baseline
@@ -164,8 +161,19 @@ for si=1:nSeq;
   else                       nCorrect= nCorrect+1;fprintf('right!'); % correct
   end
 
+
+
+  if ( ~isempty(rtbClass) ) % treat post-trial return-to-baseline as a special class		
+	 if ( ischar(rtbClass) && strcmp(rtbClass,'trialClass') ) % label as part of the trial
+		sendEvent('stimulus.target',tgtNm);
+	 elseif ( ischar(rtbClass) && strcmp(rtbClass,'trialClass+rtb') )%return-to-base ver of trial class
+		sendEvent('stimulus.target',[tgtNm '_rtb']);		
+	 else
+		sendEvent('stimulus.target',rtbClass);
+	 end
+  end
   sleepSec(feedbackDuration);
-  
+	 
   % reset the cue and fixation point to indicate trial has finished  
   set(h(:),'facecolor',bgColor);
   if ( ~isempty(symbCue) ) set(txthdl,'visible','off'); end

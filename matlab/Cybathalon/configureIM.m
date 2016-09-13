@@ -46,10 +46,9 @@ buffhost     ='localhost';
 buffport     =1972;
 symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
 %symbCue      ={'Tongue' 'Song' 'Right-Hand'}; % config for Toine
-nSymbs       =numel(symbCue); % E,N,W,S for 4 outputs, N,W,E  for 3 outputs
+nSymbs       =numel(symbCue); 
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
-rtbClass     ='trialClass+rtb'; %'rtb';% 'trialClass';%  'rtb';% [];%
-
+rtbClass     ='trialClass+rtb'; %'rtb';% 'trialClass';%  'rtb';% [];% if set post-trial is separate class also
 
 nSeq              =20*nSymbs; % 20 examples of each target
 epochDuration     =.75;
@@ -58,7 +57,7 @@ baselineDuration  =epochDuration*2;   % = 1.5s baseline
 intertrialDuration=epochDuration*2;   % = 1.5s post-trial
 feedbackDuration  =epochDuration*2;
 errorDuration     =epochDuration*2*3; %= 3s penalty for mistake
-calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
+calibrateMaxSeqDuration=150;        %= 2.5min between wait-for-key-breaks
 
 
 warpCursor   = 1; % flag if in feedback BCI output sets cursor location or how the cursor moves
@@ -103,7 +102,6 @@ earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
 trlen_ms      =epochDuration*1000; % how much data to use in each classifier training example
 offset_ms     =[0 0];%[250 250]; % give .25s for user to start/finish
 calibrateOpts ={'offset_ms',offset_ms};
-adaptHalfLife_ms = 10*1000; % 14*.75 s = 10s
 
 										% classifier training options
 welch_width_ms=250; % width of welch window => spectral resolution
@@ -117,16 +115,29 @@ contFeedbackFiltLen=(trialDuration*1000/step_ms); % accumulate whole trials data
 contFeedbackFiltFactor=exp(log(.5)/contFeedbackFiltLen); % convert to exp-move-ave weighting factor
 
 % paramters for on-line adaption to signal changes
-adaptHalfLife_ms = 30*1000; %30s amount of data to use for adapting spatialfilter/biasadapt
+adaptHalfLife_ms = 100*.75*1000; %75s amount of data to use for adapting spatialfilter/biasadapt
 conttrialAdaptHL=(adaptHalfLife_ms/step_ms); % half-life in number of calls to apply clsfr
-conttrialAdaptFactor=exp(log(.5)./conttrialAdaptHL) ;% convert to exp-move-ave weighting factor 
-epochtrialAdaptHL=(adaptHalfLife_ms/epochtrlen_ms); % half-life in number called to apply-clsfr in epoch feedback
+conttrialAdaptFactor=exp(log(.5)./conttrialAdaptHL); % convert to exp-move-ave weighting factor 
+epochtrialAdaptHL=(adaptHalfLife_ms/epochtrlen_ms); % half-life in number calls to apply-clsfr in epoch feedback
 epochtrailAdaptFactor=exp(log(.5)/epochtrialAdaptHL); % convert to exp-move-ave weight factor
 
-%trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
-trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
-%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % local-whiten + direct multi-class training
-%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','adaptspatialfilt','adaptspatialfilt',conttrialAdaptFactor,'objFn','mlr_cg','binsp',0,'spMx','1vR'};% adaptive-whiten + direct multi-class training
+spMx='1vR';
+if( ~isempty(rtbClass) ) % setup the training to ignore the rtb info
+  % build the target names used in the event
+  tgtNms={};
+  for ci=1:nSymbs; tgtNms{ci}=sprintf('%d %s',ci,symbCue{ci}); end;
+  tgtNms{nSymbs+1}=baselineClass;
+  % build the sub-problem specification matrix which ignores the rtb-class
+  spMx={};
+  for ci=1:numel(tgtNms);
+	 spMx{ci} = {tgtNms{ci} tgtNms([1:ci-1 ci+1:end])};
+  end
+end
+
+%trainOpts={'width_ms',welch_width_ms,'badtrrm',0};%default: 4hz res, stack of independent one-vs-rest classifiers
+trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx',spMx}; % whiten + direct multi-class training
+%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn','mlr_cg','binsp',0,'spMx',spMx}; % local-whiten + direct multi-class training
+%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','adaptspatialfilt','adaptspatialfilt',conttrialAdaptFactor,'objFn','mlr_cg','binsp',0,'spMx',spMx};% adaptive-whiten + direct multi-class training
 %trainOpts = {'spType',{{1 3} {2 4}}}; % train 2 classifiers, 1=N vs S, 2=E vs W
 
 % Epoch feedback opts
