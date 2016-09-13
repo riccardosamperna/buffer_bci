@@ -160,9 +160,9 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 %% Also send all raw predictions out for use in, e.g. center-out training
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',-contFeedbackFiltLen}; % trlDuration average
 % as above but include an additional bias-adaption as well as classifier output smoothing
-contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor contFeedbackFiltFactor])}; % trlDuration average
+%contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor contFeedbackFiltFactor])}; % trlDuration average
 
 % Epoch feedback with early-stopping, config using the user feedback table
-userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,trialDuration*1000./step_ms)}};
+userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,contFeedbackFiltLen)}};
 % Epoch feedback with early-stopping, (cont-classifer, so update adaptive whitener constant)
-%userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,trialDuration*1000./step_ms),'adaptspatialfilt',conttrialAdaptFactor}};
+%userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,contFeedbackFiltLen),'adaptspatialfilt',conttrialAdaptFactor}};
