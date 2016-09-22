@@ -16,7 +16,11 @@ function [spMx]=mkspMx(classIDs,spType,compBinp,classNms)
 %                      for when negative and 0 for when not used in this sub-prob
 %                      e.g. Yi=lab2ind(Y,[1 -1 0;1 0 -1;0 1 -1]);
 %         OR 
-%            {nSp x 1} cell array of 2x1 cell arrays for each sub-problem, e.g. {sp1 sp2 sp3} 
+%            {nSp x 1} cell array of class names/ids for which to construct a 1vR set of
+%                      sub-problems
+%                      e.g. sp=mkspMx(Y,{'c1' 'c2' 'c3'}); % make c1 v c2+c3,c2 v c1+c3,c3 v c1+c2
+%         OR 
+%            {nSp x {c1 c2}} cell array of 2x1 cell arrays for each sub-problem, e.g. {sp1 sp2 sp3} 
 %                      Each sub-problem cell array holds the negative then positive class label 
 %                      sets, either as numbers which match the numbers in classIDs or as 
 %                      strings which match the labels in classNms
@@ -52,7 +56,7 @@ if ( iscell(spType) && ischar(spType{1}) && ~isempty(strmatch(spType{1},{'1v1','
    for i=1:numel(classIDs);
       % Positive only, so skip negative classIDs
       if ( ~isempty(strmatch('P',spType)) && classIDs(i)<0 ) continue; end;
-      % 1vs1 first
+      % 1v1 first
       if ( ~isempty(strmatch('1v1',spType)) || ~isempty(strmatch('Pv1',spType)) )
          for j=i+1:numel(classIDs);
             nsp=nsp+1; spMx(nsp,i)=+1; spMx(nsp,j)=-1; % fill in decoding matrix
@@ -91,12 +95,32 @@ elseif( iscell(spType) ) %cell array of +ve/-ve class labels
        || (ischar(spType{1}) && ischar(spType{2})) ...
        || iscell(spType{1}) && iscell(spType{2}) && (numel(spType{1})~=2 || numel(spType{2})~=2) )  ) 
      spType={spType}; 
+  elseif( numel(spType)==1 ) %single input=set of classes to make a 1vR decomp for
+	 tmp=spType{1};
+	 % regexp to expand to get the set of matching class names to use
+	 if(ischar(tmp) && any(strncmp(tmp,{'%','#'},1)) && any(strncmp(tmp(end),{'%','#'},1))) 
+		t=false(size(classNms));
+		for ci=1:numel(classNms);
+		  if( ~isempty(regexp(classNms{ci},tmp(2:end-1))) ) t(ci)=true; end;
+	   end
+		tmp=classNms(t); % the subset of classnames we should use
+	 end
+	 spType={};
+	 for spi=1:numel(tmp);
+		spType{spi}={tmp(spi) tmp([1:spi-1 spi+1:end])};
+	 end
   end;
   nSp=numel(spType);
   spMx=zeros(nSp,nClass); % convert to spMx format
   for spi=1:size(spMx,1);
     spIds = spType{spi};
-    if ( isnumeric(spIds) && numel(spIds)==2 ) spIds   ={spIds{1} spIds{2}}; end; % single 2x1 array
+    if ( isnumeric(spIds) )
+		if ( numel(spIds)==1 )     spIds   ={spIds(1) cat(1,spIds([1:spi-1]),spIds([spi+1:end]))};
+		elseif ( numel(spIds)==2 ) spIds   ={spIds(1) spIds(2)}; % single 2x1 array
+		end;
+	 elseif ( ischar(spIds) ) % set of class-ids to use
+		spIds={spType(spi) spType([1:spi-1 spi+1:end])};
+	 end
     if ( iscell(spIds{1}) || ischar(spIds{1}) ) spIds{1}=classIDs(matchClassNms(spIds{1},classNms));end;
 	 % empty 2nd set=Rest
 	 if ( isempty(spIds{2}))                     spIds{2}=classIDs(setdiff(1:nClass,spIds{1})); 
@@ -114,12 +138,21 @@ return;
 %---------------------------------------------------------------------------
 function [tmp]=matchClassNms(spNms,classNms)
 if ( ischar(spNms) ) spNms={spNms}; end;
-tmp=zeros(numel(spNms),1);
-for i=1:numel(spNms); 
-  t=strmatch(spNms{i},classNms,'exact'); 
-  if( ~isempty(t) ) tmp(i)=t;
-  elseif( ~isempty(spNms{i}))error(sprintf('Couldnt match class name: %s',spNms{i})); %error if name
-  end;
+tmp=false(numel(classNms),1);
+for i=1:numel(spNms);
+  tgt=spNms{i};
+  t=false(numel(classNms),1);
+  if ( any(strncmp(spNms{i},{'%','#'},1)) && any(strncmp(spNms{i}(end),{'%','#'})) ) % use regexp match
+	 for ci=1:numel(classNms);
+		if( ~isempty(regexp(classNms{ci},tgt(2:end-1))) ) t(ci)=true; end;
+	 end
+  else
+	 t=strncmp(tgt,classNms,numel(tgt)); 
+  end
+  if( ~any(t) && ~isempty(spNms{i}))
+	 error(sprintf('Couldnt match class name: %s',spNms{i})); %error if name
+  end
+  tmp = tmp(:) | t(:);
 end
 return;
 
