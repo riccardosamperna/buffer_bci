@@ -64,10 +64,10 @@ function [clsfr,res,X,Y]=train_ersp_clsfr(X,Y,varargin)
 %  X       -- [ppch x pptime x ppepoch] pre-processed data (N.B. may/will have different size to input X)
 %  Y       -- [ppepoch x 1] pre-processed labels (N.B. will have diff num examples to input!)
 opts=struct('classify',1,'fs',[],'timeband_ms',[],'freqband',[],...
-            'width_ms',500,'windowType','hanning','aveType','amp',...
+            'width_ms',500,'windowType','hamming','aveType','amp',...
             'detrend',1,'spatialfilter','slap','adaptspatialfilt',[],...
-            'badchrm',1,'badchthresh',3.1,'badchscale',2,...
-            'badtrrm',1,'badtrthresh',3,'badtrscale',2,...
+            'badchrm',1,'badchthresh',3.1,'badchscale',4,...
+            'badtrrm',1,'badtrthresh',3,'badtrscale',4,...
             'ch_pos',[],'ch_names',[],'verb',0,'capFile','1010','overridechnms',0,...
             'visualize',1,'badCh',[],'nFold',10,'class_names',[],'zeroLab',1);
 [opts,varargin]=parseOpts(opts,varargin);
@@ -105,7 +105,7 @@ if ( opts.badchrm || ~isempty(opts.badCh) )
   isbadch = false(size(X,1),1);
   if ( ~isempty(ch_pos) ) isbadch(numel(ch_pos)+1:end)=true; end;
   if ( ~isempty(opts.badCh) )
-    isbadch(opts.badCh)=true;
+    isbadch(opts.badCh(1:min(end,size(isbadch,1))))=true;
     goodCh=find(~isbadch);
     if ( opts.badchrm ) 
       [isbad2,chstds,chthresh]=idOutliers(X(goodCh,:,:),1,opts.badchthresh);
@@ -118,7 +118,7 @@ if ( opts.badchrm || ~isempty(opts.badCh) )
     if ( ~isempty(ch_pos) ) ch_pos  =ch_pos(:,~isbadch(1:numel(ch_names))); end;
     ch_names=ch_names(~isbadch(1:numel(ch_names)));
   end
-  fprintf('%d ch removed\n',sum(isbadch));
+  fprintf('%d ch removed\n',sum(isbadch(1:numel(ch_names))));
 end
 
 %3.a) Spatial filter/re-reference (data-dependent-unsupervised)
@@ -419,3 +419,12 @@ mad(res.opt.f,f)
 
 % try with pre-built set of sub-problems
 [clsfr]=train_ersp_clsfr(z.X,[z.Y sign(randn(size(z.Y)))],'fs',z.di(2).info.fs,'ch_pos',[z.di(1).extra.pos3d],'ch_names',z.di(1).vals,'freqband',[0 .1 10 12],'visualize',1,'verb',1);
+
+
+										  % apply to jf_obj
+Yl = cat(1,z.Ydi(1).extra.marker); Yl={Yl.value}; Yl=Yl(:); % string labels...
+uY=unique(Yl);spMx={uY(1:end-1)};
+[clsfr,res,X,Y]=train_ersp_clsfr(z.X,Yl,'fs',z.di(2).info.fs,'ch_names',z.di(1).vals,'badCh',~[z.di(1).extra.iseeg],'width_ms',250,'freqband',freqband,'binsp',0,'objFn','mlr_cg','spMx',spMx)
+										  % off-line equivalent
+zpp=jf_retain(jf_welchpsd(jf_whiten(jf_rmOutliers(jf_detrend(z),'dim','ch')),'width_ms',250),'dim','freq','range','between','vals',[8 28]);
+jf_cvtrain(zpp,'objFn','mlr_cg','binsp',0,'spMx',spMx);
