@@ -105,7 +105,7 @@ end
 if ( isempty(opts.lossFn) && ~isempty(opts.lossType) ) opts.lossFn=opts.lossType; end;
 if ( nargin < 4 || isempty(Cs) ) Cs=[5.^(3:-1:-3) 0]; end;
 if ( nargin < 5 || isempty(fIdxs) ) 
-   nFolds=10; fIdxs = gennFold(Y,nFolds,'perm',1);
+   nFolds=10; fIdxs = gennFold(Y,nFolds);
 elseif ( isscalar(fIdxs) ) 
    nFolds= fIdxs; 
    fIdxs = gennFold(Y,nFolds);
