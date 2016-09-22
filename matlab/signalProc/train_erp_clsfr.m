@@ -299,8 +299,8 @@ clsfr.windowFn    = []; % DUMMY -- so ERP and ERSP classifier have same structur
 clsfr.welchAveType= []; % DUMMY -- so ERP and ERSP classifier have same structure fields
 clsfr.freqIdx     = []; % DUMMY -- so ERP and ERSP classifier have same structure fields
 
-clsfr.badtrthresh = []; if ( ~isempty(trthresh) ) clsfr.badtrthresh = trthresh(end)*opts.badtrscale; end
-clsfr.badchthresh = []; if ( ~isempty(chthresh) ) clsfr.badchthresh = chthresh(end)*opts.badchscale; end
+clsfr.badtrthresh = []; if ( ~isempty(trthresh) && opts.badtrscale>0 ) clsfr.badtrthresh = trthresh(end)*opts.badtrscale; end
+clsfr.badchthresh = []; if ( ~isempty(chthresh) && opts.badchscale>0 ) clsfr.badchthresh = chthresh(end)*opts.badchscale; end
 % record some dv stats which are useful
 tstf = res.tstf(:,res.opt.Ci); % N.B. this *MUST* be calibrated to be useful
 clsfr.dvstats.N   = [sum(res.Y>0) sum(res.Y<=0) numel(res.Y)]; % [pos-class neg-class pooled]
