@@ -31,7 +31,7 @@ function [data,devents,hdr]=EMGtraining()
                                           %Screen horizontally
     ypos = ceil((screensize(4)-sz(1))/2); % center the figure on the
                                           %Screen vertically
-    fig=figure(2);
+    fig=figure(2);clf;
     set(fig,'units','pixels','MenuBar','none','color',[0 0 0]);
 
     welcome = sprintf(['Welkom \n\nTijdens dit oefenblok word je gevraagd om een beweging \nte maken met jouw' ...
@@ -81,6 +81,7 @@ function [data,devents,hdr]=EMGtraining()
            devents=cat(1,devents,traindevents);
         end;
         clf;
+        pause(2);
         
         subimage(relax);
         sendEvent('move','relax',-1);
@@ -94,6 +95,10 @@ function [data,devents,hdr]=EMGtraining()
            data=cat(1,data,traindata);
            devents=cat(1,devents,traindevents);
         end;
+        
         clf;
+        pause(2);
     end
+    datestr = datevec(now); datestr = sprintf('%02d%02d%02d',datestr(1)-2000,datestr(2:3));
+    save(sprintf('emgtraining_%s',datestr),'data','devents','hdr');
 end

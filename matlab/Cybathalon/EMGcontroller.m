@@ -35,7 +35,7 @@ relax = imresize(relax,0.5);
 threshold = setEMGthreshold(data,devents,opts.hdr,opts.difficulty);
 
 % %speed = both hands, rest = rest, jump = left hand, kick = right hand
-cybathalon = struct('host','localhost','port',5555,'player',1,...
+cybathalon = struct('host','localhost','port',5555,'player',2,...
                     'cmdlabels',{{'jump' 'slide' 'speed' 'rest'}},'cmddict',[2 3 1 99],...
 						  'cmdColors',[.6 0 .6;.6 .6 0;0 .5 0;.3 .3 .3]',...
                     'socket',[],'socketaddress',[]);
@@ -47,14 +47,14 @@ connectionWarned=0;
 
 fig=figure(2);clf;
 winColor=[0 0 0];
-set(fig,'Name','Muscle Control','color',winColor,'menubar','none','toolbar','none','doublebuffer','on');
-ax=axes('position',[0.025 0.025 .95 .95],'units','normalized','visible','off','box','off',...
-        'xtick',[],'xticklabelmode','manual','ytick',[],'yticklabelmode','manual',...
-        'color',winColor,'DrawMode','fast','nextplot','replacechildren',...
-        'xlim',[-1.5 1.5],'ylim',[-1.5 1.5]);
+%set(fig,'Name','Muscle Control','color',winColor,'menubar','none','toolbar','none','doublebuffer','on');
+% ax=axes('position',[0.025 0.025 .95 .95],'units','normalized','visible','off','box','off',...
+%         'xtick',[],'xticklabelmode','manual','ytick',[],'yticklabelmode','manual',...
+%         'color',winColor,'DrawMode','fast','nextplot','replacechildren',...
+%         'xlim',[-1.5 1.5],'ylim',[-1.5 1.5]);
 
 set(fig,'Units','pixel');wSize=get(fig,'position');set(fig,'units','normalized');% win size in pixels
-txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
+txthdl = text(0,0,' ',...
 				  'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
 				  'color',[0.75 0.75 0.75],'visible','off');
@@ -143,45 +143,48 @@ while( ~endTest )
     if ( opts.verb>1 ) fprintf('Got data @ %d->%d samp\n',fin(si)-trlen_samp,fin(si)-1); end;
     
     % take only relevant EMG channels
-    X = data.buf(1:4,:); % Check which channel to use... (channel 2 = up right muscle, 1 = bottom right muscle (closest to wrist), 4 = up left muscle, 3 = bottom left muscle (closest to wrist))
+    X = data.buf; % Check which channel to use... (channel 2 = up right muscle, 1 = bottom right muscle (closest to wrist), 4 = up left muscle, 3 = bottom left muscle (closest to wrist))
     
     % subtract bipolar EMG channels
-    X(1,:) = data.buf(2,:)-data.buf(1,:); % right hand
-    X(2,:) = data.buf(4,:)-data.buf(3,:); % left hand
-    X(3:end,:) = [];
+    X =repop(X(1:5,:,:),'-',X(5,:,:));
     
     % Filter
-    freqband = [47 51 250 256];
+    freqband = [60 70 250 256];
     outsz=[size(X,2) size(X,2)];
-    if (size(X,2)>10 && ~isempty(fs)) 
+    %if (size(X,2)>10 && ~isempty(fs)) 
       len=size(X,2);
-      filt=mkFilter(freqband,floor(len/2),fs/len);
-      X   =fftfilter(X,filt,outsz,2,2);
-    end
+      filt=mkFilter(floor(len/2),freqband,fs/len);
+      X   =fftfilter(X,filt,outsz,2,1,[],1);
+      
+      %X   =abs(X);
+      X   =cat(1,sum(X(1:2,:,:),1)/2,sum(X(3:4,:,:),1)/2);
+      X   =median(X,2);
+    %end
     
     % Rectify the signal = take absolute value
-    X = abs(X);  
+    %X = abs(X);  
     %mean(mean(X))
     
     % Low pass filter the signal (cutoff =~ 15 Hz, since tau = 10ms for EMG), Welter et al., 2000; 1st order)
-    for ch = 1:size(X,1) % Per channel
-        [B,A] = butter(1,16/128,'low');
-        X(ch,:) = filter(B,A,X(ch,:));  
-    end
+    %for ch = 1:size(X,1) % Per channel
+    %    [B,A] = butter(1,16/128,'low');
+    %    X(ch,:) = filter(B,A,X(ch,:));  
+    %end
     
     % check for movement
     predTgt=[];
+    fprintf('max left: %.3f, max right %.3f, threshold: %.3f', mean(X(1,:)),mean(X(2,:)),threshold);
     aboveThresRight = find(X(2,:) > threshold);
     aboveThresLeft = find(X(1,:) > threshold);
     if ~isempty(aboveThresRight) && isempty(aboveThresLeft) % right hand movement
         rightMove = true;
-        predTgt =  strcmp(cybathalon.cmdlabels,'kick');
+        predTgt =  strcmp(cybathalon.cmdlabels,'slide');
         % send event if right movement was made
         maxSample = fin(si)-(length(X)-aboveThresRight(1));  %fin(si) is last sample, aboveTresh(1) is first sample above treshhold, Length(X)is current sample 
         
         sendEvent('rightMove',1,maxSample); %N.B. event sample is window-start!=(fin(si)-trlen_samp)
         fprintf('rightMove'); 
-        subimage(right);
+        figure(2);subimage(right);
     elseif ~isempty(aboveThresLeft) && isempty(aboveThresRight) % left hand movement
         leftMove = true;
         predTgt =  strcmp(cybathalon.cmdlabels,'speed');
@@ -190,7 +193,7 @@ while( ~endTest )
 
         sendEvent('leftMove',1,maxSample); %N.B. event sample is window-start!=(fin(si)-trlen_samp)
         fprintf('leftMove'); 
-        subimage(left);
+        figure(2);subimage(left);
     elseif ~isempty(aboveThresRight) && ~isempty(aboveThresLeft) % both hands move
         bothMove = true;
         predTgt =  strcmp(cybathalon.cmdlabels,'jump');
@@ -199,7 +202,7 @@ while( ~endTest )
 
         sendEvent('bothMove',1,maxSample); %N.B. event sample is window-start!=(fin(si)-trlen_samp)
         fprintf('bothMove'); 
-        subimage(both);
+        figure(2);subimage(both);
     else % rest
         rest = true;
         % send event if both hands move
@@ -207,7 +210,7 @@ while( ~endTest )
 
         sendEvent('rest',1,maxSample); %N.B. event sample is window-start!=(fin(si)-trlen_samp)
         fprintf('rest'); 
-        subimage(relax);
+        figure(2);subimage(relax);
     end
     if ( ~isempty(predTgt) )
     try;
