@@ -3,7 +3,11 @@ configureIM;
 if ( ~exist('contFeedbackTrialDuration') || isempty(contFeedbackTrialDuration) ) contFeedbackTrialDuration=trialDuration; end;
 
 % make the target sequence
-tgtSeq=mkStimSeqRand(nSymbs,nSeq);
+if ( baselineClass ) % with rest targets
+  tgtSeq=mkStimSeqRand(nSymbs+1,nSeq);
+else
+  tgtSeq=mkStimSeqRand(nSymbs,nSeq);
+end
 
 fig=figure(2);
 clf;
@@ -56,7 +60,7 @@ set(h(:),'facecolor',bgColor);
 % wait for user to become ready
 set(txthdl,'string', {contfeedback_instruct{:} '' 'Click mouse when ready'}, 'visible', 'on'); drawnow;
 waitforbuttonpress;
-set(txthdl,'visible', 'off'); drawnow;
+set(txthdl,'visible', 'off'); drawnow; sleepSec(intertrialDuration);
 
 sendEvent('stimulus.testing','start');
 
@@ -80,29 +84,41 @@ for si=1:nSeq;
 	 sleepSec(intertrialDuration);
   end
 
-  sleepSec(intertrialDuration);
+  %------------------------------- baseline --------------
   % show the screen to alert the subject to trial start
   set(h(:),'faceColor',bgColor);
   set(h(end),'facecolor',fixColor); % red fixation indicates trial about to start/baseline
   drawnow;% expose; % N.B. needs a full drawnow for some reason
   sendEvent('stimulus.baseline','start');
   if ( ~isempty(baselineClass) ) % treat baseline as a special class
-	 sendEvent('stimulus.target',baselineClass);
+	 for ei=1:ceil(baselineDuration/epochDuration); % send base-line event every epoch duration
+		sendEvent('stimulus.target',baselineClass);
+		sleepSec(epochDuration);
+	 end
+  else
+	 sleepSec(baselineDuration);
   end
-  sleepSec(baselineDuration);
   sendEvent('stimulus.baseline','end');
 
+  %------------------------------- cue --------------
   % show the target
   tgtIdx=find(tgtSeq(:,si)>0);
   set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
-  set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
+  if ( tgtSeq(nSymbs+1,si)<=0 )% green fixation indicates trial running, if its not actually the target
+	 set(h(end),'facecolor',tgtColor);
+  end
   if ( ~isempty(symbCue) )
-	 set(txthdl,'string',sprintf('%s ',symbCue{tgtIdx}),'color',txtColor,'visible','on');
-	 tgtNm = '';
-	 for ti=1:numel(tgtIdx);
-		if(ti>1) tgtNm=[tgtNm ' + ']; end;
-		tgtNm=sprintf('%s%d %s ',tgtNm,tgtIdx,symbCue{tgtIdx});
+	 if ( all(tgtIdx<=nSymbs) )
+		set(txthdl,'string',sprintf('%s ',symbCue{tgtIdx}),'color',txtColor,'visible','on');
+		tgtNm = '';
+		for ti=1:numel(tgtIdx);
+		  if(ti>1) tgtNm=[tgtNm ' + ']; end;
+		  tgtNm=sprintf('%s%d %s ',tgtNm,tgtIdx,symbCue{tgtIdx});
+		end
+	 elseif ( tgtIdx==nSymbs+1 ) % rest class
+		tgtNm=baselineClass;
+		set(txthdl,'string','rest','color',txtColor,'visible','on');
 	 end
   else
 	 tgtNm = tgtIdx; % human-name is position number
@@ -112,6 +128,7 @@ for si=1:nSeq;
   sendEvent('stimulus.target',tgtNm);
   sendEvent('stimulus.trial','start');
   
+  %------------------------------- trial interval --------------
   % for the trial duration update the fixatation point in response to prediction events
   % initial fixation point position
   fixPos = stimPos(:,end);
@@ -120,10 +137,16 @@ for si=1:nSeq;
   prob   = ones(nSymbs,1)./nSymbs; % start with equal prob over everything
   trlStartTime=getwTime();
   timetogo = contFeedbackTrialDuration;
+  evtTime=trlStartTime+epochDuration;
   while (timetogo>0)
-    timetogo = trialDuration - (getwTime()-trlStartTime); % time left to run in this trial
+	 curTime  = getwTime();
+    timetogo = contFeedbackTrialDuration - (curTime-trlStartTime); % time left to run in this trial
+	 if ( curTime>evtTime ) % send target type event every epochDuration
+		sendEvent('stimulus.target',tgtNm);
+		evtTime = evtTime+epochDuration;
+	 end
     % wait for new prediction events to process *or* end of trial time
-    [events,state,nsamples,nevents] = buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],min(1000,timetogo*1000));
+    [events,state,nsamples,nevents] = buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],min([1,evtTime-curTime,timetogo])*1000);
     if ( isempty(events) ) 
 		if ( timetogo>.1 ) fprintf('%d) no predictions!\n',nsamples); end;
     else
@@ -184,6 +207,7 @@ for si=1:nSeq;
     drawnow; % update the display after all events processed    
   end % while time to go
 
+  %------------------------------- feedback --------------
   % final predicted target is one fixPos is closest to
   tgtDis = repop(stimPos(:,1:end-1),'-',fixPos); tgtDis = sqrt(sum(tgtDis.^2));
   [md,predTgt]=min(tgtDis);
@@ -201,6 +225,22 @@ for si=1:nSeq;
   set(h(end),'position',[stimPos(:,end)-stimRadius/4;stimRadius/2*[1;1]]);
   drawnow;
   sendEvent('stimulus.trial','end');
+
+  %------------------------------- intertrial interval --------------
+  if ( ~isempty(rtbClass) ) % treat post-trial return-to-baseline as a special class
+	 for ei=1:ceil(intertrialDuration/epochDuration); % loop over sub-trials
+		if ( ischar(rtbClass) && strcmp(rtbClass,'trialClass') ) % label as part of the trial
+		  sendEvent('stimulus.target',tgtNm);
+		elseif ( ischar(rtbClass) && strcmp(rtbClass,'trialClass+rtb')) %return-to-base ver of trial class
+		  sendEvent('stimulus.target',[tgtNm '_rtb']);		
+		else
+		  sendEvent('stimulus.target',rtbClass);
+		end
+		sleepSec(epochDuration);
+	 end
+  else
+    sleepSec(intertrialDuration);
+  end
   
   ftime=getwTime();
   fprintf('\n');

@@ -2,7 +2,11 @@
 configureIM;
 
 % make the target sequence
-tgtSeq=mkStimSeqRand(nSymbs,nSeq);
+if ( baselineClass ) % with rest targets
+  tgtSeq=mkStimSeqRand(nSymbs+1,nSeq);
+else
+  tgtSeq=mkStimSeqRand(nSymbs,nSeq);
+end
 
 % make the stimulus display
 fig=figure(2);
@@ -53,7 +57,7 @@ progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d +%02d -%02d',0,nSeq,0,0),...
 
 set(txthdl,'string', {epochfeedback_instruct{:} '' 'Click mouse when ready'}, 'visible', 'on'); drawnow;
 waitforbuttonpress;
-set(txthdl,'visible', 'off'); drawnow;
+set(txthdl,'visible', 'off'); drawnow; sleepSec(intertrialDuration);
 
 % play the stimulus
 set(h(:),'facecolor',bgColor);
@@ -81,7 +85,6 @@ for si=1:nSeq;
 	 sleepSec(intertrialDuration);
   end
   
-  sleepSec(intertrialDuration);
   % show the screen to alert the subject to trial start
   set(h(:),'faceColor',bgColor);
   set(h(end),'facecolor',fixColor); % red fixation indicates trial about to start/baseline
@@ -97,19 +100,27 @@ for si=1:nSeq;
   tgtIdx=find(tgtSeq(:,si)>0);
   set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
+  if ( tgtSeq(nSymbs+1,si)<=0 )%green fixation indicates trial running, if its not actually the target
+	 set(h(end),'facecolor',tgtColor);
+  end
   if ( ~isempty(symbCue) )
-	 set(txthdl,'string',sprintf('%s ',symbCue{tgtIdx}),'color',txtColor,'visible','on');
-	 tgtNm = '';
-	 for ti=1:numel(tgtIdx);
-		if(ti>1) tgtNm=[tgtNm ' + ']; end;
-		tgtNm=sprintf('%s%d %s ',tgtNm,tgtIdx,symbCue{tgtIdx});
+	 if ( all(tgtIdx<=nSymbs) )
+		set(txthdl,'string',sprintf('%s ',symbCue{tgtIdx}),'color',txtColor,'visible','on');
+		tgtNm = '';
+		for ti=1:numel(tgtIdx);
+		  if(ti>1) tgtNm=[tgtNm ' + ']; end;
+		  tgtNm=sprintf('%s%d %s ',tgtNm,tgtIdx,symbCue{tgtIdx});
+		end
+	 elseif ( tgtIdx==nSymbs+1 ) % rest class
+		tgtNm=baselineClass;
+		set(txthdl,'string','rest','color',txtColor,'visible','on');
 	 end
   else
 	 tgtNm = tgtIdx; % human-name is position number
   end
   fprintf('%d) tgt=%10s : ',si,tgtNm);
   drawnow;% expose; % N.B. needs a full drawnow for some reason
-  sendEvent('stimulus.target',tgtNm);
+  ev=sendEvent('stimulus.target',tgtNm);
   sendEvent('stimulus.trial','start');
   if ( earlyStopping )
 	 % cont-classifier, so tell it to clear the prediction filter for start new trial
@@ -178,6 +189,17 @@ for si=1:nSeq;
   % also reset the position of the fixation point
   drawnow;
   sendEvent('stimulus.trial','end');
+
+  if ( ~isempty(rtbClass) ) % treat post-trial return-to-baseline as a special class
+	 if ( ischar(rtbClass) && strcmp(rtbClass,'trialClass') ) % label as part of the trial
+		sendEvent('stimulus.target',tgtNm);
+	 elseif ( ischar(rtbClass) && strcmp(rtbClass,'trialClass+rtb')) %return-to-base ver of trial class
+		sendEvent('stimulus.target',[tgtNm '_rtb']);		
+	 else
+		sendEvent('stimulus.target',rtbClass);
+	 end
+  end
+  sleepSec(intertrialDuration);
   
 end % loop over sequences in the experiment
 % end training marker
