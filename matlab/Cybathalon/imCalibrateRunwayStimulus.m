@@ -31,7 +31,7 @@ end
 										  % setup image to hold the task runway
 visDur   = 10;
 % number frames store in the visible window, padded with enough extra to not need updating during trial
-visFrames= (trialDuration+visDur)./frameDuration; 
+visFrames= (visDur+trialDuration*2)./frameDuration; 
 visImg   = zeros(nSymbs,visFrames,3); % rgb image to render
 visT0    = 0; % absolute time visible fragement of the image starts
 visEnd   = 0; % index of the end of the valid part of the image
@@ -92,10 +92,30 @@ sendEvent('stimulus.training','start');
 % play the stimulus
 % animation loop
 t0=getwTime(); % absolute start time for the experiment
+waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
 for ei=1:size(stimSeq,2);
 
   % update progress bar
   set(progresshdl,'string',sprintf('%2d/%2d',ei,size(stimSeq,2)));
+
+
+  % Give user a break if too much time has passed, and in an inter-trial
+  if ( getwTime() > waitforkeyTime && ~any(stimSeq(1:nSymbs,ei)>0) )
+	 b0=getwTime();
+	 set(txthdl,'string', {'Break between blocks.' 'Click mouse when ready to continue.'}, 'visible', 'on');
+	 drawnow;
+	 waitforbuttonpress;
+	 set(txthdl,'visible', 'off');
+	 drawnow;
+	 sleepSec(intertrialDuration);
+	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
+	 if ( 1.5*calibrateMaxSeqDuration > (size(stimSeq,2)-ei)*frameDuration  ) % close to end of expt
+		waitforkeyTime=inf;
+	 end;
+
+	 % update the start time, as if started later to compensate for the time spent waiting
+	 t0 = t0+getwTime()-b0;;
+  end
 
 										  % render stimSeq into the visImage
 										  % find epoch to start with
