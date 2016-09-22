@@ -16,13 +16,16 @@ function [x,s]=biasFilt(x,s,alpha)
 if ( nargin<4 || isempty(verb) ) verb=0; end;
 if ( isempty(s) ) s=struct('sx',zeros(size(x)),'N',0,'x',0); end;
 if ( any(alpha>1) ) alpha=exp(log(.5)./alpha); end; % convert to decay factor
+
 s.N = alpha.*s.N + (1-alpha).*1; % weight accumulated so far for each alpha, for warmup
+s.sx=alpha(:,1).*s.sx + (1-alpha(:,1)).*x; % weighted sum of x
+if ( verb>0 ) fprintf('x=[%s]\ts=[%s]',sprintf('%g ',x),sprintf('%g ',s.sx./s.N)); end;
+
 if ( size(alpha,2)>1 ) % moving average filter the raw inputs
   s.x= alpha(:,2).*s.x + (1-alpha(:,2)).*x; % udpate running average
   x  = s.x./s.N(:,2); % smoothed output estimate 
 end;
-s.sx=alpha(:,1).*s.sx + (1-alpha(:,1)).*x; % weighted sum of x
-if ( verb>0 ) fprintf('x=[%s]\ts=[%s]',sprintf('%g ',x),sprintf('%g ',s.sx./s.N)); end;
+
 x=x-s.sx./s.N(:,1); % bias adapt
 if ( verb>0 ) fprintf(' => x_new=[%s]\n',sprintf('%g ',x)); end;
 return;
