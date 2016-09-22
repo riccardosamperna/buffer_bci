@@ -45,7 +45,8 @@ verb         =0; % verbosity level for debug messages, 1=default, 0=quiet, 2=ver
 buffhost     ='localhost';
 buffport     =1972;
 %symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
-symbCue      ={'Alpha' 'Tongue' 'Hands'}; % config for Toine
+symbCue      ={'Alpha' 'Tongue' 'Hands'}; % config for JF
+%symbCue      ={'Tong' 'Voeten' 'Rechter-hand'}; % config for P3
 nSymbs       =numel(symbCue); 
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     ='999 rtb';% 'trialClass';% 'trialClass+rtb'; % 'rtb';% [];% if set post-trial is separate class also
@@ -99,6 +100,7 @@ earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
 % classifier training configuration
 
 % Calibration/data-recording options
+freqband      =[6 8 28 30];
 trlen_ms      =epochDuration*1000; % how much data to use in each classifier training example
 offset_ms     =[0 0];%[250 250]; % give .25s for user to start/finish
 calibrateOpts ={'offset_ms',offset_ms};
@@ -123,15 +125,10 @@ epochtrailAdaptFactor=exp(log(.5)/epochtrialAdaptHL); % convert to exp-move-ave 
 
 spMx='1vR';
 if( ~isempty(rtbClass) ) % setup the training to ignore the rtb info
-  % build the target names used in the event
-  tgtNms={};
-  for ci=1:nSymbs; tgtNms{ci}=sprintf('%d %s',ci,symbCue{ci}); end;
-  tgtNms{nSymbs+1}=baselineClass;
-  % build the sub-problem specification matrix which ignores the rtb-class
+  % build the target names used in the event, i.e. all but rtb
   spMx={};
-  for ci=1:numel(tgtNms);
-	 spMx{ci} = {tgtNms{ci} tgtNms([1:ci-1 ci+1:end])};
-  end
+  for ci=1:nSymbs; spMx{ci}=sprintf('%d %s',ci,symbCue{ci}); end;
+  spMx{nSymbs+1}=baselineClass;
 end
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0};%default: 4hz res, stack of independent one-vs-rest classifiers
