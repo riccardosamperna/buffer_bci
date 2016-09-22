@@ -253,7 +253,7 @@ while (ishandle(contFig))
     sendEvent(phaseToRun,'start');
     %try
        [emgdata,emgevents,emghdr]=EMGtraining();
-       EMGcontroller(emgdata,emgevents,'hdr',emghdr,'difficulty',10);
+       EMGcontroller(emgdata,emgevents,'hdr',emghdr,'difficulty',1);
        %catch
       % fprintf('Error in : %s',phaseToRun);
       % le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
