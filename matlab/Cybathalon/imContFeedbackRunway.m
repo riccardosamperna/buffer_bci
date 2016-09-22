@@ -138,13 +138,15 @@ for ei=1:size(stimSeq,2);
 	 waitforbuttonpress;
 	 set(txthdl,'visible', 'off');
 	 drawnow;
-	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
 	 sleepSec(intertrialDuration);
 
     % process any events which came in while we were waiting
 	 processNewPredictionEvents;
 
-	 % update the start time, as if started later to compensate for the time spent waiting
+	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
+	 if ( 1.5*calibrateMaxSeqDuration > (size(stimSeq,2)-ei)*frameDuration  ) % close to end of expt
+	 end
+    % update the start time, as if started later to compensate for the time spent waiting
 	 t0 = t0+getwTime()-b0;;
   end
   

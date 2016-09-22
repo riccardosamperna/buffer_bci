@@ -99,16 +99,19 @@ for ei=1:size(stimSeq,2);
   set(progresshdl,'string',sprintf('%2d/%2d',ei,size(stimSeq,2)));
 
 
-  % Give user a break if too much time has passed
-  if ( getwTime() > waitforkeyTime )
+  % Give user a break if too much time has passed, and in an inter-trial
+  if ( getwTime() > waitforkeyTime && ~any(stimSeq(1:nSymbs,ei)>0) )
 	 b0=getwTime();
 	 set(txthdl,'string', {'Break between blocks.' 'Click mouse when ready to continue.'}, 'visible', 'on');
 	 drawnow;
 	 waitforbuttonpress;
 	 set(txthdl,'visible', 'off');
 	 drawnow;
-	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
 	 sleepSec(intertrialDuration);
+	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
+	 if ( 1.5*calibrateMaxSeqDuration > (size(stimSeq,2)-ei)*frameDuration  ) % close to end of expt
+		waitforkeyTime=inf;
+	 end;
 
 	 % update the start time, as if started later to compensate for the time spent waiting
 	 t0 = t0+getwTime()-b0;;
