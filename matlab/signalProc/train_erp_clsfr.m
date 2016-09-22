@@ -100,7 +100,7 @@ if ( opts.badchrm || (~isempty(opts.badCh) && sum(opts.badCh)>0) )
   isbadch = false(size(X,1),1);
   if ( ~isempty(ch_pos) ) isbadch(numel(ch_pos)+1:end)=true; end;
   if ( ~isempty(opts.badCh) )
-      isbadch(opts.badCh)=true;
+      isbadch(opts.badCh(1:min(end,size(isbadch,1))))=true;
       goodCh=find(~isbadch);
       if ( opts.badchrm ) 
           [isbad2,chstds,chthresh]=idOutliers(X(goodCh,:,:),1,opts.badchthresh);
@@ -113,7 +113,7 @@ if ( opts.badchrm || (~isempty(opts.badCh) && sum(opts.badCh)>0) )
     if ( ~isempty(ch_pos) ) ch_pos  =ch_pos(:,~isbadch(1:numel(ch_names))); end;
     ch_names=ch_names(~isbadch(1:numel(ch_names)));
   end
-  fprintf('%d ch removed\n',sum(isbadch));
+  fprintf('%d ch removed\n',sum(isbadch(1:numel(ch_names))));
 end
 
 %3) Spatial filter/re-reference
