@@ -52,12 +52,12 @@ baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to c
 rtbClass     ='99 RTB';% if set, treat post-trial return-to-baseline phase as separate class to classify
 
 nSeq              =20*nSymbs; % 20 examples of each target
-epochDuration     =1.5;
-trialDuration     =epochDuration*3; % = 4.5s trials
-baselineDuration  =epochDuration;   % = 1.5s baseline
-intertrialDuration=epochDuration;   % = 1.5s post-trial
-feedbackDuration  =epochDuration;
-errorDuration     =epochDuration*2; %= 3s penalty for mistake
+epochDuration     =.75;% lots of short (750ms/trial) epochs for training the classifier
+trialDuration     =epochDuration*3*2; % = 4.5s trials
+baselineDuration  =epochDuration*2; % = 1.5s baseline
+intertrialDuration=epochDuration*2; % = 1.5s post-trial
+feedbackDuration  =epochDuration*2;
+errorDuration     =epochDuration*2*2;%= 3s penalty for mistake
 calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
 
 
@@ -68,11 +68,11 @@ feedbackMagFactor = 1.0; % how much we magnify the feedback cursor location
 axLim        =[-1.5 1.5]; % size of the display axes
 winColor     =[.0 .0 .0]; % window background color
 bgColor      =[.2 .2 .2]; % background/inactive stimuli color
-fixColor     =[1  0  0];  % fixitation/get-ready cue point color
-tgtColor     =[0 .9  0];  % target color
-fbColor      =[0  0 .9];  % feedback color
+fixColor     =[.8  0  0]; % fixitation/get-ready cue point color
+tgtColor     =[0  .7  0]; % target color (N.B. green is perceptually brighter, so lower)
+fbColor      =[0   0 .8]; % feedback color = blue
 txtColor     =[.9 .9 .9]; % color of the cue text
-errorColor   =[.8  0 0];  % error feedback color
+errorColor   =[.8  0  0]; % error feedback color
 
 animateFix   = true; % do we animate the fixation point during training?
 frameDuration= .25; % time between re-draws when animating the fixation point
@@ -96,23 +96,12 @@ earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
 
 %----------------------------------------------------------------------------------------------
 % classifier training configuration
-trlen_ms      =epochDuration*1000; % how often to run the classifier
-calibrateOpts ={};
-
-neurofeedback_instruct={'Perform mental tasks as you would like.' 'The fixation point will move to' 'show the systems current prediction'};
-neurofeedbackTrialDuration=30;
-
-centerout_instruct={'Complete the indicated tasks as rapidly as possible.' 'The fixation point will move to' 'show the current prediction' 'Trials end when fixation hits the target' 'or time runs out.' 'Hitting the wrong target incurs a time penalty'};
-earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
-%earlyStoppingFilt=@(x,s,e) gausOutlierFilt(x,s,2); % dv-filter to determine when a trial has ended
-
-%----------------------------------------------------------------------------------------------
-% classifier training configuration
+freqband      =[6 8 28 30];
 trlen_ms      = max(epochDuration*1000,500); % how much data to take to run the classifier on, min 500ms
 calibrateOpts ={};
+
 welch_width_ms=250; % width of welch window => spectral resolution
 step_ms=welch_width_ms/2;% N.B. welch defaults=.5 window overlap, use step=width/2 to simulate
-contFeedbackFiltLen=(trialDuration*1000/step_ms);
 
 epochtrlen_ms =trialDuration*1000; % amount of data to apply classifier to in epoch feedback
 conttrlen_ms  =welch_width_ms; % amount of data to apply classifier to in continuous feedback
@@ -129,7 +118,8 @@ epochtrialAdaptHL=(adaptHalfLife_ms/epochtrlen_ms); % half-life in number called
 epochtrailAdaptFactor=exp(log(.5)/epochtrialAdaptHL); % convert to exp-move-ave weight factor
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0}; % default: 4hz res, stack of independent one-vs-rest classifiers
-trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
+%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
+trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn','mlr_cg','binsp',0,'spMx','1vR'}; % whiten + direct multi-class training
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','adaptspatialfilt',trialadaptfactor,'objFn','mlr_cg','binsp',0,'spMx','1vR'}; % adaptive-whiten + direct multi-class training
 %trainOpts = {'spType',{{1 3} {2 4}}}; % train 2 classifiers, 1=N vs S, 2=E vs W
 
@@ -137,8 +127,8 @@ trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','wht','objFn','
 %%0) Use exactly the same classification window for feedback as for training, but
 %%   but also include a bias adaption system to cope with train->test transfer
 earlyStopping = false;
-epochFeedbackOpts={'trlen_ms',trialDuration*1000}; % raw output, from whole trials data
-%epochFeedbackOpts={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/50))}; % bias-adaption
+epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials data
+%epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) biasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
 
 % Epoch feedback with early-stopping, config using the user feedback table
 userFeedbackTable={'epochFeedback_es' 'cont' {'predFilt',@(x,s,e) gausOutlierFilt(x,s,2.5*8,trlen_ms./step_ms),'trlen_ms',welch_width_ms}}; 
@@ -155,6 +145,8 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
 %% Also send all raw predictions out for use in, e.g. center-out training
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',-contFeedbackFiltLen,'trlen_ms',welch_width_ms}; % trlDuration average
+% as above but include an additional bias-adaption as well as classifier output smoothing
+contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor contFeedbackFiltFactor]),'trlen_ms',welch_width_ms}; % trlDuration average
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation
 %contFeedbackOpts ={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/400)),'trlen_ms',[]}; 
