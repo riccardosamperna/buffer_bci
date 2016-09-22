@@ -54,11 +54,10 @@ progresshdl=text(axLim(1),axLim(2),sprintf('%2d/%2d',0,nSeq),...
 set(h(:),'facecolor',bgColor);
 sendEvent('stimulus.training','start');
 
-
+% wait for user to be ready before starting everything
 set(txthdl,'string', {calibrate_instruct{:} '' 'Click mouse when ready'}, 'visible', 'on'); drawnow;
 waitforbuttonpress;
-set(txthdl,'visible', 'off'); drawnow;
-sleepSec(intertrialDuration);
+set(txthdl,'visible', 'off'); drawnow; sleepSec(intertrialDuration);
 
 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
 for si=1:nSeq;
