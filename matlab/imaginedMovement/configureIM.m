@@ -96,6 +96,7 @@ earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
 
 %----------------------------------------------------------------------------------------------
 % classifier training configuration
+freqband      =[6 8 28 30];
 trlen_ms      = max(epochDuration*1000,500); % how much data to take to run the classifier on, min 500ms
 calibrateOpts ={};
 
