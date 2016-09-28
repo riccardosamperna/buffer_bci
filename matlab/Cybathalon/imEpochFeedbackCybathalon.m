@@ -63,7 +63,7 @@ sendEvent('stimulus.testing','start');
 state=[]; 
 endTesting=false; dvs=[];
 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
-for si=1:nSeq;
+for si=1:max(100000,nSeq);
 
   if ( ~ishandle(fig) || endTesting ) break; end;
   
