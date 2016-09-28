@@ -470,11 +470,13 @@ end;
 
 % compute the final performance with untransformed input and solutions
 Rw   = R*w;
+f = repop(w'*X,'+',b'); % true values (w.o. numerical fixes)
 if ( ~binp ) % ensure predictions are zero-mean, for numerical stability and interpability
   muf=mean(f(:)); f=f-muf; b=b-muf; 
 end
-if(opts.rescaledv) f=repop(f,'-',max(f,[],1)); end;% re-scale for numerical stability
-p    = exp(f);
+if(opts.rescaledv)   p= exp(repop(f,'-',max(f,[],1)));
+else                 p= exp(f);
+end
 if ( size(p,1)==1 ) % binary problem
   p  = p./(1+p);
   if ( onetrue ) 

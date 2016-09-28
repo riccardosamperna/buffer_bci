@@ -33,11 +33,7 @@ if ( isfield(clsfr,'detrend') && clsfr.detrend ) % detrend over time
     if ( verb>0 ) fprintf('1) Detrend\n'); end
     X=detrend(X,2); % detrend over time
   elseif ( isequal(clsfr.detrend,2) )
-<<<<<<< HEAD
-    if ( verb>0 ) fprintf('1) Center\n'); end
-=======
     if ( verb>0 ) fprintf('1) Center\n'); end;
->>>>>>> d24dcb35c3c9102a02ab706ce7a483379544c39f
     X=repop(X,'-',mean(X,2));
   end
 end 
@@ -134,7 +130,7 @@ end
 %5) feature post-processing filter
 if ( isfield(clsfr,'featFilt') && ~isempty(clsfr.featFilt) )
   for ei=1:size(X,3);
-	 [X(:,:,ei),clsfr.ffState]=feval(featFilt{1},X(:,:,ei),clsfr.ffState,featFilt{2:end});
+	 [X(:,:,ei),clsfr.ffState]=feval(clsfr.featFilt{1},X(:,:,ei),clsfr.ffState,clsfr.featFilt{2:end});
   end  
 end
 
