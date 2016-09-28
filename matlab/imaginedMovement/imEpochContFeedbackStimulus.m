@@ -41,7 +41,6 @@ h(nSymbs+1)=rectangle('curvature',[1 1],'position',[stimPos(:,end)-stimRadius/4;
 set(gca,'visible','off');
 
 %Create a text object with no text in it, center it, set font and color
-set(fig,'Units','pixel');wSize=get(fig,'position');set(fig,'units','normalized');% win size in pixels
 txthdl = text(mean(get(ax,'xlim')),mean(get(ax,'ylim')),' ',...
 				  'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle',...
 				  'fontunits','pixel','fontsize',.05*wSize(4),...
@@ -99,7 +98,14 @@ for si=1:nSeq;
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
   set(h(end),'facecolor',tgtColor); % green fixation indicates trial running
   if ( ~isempty(symbCue) )
-	 set(txthdl,'string',sprintf('%s ',symbCue{tgtSeq(:,si)>0}),'color',txtColor,'visible','on');
+	 set(txthdl,'string',sprintf('%s ',symbCue{tgtIdx}),'color',txtColor,'visible','on');
+	 tgtNm = '';
+	 for ti=1:numel(tgtIdx);
+		if(ti>1) tgtNm=[tgtNm ' + ']; end;
+		tgtNm=sprintf('%s%d %s ',tgtNm,tgtIdx,symbCue{tgtIdx});
+	 end
+  else
+	 tgtNm = tgtIdx; % human-name is position number
   end
   fprintf('%d) tgt=%10s : ',si,tgtNm);
   drawnow;% expose; % N.B. needs a full drawnow for some reason

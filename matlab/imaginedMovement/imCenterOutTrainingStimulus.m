@@ -180,7 +180,7 @@ for si=1:nSeq;
   % check for penalties if we made an incorrect prediction
   if ( targetReached ) 
      [ans,predTgt]=max(dv); % get the predicted target
-     if ( predTgt>=nSymbs ) 
+     if ( predTgt>nSymbs ) 
         nMissed=nMissed+1;
      elseif ( predTgt~=tgtIdx ) % wrong (and not 'rest') .... do the penalty
        % show the mistake

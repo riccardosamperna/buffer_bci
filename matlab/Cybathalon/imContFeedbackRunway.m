@@ -39,28 +39,28 @@ visT0    = 0; % absolute time visible fragement of the image starts
 visEnd   = 0; % index of the end of the valid part of the image
 
 										  % render stimSeq into the visImage
-  epI=[];
-  for fi=visEnd+1:size(visImg,2); % render into the frameBuffer
-	 visImg(:,fi,:) = repmat(bgColor,size(visImg,1),1); % start as background color
-	 starttfi= visT0+(fi-1)*frameDuration; % start time for the current frame
-	 % find which epoch contains this frame
-	 if ( isempty(epI) ) 
-		epI=find(starttfi>=stimTime,1,'last');
-	 else
-		if ( starttfi>=stimTime(min(end,epI+1)) ) epI=epI+1; end % move to next epoch of needed
-	 end
-	 if ( ~isempty(epI) && epI<size(stimSeq,2) )
-		ss=stimSeq(:,epI);
-		if ( any(ss>0) ) % set target cols
-		  if ( ss(end) ) % rest
-			 visImg(:,fi,:)             =repmat(fixColor,nSymbs,1);
-		  else % tgt
-			 visImg(ss(1:nSymbs)>0,fi,:)=repmat(tgtColor,sum(ss(1:nSymbs)>0),1);
-		  end
+epI=[];
+for fi=visEnd+1:size(visImg,2); % render into the frameBuffer
+  visImg(:,fi,:) = repmat(bgColor,size(visImg,1),1); % start as background color
+  starttfi= visT0+(fi-1)*frameDuration; % start time for the current frame
+										  % find which epoch contains this frame
+  if ( isempty(epI) ) 
+	 epI=find(starttfi>=stimTime,1,'last');
+  else
+	 if ( starttfi>=stimTime(min(end,epI+1)) ) epI=epI+1; end % move to next epoch of needed
+  end
+  if ( ~isempty(epI) && epI<size(stimSeq,2) )
+	 ss=stimSeq(:,epI);
+	 if ( any(ss>0) ) % set target cols
+		if ( ss(end) ) % rest
+		  visImg(:,fi,:)             =repmat(fixColor,nSymbs,1);
+		else % tgt
+		  visImg(ss(1:nSymbs)>0,fi,:)=repmat(tgtColor,sum(ss(1:nSymbs)>0),1);
 		end
 	 end
   end
-  visEnd=fi; % update the end valid-data indicator
+end
+visEnd=fi; % update the end valid-data indicator
 
 
 % make the stimulus

@@ -116,11 +116,15 @@ while (timetogo>0)
 		
 % feedback information... compute the updated positino for the cursor
 		if ( numel(prob)>=size(stimPos,2)-1 ) % per-target decomposition
+<<<<<<< HEAD
 <<<<<<< 3c8f80e17741060518c3c3e130ef046af9acedd5
         if ( numel(prob)>size(stimPos,2) ) prob=[prob(1:size(stimPos,2)-1);sum(prob(size(stimPos,2):end))];end;
 =======
         if ( numel(prob)>size(stimPos,2) ) prob=[prob(1:size(stimPos,2)-1),sum(prob(size(stimPos,2):end))];end;
 >>>>>>> updates for the center-out neuro-feedback training system
+=======
+        if ( numel(prob)>size(stimPos,2) ) prob=[prob(1:size(stimPos,2)-1);sum(prob(size(stimPos,2):end))];end;
+>>>>>>> d24dcb35c3c9102a02ab706ce7a483379544c39f
 		  dx = stimPos(:,1:numel(prob))*prob(:); % change in position is weighted by class probs
 		elseif ( numel(prob)==2 ) % direct 2d decomposition
 		  dx = prob;

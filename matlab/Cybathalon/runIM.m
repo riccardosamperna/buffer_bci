@@ -21,11 +21,12 @@ addpath('../imaginedMovement');
 			  '5) Continuous Feedback' 'contfeedback';
            '6) Center-out Feedback Training' 'centerout';
 			  '7) NeuroFeedback'       'neurofeedback'
-           '' ''
+           '' '';
 			  'p) Practice - runway'    'practice_runway'; 
 			  'r) Calibrate - runway'   'calibrate_runway'; 
 			  'f) Continuous Feedback - runway'   'contfeedback_runway'; 
 			  'c) Cybathalon Control'   'cybathalon';
+           '' '';
            'K) Keyboard Control'    'keyboardcontrol';
            'E) EMG Control'         'emgcontrol';
 			  'q) quit'                 'quit';
