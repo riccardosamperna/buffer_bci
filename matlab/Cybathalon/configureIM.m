@@ -132,7 +132,7 @@ if( ~isempty(rtbClass) ) % setup the training to ignore the rtb info
 end
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0};%default: 4hz res, stack of independent one-vs-rest classifiers
-trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'freqband',[6 8 35 38],'badchscale',0,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx',spMx}; % whiten + direct multi-class training
+trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'freqband',[6 8 26 38],'badchscale',0,'spatialfilter','wht','featFilt',{'relFilt',conttrialAdaptHL,1},'objFn','mlr_cg','binsp',0,'spMx',spMx}; % whiten + direct multi-class training
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn','mlr_cg','binsp',0,'spMx',spMx}; % local-whiten + direct multi-class training
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','adaptspatialfilt','adaptspatialfilt',conttrialAdaptFactor,'objFn','mlr_cg','binsp',0,'spMx',spMx};% adaptive-whiten + direct multi-class training
 %trainOpts = {'spType',{{1 3} {2 4}}}; % train 2 classifiers, 1=N vs S, 2=E vs W
