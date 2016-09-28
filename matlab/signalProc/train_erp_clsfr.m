@@ -62,11 +62,13 @@ function [clsfr,res,X,Y]=train_erp_clsfr(X,Y,varargin)
 %  res    - [struct] results structure as returned by 'cvtrainFn'. 
 %                    use: help cvtrainFn for more information on its structure
 %  X      - [size(X)] the pre-processed data
-opts=struct('classify',1,'fs',[],'timeband_ms',[],'freqband',[],'downsample',[],'detrend',1,'spatialfilter','car',...
-    'badchrm',1,'badchthresh',3.1,'badchscale',2,...
-    'badtrrm',1,'badtrthresh',3,'badtrscale',2,...
-    'ch_pos',[],'ch_names',[],'verb',0,'capFile','1010','overridechnms',0,...
-    'visualize',1,'badCh',[],'nFold',10,'class_names',[],'zeroLab',1);
+  opts=struct('classify',1,'fs',[],...
+				  'timeband_ms',[],'freqband',[],'downsample',[],'detrend',1,'spatialfilter','car',...
+				  'badchrm',1,'badchthresh',3.1,'badchscale',2,...
+				  'badtrrm',1,'badtrthresh',3,'badtrscale',2,...
+				  'featFilt',[],...
+				  'ch_pos',[],'ch_names',[],'verb',0,'capFile','1010','overridechnms',0,...
+				  'visualize',1,'badCh',[],'nFold',10,'class_names',[],'zeroLab',1);
 [opts,varargin]=parseOpts(opts,varargin);
 
 di=[]; ch_pos=opts.ch_pos; ch_names=opts.ch_names;
@@ -174,6 +176,15 @@ if ( opts.badtrrm )
   Y=Y(~isbadtr,:);
   fprintf(' %d tr removed\n',sum(isbadtr));
 end;
+
+% 5.9) Apply a feature filter post-processor if wanted
+featFilt=opts.featFilt; ffState=[];
+if ( ~isempty(featFilt) )
+  if ( ~iscell(featFilt) ) featFilt={featFilt}; end;
+  for ei=1:size(X,3);
+	 [X(:,:,ei),ffState]=feval(featFilt{1},X(:,:,ei),ffState,featFilt{2:end});
+  end
+end
 
 %5.5) Visualise the input?
 aucfig=[];erpfig=[];
@@ -283,6 +294,8 @@ clsfr.timeIdx     = timeIdx; % time range to apply the classifer to
 clsfr.windowFn    = []; % DUMMY -- so ERP and ERSP classifier have same structure fields
 clsfr.welchAveType= []; % DUMMY -- so ERP and ERSP classifier have same structure fields
 clsfr.freqIdx     = []; % DUMMY -- so ERP and ERSP classifier have same structure fields
+clsfr.normalize   = normalize; % feature normalization type
+clsfr.normpow     = normpow;
 
 clsfr.badtrthresh = []; if ( ~isempty(trthresh) && opts.badtrscale>0 ) clsfr.badtrthresh = trthresh(end)*opts.badtrscale; end
 clsfr.badchthresh = []; if ( ~isempty(chthresh) && opts.badchscale>0 ) clsfr.badchthresh = chthresh(end)*opts.badchscale; end

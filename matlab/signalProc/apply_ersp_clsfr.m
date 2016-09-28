@@ -150,6 +150,13 @@ if ( isfield(clsfr,'freqIdx') && ~isempty(clsfr.freqIdx) )
   X=X(:,clsfr.freqIdx,:); % sub-set to the interesting frequency range
 end
 
+%5) feature post-processing filter
+if ( isfield(clsfr,'featFilt') && ~isempty(clsfr.featFilt) )
+  for ei=1:size(X,3);
+	 [X(:,:,ei),clsfr.ffState]=feval(featFilt{1},X(:,:,ei),clsfr.ffState,featFilt{2:end});
+  end  
+end
+
 %6) apply classifier
 [f, fraw]=applyLinearClassifier(X,clsfr);
 
