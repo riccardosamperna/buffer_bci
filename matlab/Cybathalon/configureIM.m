@@ -61,9 +61,9 @@ errorDuration     =epochDuration*2*3; %= 3s penalty for mistake
 calibrateMaxSeqDuration=150;        %= 2.5min between wait-for-key-breaks
 
 
-warpCursor   = 1; % flag if in feedback BCI output sets cursor location or how the cursor moves
+warpCursor   = 1; % flag if in feedback BCI output sets cursor location or how the relative movement
 moveScale    = .1;
-feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
+%feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
 
 axLim        =[-1.5 1.5]; % size of the display axes
 winColor     =[.0 .0 .0]; % window background color
@@ -158,6 +158,7 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',-contFeedbackFiltLen}; % trlDuration average
 % as above but include an additional bias-adaption as well as classifier output smoothing
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,[conttrialAdaptFactor -contFeedbackFiltLen])}; % trlDuration average
+feedbackMagFactor = contFeedbackFiltLen; % re-scale the mean back up to a sum
 
 % Epoch feedback with early-stopping, config using the user feedback table
 userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,contFeedbackFiltLen)}};
