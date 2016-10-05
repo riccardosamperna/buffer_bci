@@ -45,8 +45,8 @@ verb         =0; % verbosity level for debug messages, 1=default, 0=quiet, 2=ver
 buffhost     ='localhost';
 buffport     =1972;
 %symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
-symbCue      ={'Alpha' 'Tongue' 'Hands'}; % config for JF
-%symbCue      ={'Tong' 'Voeten' 'Rechter-hand'}; % config for P3
+%symbCue      ={'Alpha' 'Tongue' 'Hands'}; % config for JF
+symbCue      ={'Tong' 'Voeten' 'Rechter-hand'}; % config for P3
 nSymbs       =numel(symbCue); 
 baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     ='999 rtb';% 'trialClass';% 'trialClass+rtb'; % 'rtb';% [];% if set post-trial is separate class also
@@ -63,7 +63,7 @@ calibrateMaxSeqDuration=150;        %= 2.5min between wait-for-key-breaks
 
 warpCursor   = 1; % flag if in feedback BCI output sets cursor location or how the relative movement
 moveScale    = .1;
-%feedbackMagFactor = 1.3; % how much we magnify the feedback cursor location
+dvCalFactor  = []; % calibration factor to re-scale classifier decsion values to true probabilities
 
 axLim        =[-1.5 1.5]; % size of the display axes
 winColor     =[.0 .0 .0]; % window background color
@@ -117,7 +117,7 @@ contFeedbackFiltLen=(trialDuration*1000/step_ms); % accumulate whole trials data
 contFeedbackFiltFactor=exp(log(.5)/(contFeedbackFiltLen/2)); % convert to exp-move-ave weighting factor, N.B. 2-hl in window=75% output
 
 % paramters for on-line adaption to signal changes
-adaptHalfLife_ms = 50*.75*1000; %75s amount of data to use for adapting spatialfilter/biasadapt
+adaptHalfLife_ms = 50*.75*1000; %50 epochs amount of data to use for adapting spatialfilter/biasadapt
 conttrialAdaptHL=(adaptHalfLife_ms/step_ms); % half-life in number of calls to apply clsfr
 conttrialAdaptFactor=exp(log(.5)./conttrialAdaptHL); % convert to exp-move-ave weighting factor 
 epochtrialAdaptHL=(adaptHalfLife_ms/epochtrlen_ms); % half-life in number calls to apply-clsfr in epoch feedback
@@ -158,7 +158,7 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',-contFeedbackFiltLen}; % trlDuration average
 % as above but include an additional bias-adaption as well as classifier output smoothing
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,[conttrialAdaptFactor -contFeedbackFiltLen])}; % trlDuration average
-feedbackMagFactor = contFeedbackFiltLen; % re-scale the mean back up to a sum
+dvCalFactor = contFeedbackFiltLen; % re-scale the mean-dv back up to a sum-dv
 
 % Epoch feedback with early-stopping, config using the user feedback table
 userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,contFeedbackFiltLen)}};

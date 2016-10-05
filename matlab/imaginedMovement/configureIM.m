@@ -63,7 +63,7 @@ calibrateMaxSeqDuration=120;        %= 2min between wait-for-key-breaks
 
 warpCursor   = 0; % flag if in feedback BCI output sets cursor location or how the cursor moves
 moveScale    = .1;
-feedbackMagFactor = 1.0; % how much we magnify the feedback cursor location
+dvCalFactor  = []; % calibration factor to re-scale classifier decsion values to true probabilities
 
 axLim        =[-1.5 1.5]; % size of the display axes
 winColor     =[.0 .0 .0]; % window background color

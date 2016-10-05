@@ -176,8 +176,11 @@ for si=1:nSeq;
 			 dv=pred;
 		  end
 
-		  % convert from dv to normalised probability
-        prob=exp((dv-max(dv))); prob=prob./sum(prob); % robust soft-max prob computation
+										  % convert from dv to normalised probability
+		  if(~isempty(dvCalFactor)) prob=exp((dv-max(dv))*dvCalFactor);
+		  else                      prob=exp((dv-max(dv)));
+		  end
+		  prob=prob./sum(prob); % robust soft-max prob computation
         if ( verb>=0 ) 
 			 fprintf('%d) dv:[%s]\tPr:[%s]\n',ev.sample,sprintf('%5.4f ',pred),sprintf('%5.4f ',prob));
         end;
@@ -199,7 +202,6 @@ for si=1:nSeq;
 	 % relative or absolute cursor movement
 	 if ( warpCursor ) % absolute position on the screen
 		fixPos=dx;
-		if(feedbackMagFactor>1) fixPos=(fixPos-stimPos(:,end))*feedbackMagFactor + stimPos(:,end); end;
 	 else % relative movement
 		fixPos=fixPos + dx*moveScale;
 	 end;

@@ -90,7 +90,7 @@ function [res,Cs,fIdxs]=cvtrainFn(objFn,X,Y,Cs,fIdxs,varargin)
 % fIdxs -- the fold structure used. (may be different from input if input is scalar)
 opts = struct('binsp',1,'aucNoise',0,'recSoln',0,'dim',[], 'reuseParms',1,...
               'seed',[],'seedNm','alphab','verb',0,'reorderC',1, ...
-              'spDesc',[],'outerSoln',-1,'calibrate','bal',...
+              'spDesc',[],'outerSoln',-1,'calibrate',[],...
 				  'lossType',[],'lossFn','bal','dispType','bin', 'subIdx',[],'aucWght',.1);
 [opts,varargin]=parseOpts(opts,varargin);
 
@@ -404,27 +404,38 @@ end
 % Calibrate the optimal classifier output probabilities
 % N.B. only for linear classifiers!
 exInd = all(fIdxs<=0,3); % tst points
-if ( ~all(exInd) && opts.binsp && ~isempty(opts.calibrate) && ~isequal(opts.calibrate,0) ) 
-   cr=res.tstbin(:,:,optCi); % cv-estimated probability of being correct - target for calibration
-   %if ( strcmp(opts.calibrate,'bal') ) cr = cr([1 1],:,:); end; % balanced calibration
+if ( ~all(exInd) && ~isempty(opts.calibrate) && ~isequal(opts.calibrate,0) ) 
+   cr=res.tst(:,:,optCi);% cv-estimated probability of being correct - target for calibration
    % correct the targets to prevent overfitting
    cwght=[];
    if ( strcmp(opts.calibrate,'bal') ) % balanced calibration, so equal class weights
       cwght(1,:)=sum(Y(~exInd,:)~=0,1)./sum(Y(~exInd,:)<0)./2; 
       cwght(2,:)=sum(Y(~exInd,:)~=0,1)./sum(Y(~exInd,:)>0)./2;
    end
-   [Ab]=dvCalibrate(Y(~exInd,:),res.tstf(~exInd,:,res.opt.Ci),cr,cwght);
+	if ( ~binsp ) % compute once for all classifiers
+	  Ab=mcCalibrate(Y(~exInd,:),res.opt.tstf(~exInd,:),cr);
+	end
    for i=1:numel(res.opt.soln);
-      if ( iscell(res.opt.soln{i}) ) % cell, assume W is full and b is separate!
+	  if ( binsp ) 
+		 [Ab(:,i)]=dvCalibrate(Y(~exInd,i),res.opt.tstf(~exInd,i),cr,cwght);
+       if ( iscell(res.opt.soln{i}) ) % cell, assume W is full and b is separate!
          res.opt.soln{i}{1}  =res.opt.soln{i}{1}*Ab(1,i);
          res.opt.soln{i}{end}=res.opt.soln{i}{end}*Ab(1,i)+Ab(2,i);
-      else  % non-cell, assume is wb format
+       else  % non-cell, assume is wb format
          res.opt.soln{i}(1:end-1)=res.opt.soln{i}(1:end-1)*Ab(1,i);
          res.opt.soln{i}(end)    =res.opt.soln{i}(end)*Ab(1,i)+Ab(2,i);
-      end
-      % update the predictions also
-      res.opt.f(:,i)    = res.opt.f(:,i)   *Ab(1,i)+Ab(2,i);
-      res.opt.tstf(:,i) = res.opt.tstf(:,i)*Ab(1,i)+Ab(2,i);
+       end
+	  else
+		 if ( size(res.opt.soln,2)==size(Y,2) ) % [wb x nSp]
+			res.opt.soln(1:end-1,i)=res.opt.soln(1:end-1,min(end,i))*Ab(1,min(end,i));
+			res.opt.soln(end,i)    =res.opt.soln(end,i)*Ab(1,min(end,i))+Ab(2,min(end,i));
+		 else % [w*nSp;b*nSp]
+			error('not implemented yet');
+		 end
+	  end
+										  % update the predictions also
+     res.opt.f(:,i)    = res.opt.f(:,i)   *Ab(1,i)+Ab(2,i);
+     res.opt.tstf(:,i) = res.opt.tstf(:,i)*Ab(1,i)+Ab(2,i);
    end  
    res.opt.cal.scale=Ab(1,:); res.opt.cal.offset=Ab(2,:);
 end
