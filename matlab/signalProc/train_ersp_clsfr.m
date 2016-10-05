@@ -270,7 +270,7 @@ if ( opts.visualize )
   % Compute the labeling and set of sub-problems and classes to plot
   Yidx=Y; sidx=[]; labels=opts.class_names; auclabels=labels;
   if ( size(Y,2)==1 && ~(isnumeric(Y) && ~opts.zeroLab && all(Y(:)==1 | Y(:)==0 | Y(:)==-1)))
-    uY=unique(Y,'rows'); Yidx=-ones([size(Y,1),numel(uY)],'int8');    
+    uY=unique(Y); Yidx=-ones([size(Y,1),numel(uY)],'int8');    
     for ci=1:size(uY,1); 
       if(iscell(uY)) 
         tmp=strmatch(uY{ci},Y); Yidx(tmp,ci)=1; 

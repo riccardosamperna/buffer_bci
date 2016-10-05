@@ -121,7 +121,7 @@ adaptHalfLife_ms = 50*.75*1000; %50 epochs amount of data to use for adapting sp
 conttrialAdaptHL=(adaptHalfLife_ms/step_ms); % half-life in number of calls to apply clsfr
 conttrialAdaptFactor=exp(log(.5)./conttrialAdaptHL); % convert to exp-move-ave weighting factor 
 epochtrialAdaptHL=(adaptHalfLife_ms/epochtrlen_ms); % half-life in number calls to apply-clsfr in epoch feedback
-epochtrailAdaptFactor=exp(log(.5)/epochtrialAdaptHL); % convert to exp-move-ave weight factor
+epochtrialAdaptFactor=exp(log(.5)/epochtrialAdaptHL); % convert to exp-move-ave weight factor
 
 spMx='1vR';
 if( ~isempty(rtbClass) ) % setup the training to ignore the rtb info
@@ -133,6 +133,7 @@ end
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0};%default: 4hz res, stack of independent one-vs-rest classifiers
 trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'freqband',[6 8 26 38],'badchscale',0,'spatialfilter','wht','featFilt',{'relFilt',conttrialAdaptHL,1},'objFn','mlr_cg','binsp',0,'spMx',spMx}; % whiten + direct multi-class training
+%trainOpts={'width_ms',welch_width_ms,'aveType','db','badtrrm',0,'badtrthresh',100,'badchrm',5,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx',spMx}; % whiten + direct multi-class training
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn','mlr_cg','binsp',0,'spMx',spMx}; % local-whiten + direct multi-class training
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','adaptspatialfilt','adaptspatialfilt',conttrialAdaptFactor,'objFn','mlr_cg','binsp',0,'spMx',spMx};% adaptive-whiten + direct multi-class training
 %trainOpts = {'spType',{{1 3} {2 4}}}; % train 2 classifiers, 1=N vs S, 2=E vs W
@@ -142,7 +143,9 @@ trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'freqband',[6 8 26 38],'badchsc
 %%   but also include a bias adaption system to cope with train->test transfer
 earlyStopping = false;
 %epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials data
-epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
+%epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
+%epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials data
+%epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) biasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
 
 % different feedback configs (should all give similar results)
 
@@ -159,6 +162,7 @@ contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welc
 % as above but include an additional bias-adaption as well as classifier output smoothing
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,[conttrialAdaptFactor -contFeedbackFiltLen])}; % trlDuration average
 dvCalFactor = contFeedbackFiltLen; % re-scale the mean-dv back up to a sum-dv
+%contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor contFeedbackFiltFactor])}; % trlDuration average
 
 % Epoch feedback with early-stopping, config using the user feedback table
 userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,contFeedbackFiltLen)}};

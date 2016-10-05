@@ -42,6 +42,6 @@ $buffexe ${buffdir}/biosemi.cfg $outfile > $logfile
 
 if [ $? == 1 ] ; then
 	 echo Couldnt start the AMP driver.  Possible reasons
-	 echo 1) The amplifier isnt connected or turned on?
-	 echo 2) You cannot read the USB device.  On linux try: sudo ./startBiosemi.sh
+	 echo 1\) The amplifier isn\'t connected or turned on?
+	 echo 2\) You cannot read the USB device.  On linux try: sudo ./startBiosemi.sh
 fi
