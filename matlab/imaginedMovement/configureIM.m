@@ -128,7 +128,7 @@ trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn'
 %%   but also include a bias adaption system to cope with train->test transfer
 earlyStopping = false;
 epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials data
-%epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) biasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
+epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) biasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
 
 % Epoch feedback with early-stopping, config using the user feedback table
 userFeedbackTable={'epochFeedback_es' 'cont' {'predFilt',@(x,s,e) gausOutlierFilt(x,s,2.5*8,trlen_ms./step_ms),'trlen_ms',welch_width_ms}}; 
