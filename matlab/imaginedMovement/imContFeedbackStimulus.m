@@ -1,6 +1,7 @@
 % continous feedback within a cued trial based structure
 configureIM;
 if ( ~exist('contFeedbackTrialDuration') || isempty(contFeedbackTrialDuration) ) contFeedbackTrialDuration=trialDuration; end;
+if ( ~exist('stimSmoothFactor') ) stimSmoothFactor=[]; end;
 
 % make the target sequence
 if ( baselineClass ) % with rest targets
@@ -105,7 +106,7 @@ for si=1:nSeq;
   tgtIdx=find(tgtSeq(:,si)>0);
   set(h(tgtSeq(:,si)>0),'facecolor',tgtColor);
   set(h(tgtSeq(:,si)<=0),'facecolor',bgColor);
-  if ( tgtSeq(nSymbs+1,si)<=0 )% green fixation indicates trial running, if its not actually the target
+  if ( ~isempty(baselineClass) && tgtSeq(nSymbs+1,si)<=0 )% green fixation indicates trial running, if its not actually the target
 	 set(h(end),'facecolor',tgtColor);
   end
   if ( ~isempty(symbCue) )
@@ -209,7 +210,10 @@ for si=1:nSeq;
     drawnow; % update the display after all events processed    
   end % while time to go
 
-  %------------------------------- feedback --------------
+										  % turn off the text cue
+	 set(txthdl,'string','','color',txtColor,'visible','on');
+
+						  %------------------------------- feedback --------------
   % final predicted target is one fixPos is closest to
   tgtDis = repop(stimPos(:,1:end-1),'-',fixPos); tgtDis = sqrt(sum(tgtDis.^2));
   [md,predTgt]=min(tgtDis);

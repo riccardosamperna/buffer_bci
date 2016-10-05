@@ -46,16 +46,16 @@ buffhost     ='localhost';
 buffport     =1972;
 %symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
 %symbCue      ={'Alpha' 'Tongue' 'Hands'}; % config for JF
-symbCue      ={'Tong' 'Voeten' 'Rechter-hand'}; % config for P3
+symbCue      ={'Tong' 'Voeten' 'Rechter-hand' 'Linker-hand'}; % config for P3
 nSymbs       =numel(symbCue); 
-baselineClass='99 Rest'; % if set, treat baseline phase as a separate class to classify
-rtbClass     ='999 rtb';% 'trialClass';% 'trialClass+rtb'; % 'rtb';% [];% if set post-trial is separate class also
+baselineClass=[];%'99 Rest'; % if set, treat baseline phase as a separate class to classify
+rtbClass     =[];%'999 rtb';% 'trialClass';% 'trialClass+rtb'; % 'rtb';% [];% if set post-trial is separate class also
 
 nSeq              =20*nSymbs; % 20 examples of each target
 epochDuration     =.75;
 trialDuration     =epochDuration*3*2; % 3*20 = 60 classification trials per class = 4.5s trials
-baselineDuration  =epochDuration*2;   % = 1.5s baseline
-intertrialDuration=epochDuration*2;   % = 1.5s post-trial
+baselineDuration  =epochDuration*2*0;   % = 1.5s baseline
+intertrialDuration=epochDuration*2*0;   % = 1.5s post-trial
 feedbackDuration  =epochDuration*2;
 errorDuration     =epochDuration*2*3; %= 3s penalty for mistake
 calibrateMaxSeqDuration=150;        %= 2.5min between wait-for-key-breaks
@@ -107,18 +107,18 @@ calibrateOpts ={'offset_ms',offset_ms};
 
 										% classifier training options
 welch_width_ms=250; % width of welch window => spectral resolution
-step_ms       =welch_width_ms/2;% N.B. welch defaults=.5 window overlap, use step=width/2 to simulate
 
 epochtrlen_ms =trialDuration*1000; % amount of data to apply classifier to in epoch feedback
-conttrlen_ms  =welch_width_ms; % amount of data to apply classifier to in continuous feedback
+conttrlen_ms  =epochDuration*1000;%welch_width_ms; % amount of data to apply classifier to in continuous feedback
+contstep_ms   =conttrlen_ms/2;% N.B. welch defaults=.5 window overlap, use step=width/2 to simulate
 
 % smoothing parameters for feedback in continuous feedback mode
-contFeedbackFiltLen=(trialDuration*1000/step_ms); % accumulate whole trials data before feedback
+contFeedbackFiltLen=(trialDuration*1000/contstep_ms); % accumulate whole trials data before feedback
 contFeedbackFiltFactor=exp(log(.5)/(contFeedbackFiltLen/2)); % convert to exp-move-ave weighting factor, N.B. 2-hl in window=75% output
 
 % paramters for on-line adaption to signal changes
 adaptHalfLife_ms = 50*.75*1000; %50 epochs amount of data to use for adapting spatialfilter/biasadapt
-conttrialAdaptHL=(adaptHalfLife_ms/step_ms); % half-life in number of calls to apply clsfr
+conttrialAdaptHL=(adaptHalfLife_ms/contstep_ms); % half-life in number of calls to apply clsfr
 conttrialAdaptFactor=exp(log(.5)./conttrialAdaptHL); % convert to exp-move-ave weighting factor 
 epochtrialAdaptHL=(adaptHalfLife_ms/epochtrlen_ms); % half-life in number calls to apply-clsfr in epoch feedback
 epochtrialAdaptFactor=exp(log(.5)/epochtrialAdaptHL); % convert to exp-move-ave weight factor
@@ -132,10 +132,10 @@ if( ~isempty(rtbClass) ) % setup the training to ignore the rtb info
 end
 
 %trainOpts={'width_ms',welch_width_ms,'badtrrm',0};%default: 4hz res, stack of independent one-vs-rest classifiers
-trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'freqband',[6 8 26 38],'badchscale',0,'spatialfilter','wht','featFilt',{'relFilt',conttrialAdaptHL,1},'objFn','mlr_cg','binsp',0,'spMx',spMx}; % whiten + direct multi-class training
-%trainOpts={'width_ms',welch_width_ms,'aveType','db','badtrrm',0,'badtrthresh',100,'badchrm',5,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx',spMx}; % whiten + direct multi-class training
-%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','trwht','objFn','mlr_cg','binsp',0,'spMx',spMx}; % local-whiten + direct multi-class training
-%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'spatialfilter','adaptspatialfilt','adaptspatialfilt',conttrialAdaptFactor,'objFn','mlr_cg','binsp',0,'spMx',spMx};% adaptive-whiten + direct multi-class training
+trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'freqband',freqband,'badchscale',0,'spatialfilter','wht','featFilt',{'relFilt',conttrialAdaptHL,1},'objFn','mlr_cg','binsp',0,'spMx',spMx,'calibrate','cr'}; % whiten + direct multi-class training
+%trainOpts={'width_ms',welch_width_ms,'aveType','db','badtrrm',0,'freqband',freqband,'badtrthresh',100,'badchrm',5,'spatialfilter','wht','objFn','mlr_cg','binsp',0,'spMx',spMx}; % whiten + direct multi-class training
+%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'freqband',freqband,'spatialfilter','trwht','objFn','mlr_cg','binsp',0,'spMx',spMx}; % local-whiten + direct multi-class training
+%trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'freqband',freqband,'spatialfilter','adaptspatialfilt','adaptspatialfilt',conttrialAdaptFactor,'objFn','mlr_cg','binsp',0,'spMx',spMx};% adaptive-whiten + direct multi-class training
 %trainOpts = {'spType',{{1 3} {2 4}}}; % train 2 classifiers, 1=N vs S, 2=E vs W
 
 % Epoch feedback opts
@@ -143,24 +143,19 @@ trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'freqband',[6 8 26 38],'badchsc
 %%   but also include a bias adaption system to cope with train->test transfer
 earlyStopping = false;
 %epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials data
-%epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
+epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
 %epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials data
 %epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) biasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
 
 % different feedback configs (should all give similar results)
 
-%%1) Use exactly the same classification window for feedback as for training, but apply more often
-%contFeedbackOpts ={'step_ms',welch_width_ms}; % apply classifier more often
-%%   but also include a bias adaption system to cope with train->test transfer
-%contFeedbackOpts ={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/100)),'step_ms',250};
-stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s trlen
-
-%%2) Classify every welch-window-width (default 250ms), prediction is average of full trials worth of data, no-bias adaptation
+%%2) Classify every conttrlen_ms (default 250ms), prediction is average of full trials worth of data, no-bias adaptation
 %% N.B. this is numerically identical to option 1) above, but computationally *much* cheaper 
 %% Also send all raw predictions out for use in, e.g. center-out training
-contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',-contFeedbackFiltLen}; % trlDuration average
+%contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',conttrlen_ms,'predFilt',-contFeedbackFiltLen}; % trlDuration average
+%contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',conttrlen_ms,'predFilt',-contFeedbackFiltLen}; % trlDuration average
 % as above but include an additional bias-adaption as well as classifier output smoothing
-contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,[conttrialAdaptFactor -contFeedbackFiltLen])}; % trlDuration average
+contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',conttrlen_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,[conttrialAdaptFactor -contFeedbackFiltLen])}; % trlDuration average
 dvCalFactor = contFeedbackFiltLen; % re-scale the mean-dv back up to a sum-dv
 %contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor contFeedbackFiltFactor])}; % trlDuration average
 
