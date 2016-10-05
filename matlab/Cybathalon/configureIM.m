@@ -142,7 +142,7 @@ trainOpts={'width_ms',welch_width_ms,'badtrrm',0,'freqband',[6 8 26 38],'badchsc
 %%0) Use exactly the same classification window for feedback as for training, but
 %%   but also include a bias adaption system to cope with train->test transfer
 earlyStopping = false;
-%epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials data
+epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials data
 %epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
 %epochFeedbackOpts={'trlen_ms',epochtrlen_ms}; % raw output, from whole trials data
 %epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) biasFilt(x,s,epochtrialAdaptFactor)}; % bias-adaption
@@ -160,9 +160,9 @@ stimSmoothFactor= 0; % additional smoothing on the stimulus, not needed with 3s 
 %% Also send all raw predictions out for use in, e.g. center-out training
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',-contFeedbackFiltLen}; % trlDuration average
 % as above but include an additional bias-adaption as well as classifier output smoothing
-contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,[conttrialAdaptFactor -contFeedbackFiltLen])}; % trlDuration average
+%contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,[conttrialAdaptFactor -contFeedbackFiltLen])}; % trlDuration average
 dvCalFactor = contFeedbackFiltLen; % re-scale the mean-dv back up to a sum-dv
-%contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor contFeedbackFiltFactor])}; % trlDuration average
+contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor contFeedbackFiltFactor])}; % trlDuration average
 
 % Epoch feedback with early-stopping, config using the user feedback table
 userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,contFeedbackFiltLen)}};
