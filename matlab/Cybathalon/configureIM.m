@@ -158,7 +158,7 @@ epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,ep
 % as above but include an additional bias-adaption as well as classifier output smoothing
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',conttrlen_ms,'predFilt',@(x,s,e) rbiasFilt(x,s,[conttrialAdaptFactor -contFeedbackFiltLen])}; % trlDuration average
 dvCalFactor = contFeedbackFiltLen; % re-scale the mean-dv back up to a sum-dv
-%contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',welch_width_ms,'predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor contFeedbackFiltFactor])}; % trlDuration average
+contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','trlen_ms',conttrlen_ms,'predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor contFeedbackFiltFactor])}; % trlDuration average
 
 % Epoch feedback with early-stopping, config using the user feedback table
 userFeedbackTable={'epochFeedback_es' 'cont' {'trlen_ms',welch_width_ms,'predFilt',@(x,s,e) gausOutlierFilt(x,s,3.0,contFeedbackFiltLen)}};
