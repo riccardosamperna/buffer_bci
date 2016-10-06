@@ -308,7 +308,7 @@ if ( opts.visualize )
    end
    % Actually plot the data and AUC scores
 	xy=ch_pos; if (size(xy,1)==3) xy = xyz2xy(xy); end
-   erpfig=figure(1);clf(erpfig);set(erpfig,'Name','Data Visualisation: ERSP');
+   erpfig=figure(2);clf(erpfig);set(erpfig,'Name','Data Visualisation: ERSP');
    yvals=freqs;
    try; 
 	  image3d(mu(:,:,:),1,'plotPos',xy,'Xvals',ch_names,'ylabel','freq(Hz)','Yvals',yvals,'zlabel','class','Zvals',labels(:),'disptype','plot','ticklabs','sw','clabel',opts.aveType);
@@ -317,7 +317,7 @@ if ( opts.visualize )
       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
 	end;
    if ( ~(all(Yci(:)==Yci(1))) )
-    aucfig=figure(2);clf(aucfig);set(aucfig,'Name','Data Visualisation: ERSP AUC');
+    aucfig=figure(3);clf(aucfig);set(aucfig,'Name','Data Visualisation: ERSP AUC');
     try; 
 		image3d(auc,1,'plotPos',xy,'Xvals',ch_names,'ylabel','freq(Hz)','Yvals',yvals,'zlabel','class','Zvals',auclabels,'disptype','imaget','ticklabs','sw','clim',[.2 .8],'clabel','auc');
 		colormap ikelvin; 
@@ -341,7 +341,7 @@ end
 if ( opts.visualize ) 
   if ( size(res.tstconf,2)==1 ) % confusion matrix is correct
      % plot the confusion matrix
-    confMxFig=figure(3); set(confMxFig,'name','Class confusion matrix');	 
+    confMxFig=figure(4); set(confMxFig,'name','Class confusion matrix');	 
 	 if ( size(clsfr.spMx,1)==1 ) clabels={clsfr.spKey{clsfr.spMx>0} clsfr.spKey{clsfr.spMx<0}};
 	 else                         [ans,li]=find(clsfr.spMx>0); clabels=clsfr.spKey(li);
 	 end
