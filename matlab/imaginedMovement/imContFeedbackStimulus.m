@@ -138,16 +138,19 @@ for si=1:nSeq;
   prob   = ones(nSymbs,1)./nSymbs; % start with equal prob over everything
   trlStartTime=getwTime();
   timetogo = contFeedbackTrialDuration;
-  evtTime=trlStartTime+epochDuration;
+  nevt=0;
+  evtTime=trlStartTime+epochDuration; % N.B. already sent the 1st target event
   while (timetogo>0)
 	 curTime  = getwTime();
     timetogo = contFeedbackTrialDuration - (curTime-trlStartTime); % time left to run in this trial
 	 if ( curTime>evtTime ) % send target type event every epochDuration
 		sendEvent('stimulus.target',tgtNm);
+		if ( verb>0 ) fprintf(' %d -> %g\n',nevt,evtTime-trlStartTime); end;
 		evtTime = evtTime+epochDuration;
+		nevt=nevt+1;
 	 end
     % wait for new prediction events to process *or* end of trial time
-    [events,state,nsamples,nevents] = buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],min([1,evtTime-curTime,timetogo])*1000);
+    [events,state,nsamples,nevents] = buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],min([epochDuration,evtTime-curTime,timetogo])*1000);
     if ( isempty(events) ) 
 		if ( timetogo>.1 ) fprintf('%d) no predictions!\n',nsamples); end;
     else
