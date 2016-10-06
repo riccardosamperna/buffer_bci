@@ -139,9 +139,9 @@ for si=1:nSeq;
   end;
   if ( earlyStopping )
 	 % wait for new prediction events to process *or* end of trial time
-	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],epochFeedbackTrailDuration*1000+1500);
+	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],epochFeedbackTrialDuration*1000+1500);
   else
-    sleepSec(epochFeedbackTrailDuration); 
+    sleepSec(epochFeedbackTrialDuration); 
 	 % wait for classifier prediction event
 	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],2000);
   end
