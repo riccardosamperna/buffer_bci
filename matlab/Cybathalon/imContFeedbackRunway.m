@@ -1,16 +1,23 @@
 configureIM;
 % add the generic im experiment directory for the generic stimulus files
 addpath('../imaginedMovement');
-
 initgetwTime;
 initsleepSec;
+
+if ( exist('runwayFeedbackTrialDuration') && ~isempty(runwayFeedbackTrialDuration) )
+  contFeedbackTrialDuration=runwayFeedbackTrialDuration;
+end
+if ( ~exist('contFeedbackTrialDuration') || isempty(contFeedbackTrialDuration) )
+  contFeedbackTrialDuration=trialDuration;
+end;
+
 
 % pre-build the time-line for the whole experiment
 tgtSeq=mkStimSeqRand(nSymbs,nSeq);
 % insert the rest between tgts to make a complete stim sequence + event seq with times
-trlEP   = (trialDuration+baselineDuration+intertrialDuration)./epochDuration;
+trlEP   = (contFeedbackTrialDuration+baselineDuration+intertrialDuration)./epochDuration;
 stimSeq = zeros(size(tgtSeq,1)+1,size(tgtSeq,2)*trlEP);
-%zeros(size(tgtSeq,1)+1,size(tgtSeq,2)*(trialDuration+baselineDuration+intertrialDuration)./epochDuration);										  
+%zeros(size(tgtSeq,1)+1,size(tgtSeq,2)*(contFeedbackTrialDuration+baselineDuration+intertrialDuration)./epochDuration);										  
 stimTime=(0:size(stimSeq,2))*epochDuration; % stimulus times										  
 eventSeq=true(1,size(stimSeq,2));           % when to send events
 
