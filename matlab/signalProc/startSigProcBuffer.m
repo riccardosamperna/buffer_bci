@@ -109,6 +109,7 @@ opts=struct('phaseEventType','startPhase.cmd',...
             'epochPredFilt',[],'epochFeedbackOpts',{{}},...
 				'contPredFilt',[],'contFeedbackOpts',{{}},...
 				'userFeedbackTable',{{}},...
+				'savetestdata',0,... % save data seen during the test phase (i.e. in cont_applyClsfr)
 				'capFile',[],...
 				'subject','test','verb',1,'buffhost',[],'buffport',[],'timeout_ms',500,...
 				'useGUI',1,'cancelError',0);
@@ -124,7 +125,7 @@ if( isempty(capFile) )
   else                                   capFile=fullfile(pth,fn);
   end; % 1010 default if not selected
 end
-if ( ~isempty(strfind(capFile,'1010.txt')) ) overridechnms=0; else overridechnms=1; end; % force default override
+if(~isempty(strfind(capFile,'1010.txt')) ) overridechnms=0; else overridechnms=1; end; % force default override
 if ( ~isempty(strfind(capFile,'tmsi')) ) thresh=[.0 .1 .2 5]; badchThresh=1e-4; end;
 
 if ( isempty(opts.epochEventType) && opts.useGUI )
@@ -435,8 +436,7 @@ while ( true )
 
    %---------------------------------------------------------------------------------
    case {'contfeedback'};
-    try
-    if ( ~isequal(clsSubj,subject) || ~exist('clsfr','var') ) 
+    try % try to load the classifier from file (in case someone else made it for us)
       clsfrfile = [cname '_' subject '_' datestr];
       if ( ~(exist([clsfrfile '.mat'],'file') || exist(clsfrfile,'file')) ) 
 		  clsfrfile=[cname '_' subject]; 
@@ -444,18 +444,51 @@ while ( true )
       if(opts.verb>0)fprintf('Loading classifier from file : %s\n',clsfrfile);end;
       clsfr=load(clsfrfile);
       clsSubj = subject;
-    end;
+	 catch
+		if ( ~isequal(clsSubj,subject) || ~exist('clsfr','var') ) % can't use the clsfr variable
+		  fprintf('Error in : %s',phaseToRun);
+        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+		  if ( ~isempty(le.stack) )
+			 for i=1:numel(le.stack);
+				fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+			 end;
+		  end
+        msgbox({sprintf('Error in : %s',phaseToRun) 'OK to continue!'},'Error');
+        sendEvent('testing','end');    
+		end;
+	 end
 
+	 try		
     if ( ~any(strcmp(lower(opts.clsfr_type),{'ersp','induced'})) )
       warning('Trying to use an ERP classifier in continuous application mode.\nAre you sure?');
     end
 	 % generate prediction every trlen_ms/2 seconds using trlen_ms data
-    cont_applyClsfr(clsfr,...
-						  'endType',{'testing','test','contfeedback'},...
-						  'predFilt',opts.contPredFilt,'verb',opts.verb,...
-						  'trlen_ms',opts.trlen_ms,'overlap',.5,... %default to prediction every trlen_ms/2 ms
-						  opts.contFeedbackOpts{:}); % but override with contFeedbackOpts
-    catch
+	 if ( ~opts.savetestdata )
+		cont_applyClsfr(clsfr,...
+							 'endType',{'testing','test','contfeedback'},...
+							 'predFilt',opts.contPredFilt,'verb',opts.verb,...
+							 'trlen_ms',opts.trlen_ms,'overlap',.5,... %default to predict every trlen_ms/2 ms
+							 opts.contFeedbackOpts{:}); % but override with contFeedbackOpts
+	 else
+		[testdata,testdevents]=...
+		cont_applyClsfr(clsfr,...
+							 'endType',{'testing','test','contfeedback'},...
+							 'predFilt',opts.contPredFilt,'verb',opts.verb,...
+							 'trlen_ms',opts.trlen_ms,'overlap',.5,... %default to predict every trlen_ms/2 ms
+							 opts.contFeedbackOpts{:}); % but override with contFeedbackOpts
+										  % save to disk and merge with training data
+		fname=['testingdata' '_' subject '_' datestr];
+		fprintf('Saving %d epochs to : %s\n',numel(testdevents),fname);save([fname '.mat'],'testdata','testdevents','hdr');
+		% concatenate with the training data so can re-train with the extended data-set
+		if ( ~isempty(traindata) )
+		  traindata   =cat(1,traindata,testdata);
+		  traindevents=cat(1,traindevents,testdevents);
+		else
+		  traindata   =testdata;
+		  traindevents=testdevents;
+		end
+	 end
+		 catch
       fprintf('Error in : %s',phaseToRun);
       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
 		if ( ~isempty(le.stack) )
