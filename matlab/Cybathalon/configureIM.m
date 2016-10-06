@@ -51,11 +51,11 @@ nSymbs       =numel(symbCue);
 baselineClass=[];%'99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     =[];%'999 rtb';% 'trialClass';% 'trialClass+rtb'; % 'rtb';% [];% if set post-trial is separate class also
 
-nSeq              =20*nSymbs; % 20 examples of each target
+nSeq              =15*nSymbs; % 20 examples of each target
 epochDuration     =.75;
-trialDuration     =epochDuration*3*2; % 3*20 = 60 classification trials per class = 4.5s trials
+trialDuration     =epochDuration*4*2; % 3*20 = 60 classification trials per class = 4.5s trials
 baselineDuration  =epochDuration*2*0;   % = 1.5s baseline
-intertrialDuration=epochDuration*2*0;   % = 1.5s post-trial
+intertrialDuration=epochDuration;%*2*0;   % = 1.5s post-trial
 feedbackDuration  =epochDuration*2;
 errorDuration     =epochDuration*2*3; %= 3s penalty for mistake
 calibrateMaxSeqDuration=150;        %= 2.5min between wait-for-key-breaks
@@ -87,10 +87,10 @@ calibrate_instruct ={'When instructed perform the indicated' 'actual movement'};
 epochfeedback_instruct={'When instructed perform the indicated' 'actual movement.  When trial is done ' 'classifier prediction with be shown' 'with a blue highlight'};
 
 contfeedback_instruct={'When instructed perform the indicated' 'actual movement.  The fixation point' 'will move to show the systems' 'current prediction'};
-contFeedbackTrialDuration =10;
+contFeedbackTrialDuration =epochDuration*ceil(10/epochDuration); % about 10s
 
 neurofeedback_instruct={'Perform mental tasks as you would like.' 'The fixation point will move to' 'show the systems current prediction'};
-neurofeedbackTrialDuration=30;
+neurofeedbackTrialDuration=epochDuration*ceil(60/epochDuration); % about 60s
 
 centerout_instruct={'Complete the indicated tasks as rapidly as possible.' 'The fixation point will move to' 'show the current prediction' 'Trials end when fixation hits the target' 'or time runs out.' 'Hitting the wrong target incurs a time penalty'};
 earlyStoppingFilt=[]; % dv-filter to determine when a trial has ended
