@@ -1,6 +1,7 @@
 configureIM;
 % add the generic im experiment directory for the generic stimulus files
 addpath('../imaginedMovement');
+mdir=fileparts(mfilename('fullpath'));
 
 % create the control window and execute the phase selection loop
 %try
@@ -40,6 +41,8 @@ addpath('../imaginedMovement');
   drawnow; % make sure the figure is visible
 %end
 subject='test';
+
+datestr = datevec(now); datestr = sprintf('%02d%02d%02d',datestr(1)-2000,datestr(2:3));
 
 sendEvent('experiment.im','start');
 while (ishandle(contFig))
@@ -156,10 +159,37 @@ while (ishandle(contFig))
 
    %---------------------------------------------------------------------------
    case {'train','trainersp','trainersp_subset','train_subset'};
-    sendEvent('subject',subject);
-    sendEvent('startPhase.cmd',phaseToRun); % tell sig-proc what to do
-    buffer_newevents(buffhost,buffport,[],phaseToRun,'end'); % wait until finished
+     sendEvent('subject',subject);
+	  if ( 0 ) % don't get the sig-processor to do it, do it ourselves.....
+		 sendEvent('startPhase.cmd',phaseToRun); % tell sig-proc what to do
+		 buffer_newevents(buffhost,buffport,[],phaseToRun,'end'); % wait until finished
+	  else
+		 % BODGE: slice data from save file and train classifier directly.....
+		 % slice from the save file
+		 [fn,pth]=uigetfile({'header'},'Pick data header file'); drawnow;
+		 if ( ~isequal(fn,0) ); datadir=pth; end;
+		 [fn,pth]=uigetfile(fullfile(mdir,'..','../resources/caps/*.txt'),'Pick cap-file'); 
+		 if ( isequal(fn,0) || isequal(pth,0) ) capFile='1010.txt'; 
+		 else                                   capFile=fullfile(pth,fn);
+		 end
+		 if(~isempty(strfind(capFile,'1010.txt')))overridechnms=0;else overridechnms=1; end; 
+		 % slice the data-file
+		 [traindata,traindevents]=sliceraw(datadir,... % N.B. **MUST** read header from save file!
+													  'startSet','stimulus.target','trlen_ms',trlen_ms);
 
+		 % train the classifier
+		 [clsfr,res]=...
+		 buffer_train_ersp_clsfr(traindata,traindevents,hdr,'spatialfilter','car',...
+										 'freqband',freqband,'badchrm',1,'badtrrm',1,...
+										 'capFile',capFile,'overridechnms',overridechnms,'verb',verb,...
+										 trainOpts{:});
+
+		 % save the trained classifier
+		 fname=['clsfr' '_' subject '_' datestr];
+       fprintf('Saving classifier to : %s\n',fname);
+		 save([fname '.mat'],'-struct','clsfr');		 
+	  end
+		 
    %---------------------------------------------------------------------------
    case {'epochfeedback'};
     sendEvent('subject',subject);
@@ -216,17 +246,17 @@ while (ishandle(contFig))
     sendEvent('subject',subject);
     %sleepSec(.1);
     sendEvent(phaseToRun,'start');
-    %try
+    try
       sendEvent('startPhase.cmd','contfeedback');
       imContFeedbackStimulus;
-    %catch
-    %   le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
-	 % 	 if ( ~isempty(le.stack) )
-	 % 	   for i=1:numel(le.stack);
-	 % 	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
-	 % 	   end;
-	 % 	 end
-    %end
+    catch
+       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
+    end
     sendEvent('contfeedback','end');
     sendEvent('test','end');
     sendEvent(phaseToRun,'end');
