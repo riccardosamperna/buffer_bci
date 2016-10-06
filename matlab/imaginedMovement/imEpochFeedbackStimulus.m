@@ -1,5 +1,6 @@
 % per-epoch feedback when using an event triggered classifier
 configureIM;
+if ( ~exist('epochFeedbackTrialDuration') || isempty(epochFeedbackTrialDuration) ) epochFeedbackTrialDuration=trialDuration; end;
 
 % make the target sequence
 if ( baselineClass ) % with rest targets
@@ -138,9 +139,9 @@ for si=1:nSeq;
   end;
   if ( earlyStopping )
 	 % wait for new prediction events to process *or* end of trial time
-	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],trialDuration*1000+1500);
+	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],epochFeedbackTrailDuration*1000+1500);
   else
-    sleepSec(trialDuration); 
+    sleepSec(epochFeedbackTrailDuration); 
 	 % wait for classifier prediction event
 	 [devents,state,nevents,nsamples]=buffer_newevents(buffhost,buffport,state,'classifier.prediction',[],2000);
   end
