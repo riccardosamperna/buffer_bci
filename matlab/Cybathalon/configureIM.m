@@ -51,7 +51,7 @@ nSymbs       =numel(symbCue);
 baselineClass=[];%'99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     =[];%'999 rtb';% 'trialClass';% 'trialClass+rtb'; % 'rtb';% [];% if set post-trial is separate class also
 
-nSeq              =15*nSymbs; % 20 examples of each target
+nSeq              =18*nSymbs; % 20 examples of each target
 epochDuration     =.75;
 trialDuration     =epochDuration*4*2; % 3*20 = 60 classification trials per class = 4.5s trials
 baselineDuration  =epochDuration*2*0;   % = 1.5s baseline

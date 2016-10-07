@@ -18,6 +18,7 @@ mdir=fileparts(mfilename('fullpath'));
            '1) Practice'            'practice';
 			  '2) Calibrate'           'calibrate'; 
 			  '3) Train Classifier'    'trainersp';
+			  'T) Train Classifier (offline)'    'train_offline';
 			  '4) Epoch Feedback'      'epochfeedback';
 			  '5) Continuous Feedback' 'contfeedback';
            '6) Center-out Feedback Training' 'centerout';
@@ -25,7 +26,8 @@ mdir=fileparts(mfilename('fullpath'));
            '' '';
 			  'p) Practice - runway'    'practice_runway'; 
 			  'r) Calibrate - runway'   'calibrate_runway'; 
-			  'f) Continuous Feedback - runway'   'contfeedback_runway'; 
+			  'f) Continuous Feedback - runway'   'contfeedback_runway';
+			  'w) Cybathalon warmup->Control'    'cybathalon_warmup';
 			  'c) Cybathalon Control'   'cybathalon';
            '' '';
            'K) Keyboard Control'    'keyboardcontrol';
@@ -160,10 +162,11 @@ while (ishandle(contFig))
    %---------------------------------------------------------------------------
    case {'train','trainersp','trainersp_subset','train_subset'};
      sendEvent('subject',subject);
-	  if ( 0 ) % don't get the sig-processor to do it, do it ourselves.....
 		 sendEvent('startPhase.cmd',phaseToRun); % tell sig-proc what to do
 		 buffer_newevents(buffhost,buffport,[],phaseToRun,'end'); % wait until finished
-	  else
+
+%---------------------------------------------------------------------------
+   case {'train_offline'};
 		 % BODGE: slice data from save file and train classifier directly.....
 		 % slice from the save file
 		 [fn,pth]=uigetfile({'header'},'Pick data header file'); drawnow;
@@ -188,7 +191,6 @@ while (ishandle(contFig))
 		 fname=['clsfr' '_' subject '_' datestr];
        fprintf('Saving classifier to : %s\n',fname);
 		 save([fname '.mat'],'-struct','clsfr');		 
-	  end
 		 
    %---------------------------------------------------------------------------
    case {'epochfeedback'};
@@ -219,7 +221,7 @@ while (ishandle(contFig))
     sendEvent(phaseToRun,'end');
 
     %---------------------------------------------------------------------------
-   case {'cybathalon'};
+   case {'cybathalon','cybathalon_warmup'};
     sendEvent('subject',subject);
     %sleepSec(.1);
     sendEvent(phaseToRun,'start');
@@ -229,6 +231,20 @@ while (ishandle(contFig))
       else
         sendEvent('startPhase.cmd','epochfeedback');
       end
+		% run warmup first if needed -- for the filters/user to bed in...
+		if( strcmp(phaseToRun,'cybathalon_warmup') )
+		  try;
+			 imEpochFeedbackWarmupCybathalon;
+		  catch;
+       le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
+	  	 if ( ~isempty(le.stack) )
+	  	   for i=1:numel(le.stack);
+	  	 	 fprintf('%s>%s : %d\n',le.stack(i).file,le.stack(i).name,le.stack(i).line);
+	  	   end;
+	  	 end
+		  end
+		end
+		% run the main cybathalon control
       imEpochFeedbackCybathalon;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
