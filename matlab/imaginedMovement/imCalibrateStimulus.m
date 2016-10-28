@@ -75,6 +75,10 @@ for si=1:nSeq;
 	 set(txthdl,'visible', 'off');
 	 drawnow;	 
 	 waitforkeyTime=getwTime()+calibrateMaxSeqDuration;
+	 if ( 1.5*calibrateMaxSeqDuration > ...  % close to end of expt = don't wait again
+			(nSeq-si)*(baselineDuration+trialDuration+intertrialDuration) ) 
+		waitforkeyTime=inf;
+	 end;
 	 sleepSec(intertrialDuration);
   end
   
