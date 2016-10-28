@@ -1,7 +1,7 @@
-function [testdata,testevents]=cont_applyClsfr(clsfr,varargin)
+function [testdata,testevents,predevents]=cont_applyClsfr(clsfr,varargin)
 % continuously apply this classifier to the new data
 %
-%  [testdata,testevents]=cont_applyClsfr(clsfr,varargin)
+%  [testdata,testevents,predevents]=cont_applyClsfr(clsfr,varargin)
 %
 % Options:
 %  buffhost, buffport, hdr
@@ -49,6 +49,8 @@ opts=struct('buffhost','localhost','buffport',1972,'hdr',[],...
 				'resetType','classifier.reset',...
             'predEventType','classifier.prediction',...
             'rawpredEventType','',...
+				'labelEventType',[],...
+            'maxFrameLag',3,...
             'trlen_ms',[],'trlen_samp',[],'overlap',.5,'step_ms',[],...
             'predFilt',[],'timeout_ms',1000,'adaptspatialfilt',[]);
 [opts]=parseOpts(opts,varargin);
@@ -90,7 +92,7 @@ else
 end
 
 % for returning the data used by the classifier if wanted
-testdata={}; testevents={}; %N.B. cell array to avoid expensive mem-realloc during execution loop
+testdata={}; testevents={}; predevents={};%N.B. cell array to avoid expensive mem-realloc during execution loop
 
 % get the current number of samples, so we can start from now
 status=buffer('wait_dat',[-1 -1 -1],opts.buffhost,opts.buffport);
@@ -98,6 +100,7 @@ nEvents=status.nevents; nSamples=status.nSamples; % most recent event/sample see
 endSample=nSamples+trlen_samp; % last sample of the first window to apply to
 
 dv=[];
+lev=[]; testLabi=1;
 nEpochs=0; filtstate=[]; fbuff=[];
 endTest=false;
 tic;t0=0;t1=t0;
@@ -128,7 +131,7 @@ while( ~endTest )
   oendSample=endSample;
   fin = oendSample:step_samp:status.nSamples; % window start positions
   if( ~isempty(fin) ) endSample=fin(end)+step_samp; end %fin of next trial for which not enough data
-  if ( numel(fin)>3 ) % drop frames if we can't keep up
+  if ( numel(fin)>opts.maxFrameLag ) % drop frames if we can't keep up
 	  fprintf('Warning: classifier cant keep up, dropping %d frames!\n',numel(fin)-1);
 	  fin=fin(end);
   end
@@ -177,10 +180,11 @@ while( ~endTest )
       
 	 % Send prediction event, if wanted
 	 if( ~isempty(dv) ) 
-		sendEvent(opts.predEventType,dv,fin(si)-trlen_samp); %N.B. event sample is window-start!
+		ev=sendEvent(opts.predEventType,dv,fin(si)-trlen_samp); %N.B. event sample is window-start!
 		if ( opts.verb>0 )
 		  fprintf('%3d) Clsfr Pred: s:%d->%d v:[%s]\n',fin(si),fin(si)-trlen_samp,fin(si),sprintf('%5.2f ',dv));
 		end
+		if( nargout>2 ) predevents{nEpochs}=ev; end;
 	 end
 	 if ( opts.verb>-1 )
 		fprintf('.'); 
@@ -202,6 +206,28 @@ while( ~endTest )
 		filtstate=[]; fbuff(:)=0; dv(:)=0;
 		endSample = devents(mi).sample+trlen_samp; % wait for trials worth of data post reset time
 	 end;
+	 if ( nargout>1 && ~isempty(opts.labelEventType) )
+		mi=matchEvents(devents,opts.labelEventType);
+		if ( any(mi) )
+        % N.B. we assume that a label applies until the next label event and that data *must*
+		  % lie within a single labels range to be valid
+		  if( ~isempty(lev) ) lev=[lev;devents(mi)]; else lev=devents(mi); end;
+		  [ans,si]=sort([lev.sample],'ascend'); lev=lev(si);
+		  for li=1:numel(lev-1);
+			 for ti=testLabi:numel(testevents);
+				if ( testevents{ti}.sample-trlen_samp > lev(li+1).sample )%start after end of labelled range
+				  break;
+				end
+				if( testevents{ti}.sample-trlen_samp > lev(li).sample ... % after start of unlab data
+					 && testevents{ti}.sample         < lev(li+1).sample ) % contained in this label range
+				  testevents{ti}.value = lev(li).value; % add the label info
+				end				  
+			 end
+			 testLabi=ti;
+		  end
+		  lev=lev(end);
+		end
+	 end
     nEvents=status.nevents;
   end
 end % while not endTest
