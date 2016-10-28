@@ -15,7 +15,7 @@ if ( ischar(mval) && ~isequal(mval,'*') )   mval={mval}; end;
 
 % find matching types
 mi=true(size(ev));
-if ( isequal(mtype,'*') )
+if ( isequal(mtype,'*') || isempty(mtype) )
 else
 										  % extract all the type info
   if ( ischar(ev(1).type) )
@@ -48,7 +48,7 @@ else
   end
 end
 % find matching values
-if ( isequal(mval,'*') )
+if ( isequal(mval,'*') || isempty(mval) || ~any(mi) )
 else
 														  % extract the values
   if ( ischar(ev(1).value) )
