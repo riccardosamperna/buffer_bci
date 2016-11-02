@@ -44,18 +44,18 @@ end
 verb         =0; % verbosity level for debug messages, 1=default, 0=quiet, 2=very verbose
 buffhost     ='localhost';
 buffport     =1972;
-%symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
+symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
 %symbCue      ={'Alpha' 'Tongue' 'Hands'}; % config for JF
-symbCue      ={'Tong' 'Voeten' 'Rechter-hand' 'Linker-hand'}; % config for P3
+%symbCue      ={'Tong' 'Voeten' 'Rechter-hand' 'Linker-hand'}; % config for P3
 nSymbs       =numel(symbCue); 
-baselineClass=[];%'99 Rest'; % if set, treat baseline phase as a separate class to classify
+baselineClass='99 Rest'; %[];% if set, treat baseline phase as a separate class to classify
 rtbClass     =[];%'999 rtb';% 'trialClass';% 'trialClass+rtb'; % 'rtb';% [];% if set post-trial is separate class also
 
 nSeq              =18*nSymbs; % 20 examples of each target
 epochDuration     =.75;
 trialDuration     =epochDuration*4*2; % 3*20 = 60 classification trials per class = 4.5s trials
-baselineDuration  =epochDuration*2*0;   % = 1.5s baseline
-intertrialDuration=epochDuration;%*2*0;   % = 1.5s post-trial
+baselineDuration  =epochDuration*2;   % = 1.5s baseline
+intertrialDuration=epochDuration*2; % = 1.5s post-trial
 feedbackDuration  =epochDuration*2;
 errorDuration     =epochDuration*2*3; %= 3s penalty for mistake
 calibrateMaxSeqDuration=150;        %= 2.5min between wait-for-key-breaks
