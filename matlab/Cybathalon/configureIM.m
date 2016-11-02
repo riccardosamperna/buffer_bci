@@ -44,9 +44,9 @@ end
 verb         =0; % verbosity level for debug messages, 1=default, 0=quiet, 2=very verbose
 buffhost     ='localhost';
 buffport     =1972;
-%symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
+symbCue      ={'Feet' 'Left-Hand' 'Right-Hand'};
 %symbCue      ={'Alpha' 'Tongue' 'Hands'}; % config for JF
-symbCue      ={'Tong' 'Voeten' 'Rechter-hand' 'Linker-hand'}; % config for P3
+%symbCue      ={'Tong' 'Voeten' 'Rechter-hand' 'Linker-hand'}; % config for P3
 nSymbs       =numel(symbCue); 
 baselineClass=[];%'99 Rest'; % if set, treat baseline phase as a separate class to classify
 rtbClass     =[];%'999 rtb';% 'trialClass';% 'trialClass+rtb'; % 'rtb';% [];% if set post-trial is separate class also
