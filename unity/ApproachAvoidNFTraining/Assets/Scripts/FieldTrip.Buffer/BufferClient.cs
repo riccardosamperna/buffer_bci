@@ -40,6 +40,8 @@ namespace FieldTrip.Buffer
 		protected SocketChannel sockChan;
 		protected ByteOrder myOrder;
 		public Header header;
+		protected string host="localhost";
+		protected int port=1972;
 
 		public short errorReturned;
 
@@ -51,28 +53,33 @@ namespace FieldTrip.Buffer
 			myOrder = order;
 		}
 
-		public bool connect(string hostname, int port) {
+		public bool connect(string host, int port) {
 			if(sockChan == null){
 				sockChan = new SocketChannel();
 			}else if(sockChan.isConnected()){
 				disconnect();
+				sockChan = new SocketChannel(); // force build of new socket connection
 			}
-			sockChan.connect(hostname, port);
+			this.host = host;
+			this.port = port;
+			sockChan.connect(this.host, this.port);
 
 			return sockChan.isConnected();
 		}
-
-
+			
 		public bool connect(string address) {
-			string hostname = address;
-			int port = 1972;
+			host = address;
 			int colonPos = address.LastIndexOf(':');
 			if (colonPos != -1) {
-				hostname = address.Substring(0,colonPos);
+				host = address.Substring(0,colonPos);
 				port = int.Parse(address.Substring(colonPos+1));
 			}
 			// other addresses not recognised yet
-			return sockChan.connect(hostname, port);
+			return connect(host,port);
+		}
+
+		public bool reconnect(){
+			return connect (host, port);
 		}
 
 		public void disconnect()  {
