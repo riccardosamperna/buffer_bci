@@ -24,9 +24,9 @@ WORKDIR /
 RUN git clone https://github.com/jadref/buffer_bci.git
 
 # Java
-WORKDIR /buffer_bci/dataAcq/buffer/java
-RUN ./build.sh
+#WORKDIR /buffer_bci/dataAcq/buffer/java
+#RUN ./build.sh
 
 # C
-WORKDIR /buffer_bci/dataAcq/buffer/c
-RUN make
+#WORKDIR /buffer_bci/dataAcq/buffer/c
+#RUN make
