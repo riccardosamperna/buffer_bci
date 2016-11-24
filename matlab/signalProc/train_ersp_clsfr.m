@@ -161,6 +161,8 @@ if ( ~isempty(opts.timeband_ms) )
   X    = X(:,timeIdx,:);
 end
 
+%3) Spatial filter/re-reference, potentially data dependent
+R=[];
 %3.b) Spatial filter/re-reference (data-independent / supervised)
 if ( size(X,1)>=4 ) % only spatial filter if enough channels
   sftype=lower(opts.spatialfilter);

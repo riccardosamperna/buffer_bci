@@ -1,5 +1,9 @@
 try; cd(fileparts(mfilename('fullpath')));catch; end;
-run ../../matlab/utilities/initPaths.m
+try;
+   run ../../matlab/utilities/initPaths.m
+catch
+   msgbox({'Please change to the directory where this file is saved before running the rest of this code'},'Change directory'); 
+end
 
 % N.B. only really need the header to get the channel information, and sample rate
 buffhost='localhost';buffport=1972;
@@ -24,7 +28,7 @@ cname  ='clsfr';
 %useful functions
 load(dname);
 % train classifier
-clsfr=buffer_train_ersp_clsfr(data,devents,hdr,'spatialfilter','slap','freqband',[6 10 26 30],'badchrm',0,'capFile',capFile,'overridechnm',overridechnm);
+clsfr=buffer_train_ersp_clsfr(data,devents,hdr,'spatialfilter','slap','freqband',[6 10 26 30],'badchrm',0,'capFile',capFile,'overridechnms',overridechnm);
 fprintf('Saving classifier to : %s\n',cname);
 save(cname,'-struct','clsfr');
 sendEvent('phase.training','start');

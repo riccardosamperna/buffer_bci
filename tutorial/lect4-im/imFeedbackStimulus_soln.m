@@ -1,5 +1,9 @@
 try; cd(fileparts(mfilename('fullpath')));catch; end;
-run ../../matlab/utilities/initPaths.m
+try;
+   run ../../matlab/utilities/initPaths.m
+catch
+   msgbox({'Please change to the directory where this file is saved before running the rest of this code'},'Change directory'); 
+end
 
 buffhost='localhost';buffport=1972;
 % wait for the buffer to return valid header information
@@ -26,6 +30,12 @@ nBlock=2;%10; % number of stim blocks to use
 trialDuration=3;
 baselineDuration=1;
 intertrialDuration=2;
+feedbackDuration=1;
+
+bgColor=[.5 .5 .5];
+tgtColor=[0 1 0];
+fixColor=[1 0 0];
+fbColor=[0 0 1];
 
 % make the target sequence
 tgtSeq=mkStimSeqRand(nSymbs,nSeq);

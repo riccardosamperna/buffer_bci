@@ -1,6 +1,10 @@
 %% initialise the matlab paths
 try; cd(fileparts(mfilename('fullpath')));catch; end;
-run ../../matlab/utilities/initPaths.m
+try;
+   run ../../matlab/utilities/initPaths.m
+catch
+   msgbox({'Please change to the directory where this file is saved before running the rest of this code'},'Change directory'); 
+end
 
 %% load the data this contains
 % X - [ channels x time x epochs ] raw EEG data
@@ -51,7 +55,7 @@ X =X - repmat(mean(X,1),[size(X,1),1,1]);
 %% 3.5) remove bad epochs
 fprintf('3.5) bad trial removal');
 % plot the epoch/trial powers
-eppow = sum(1,reshape(X,[],size(X,3)).^2);
+eppow = sum(reshape(X,[],size(X,3)).^2,1);
 figure(1); clf; plot(eppow);
 % automatically identify the bad epochs
 badep = idOutliers(X,3,3);
