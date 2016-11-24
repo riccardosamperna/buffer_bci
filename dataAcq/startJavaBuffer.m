@@ -13,10 +13,22 @@ subject='test';
 datv = datevec(now);
 session=sprintf('%02d%02d%02d',datv(1)-2000,datv(2:3));
 block  =sprintf('%02d%02d',datv(4:5));
-savepath=fullfile('~','output',subject,session,block);
-if ( ~exist(savepath,'dir') ) mkdir('-p',savepath); end;
+if ispc
+   rootdir = fullfile(getenv('HOMEDRIVE'),getenv('HOMEPATH'));
+else
+   rootdir = fullfile(getenv('HOME'));
+end
+savepath=fullfile(rootdir,'output',subject,session,block);
+if ( ~exist(savepath,'dir') ) 
+   diri=find(savepath==filesep | savepath=='/');
+   if(diri(1)==1);diri=diri(2:end);end;
+   if(diri(end)~=numel(savepath))diri=[diri numel(savepath)+1];end;
+   for di=1:numel(diri);
+      if ( ~exist(savepath(1:diri(di)-1),'dir') ) mkdir(savepath(1:diri(di)-1)); end;
+   end
+end;
 
 % create the object, saving to the given location
 svr=javaObject('nl.fcdonders.fieldtrip.bufferserver.BufferServer',savepath,port);
 % run the server
-svr.run();
+svr.start();

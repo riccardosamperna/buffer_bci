@@ -70,7 +70,7 @@ while (ishandle(contFig))
   if ( isempty(phaseToRun) ) pause(.3); continue; end;
 
   fprintf('Start phase : %s\n',phaseToRun);  
-  set(contFig,'visible','off');
+  set(contFig,'visible','off'); drawnow;
   switch phaseToRun;
     
    %---------------------------------------------------------------------------
@@ -78,6 +78,7 @@ while (ishandle(contFig))
     sendEvent('subject',subject);
     sendEvent('startPhase.cmd',phaseToRun); % tell sig-proc what to do
     buffer_newevents(buffhost,buffport,[],phaseToRun,'end',inf); % wait until finished
+    set(contFig,'userdata',[]); % ignore any key-presses here while the other window was running
 
    %---------------------------------------------------------------------------
    case 'eegviewer';
@@ -85,6 +86,7 @@ while (ishandle(contFig))
     sendEvent('startPhase.cmd',phaseToRun); % tell sig-proc what to do
     % wait until capFitting is done
     buffer_newevents(buffhost,buffport,[],phaseToRun,'end',inf); % wait until finished
+    set(contFig,'userdata',[]); % ignore any key-presses here while the other window was running
     
    %---------------------------------------------------------------------------
    case 'artifact';
@@ -124,15 +126,10 @@ while (ishandle(contFig))
    case {'train','trainersp','trainersp_subset','train_subset'};
     sendEvent('subject',subject);
     sendEvent('startPhase.cmd',phaseToRun); % tell sig-proc what to do
-<<<<<<< HEAD
-    buffer_newevents(buffhost,buffport,[],phaseToRun,'end'); % wait until finished
-	 
-	 
-=======
     buffer_newevents(buffhost,buffport,[],phaseToRun,'end',inf); % wait until finished
+    set(contFig,'userdata',[]); % ignore any key-presses here while the other window was running
 
->>>>>>> 21154e6... force stimulus presentation to wait for eegviewer to finish before allowing move to other stimulus phases
-   %---------------------------------------------------------------------------
+	%---------------------------------------------------------------------------
    case {'epochfeedback'};
     sendEvent('subject',subject);
     %sleepSec(.1);

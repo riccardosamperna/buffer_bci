@@ -2,7 +2,9 @@
 cd `dirname ${BASH_SOURCE[0]}`
 buffdir=`dirname $0`
 
-dataacq='biosemi';
+
+dataacq='mobita';
+
 if [ $# -gt 0 ]; then dataacq=$1; fi
 sigproc=0;
 if [ $# -gt 1 ]; then sigproc=$2; fi
